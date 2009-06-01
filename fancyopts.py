@@ -4,18 +4,21 @@
 
 import getopt, types, textwrap
 
-def fancyopts(cmd, args, options):
+def fancyopts(cmd, usage, args, options):
     if not args:
-        help_(cmd, options)
+        help_(cmd, usage, options)
     else:
         opts, args = parse(args, options)
         cmd(*args, **opts)
 
-def help_(cmd, options):
+def help_(cmd, usage, options):
     '''show help for given command
 
     >>> def test(*args, **opts):
-    ...     """test [-l HOST] [NAME]"""
+    ...     """that's a test command
+    ...
+    ...        you can do nothing with this command"""
+    ...     pass
     >>> opts = [('l', 'listen', 'localhost',
     ...          'ip to listen on'),
     ...         ('p', 'port', 8000,
@@ -24,8 +27,12 @@ def help_(cmd, options):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> help_(test, opts)
+    >>> help_(test, 'test [-l HOST] [NAME]', opts)
     test [-l HOST] [NAME]
+    <BLANKLINE>
+    that's a test command
+    <BLANKLINE>
+           you can do nothing with this command
     <BLANKLINE>
     options:
     <BLANKLINE>
@@ -41,7 +48,7 @@ def help_(cmd, options):
     doc = cmd.__doc__
     if not doc:
         doc = '(no help text available)'
-    print '%s\n' % doc.strip()
+    print '%s\n\n%s\n' % (usage, doc.strip())
     print '\n'.join(help_options(options))
 
 
