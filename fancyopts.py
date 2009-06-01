@@ -58,7 +58,7 @@ def help_options(options):
     for first, second in output:
         if second:
             # wrap description at 70 chars
-            second = textwrap.wrap(second, width=70 - opts_len - 3)
+            second = textwrap.wrap(second, width=(70 - opts_len - 3))
             pad = '\n' + ' ' * (opts_len + 3)
             yield ' %-*s  %s\n' % (opts_len, first, pad.join(second))
         else:
