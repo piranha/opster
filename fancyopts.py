@@ -54,7 +54,7 @@ def help_options(options):
                                   name and ' --%s' % name),
                        '%s%s' % (desc, default)))
 
-    opts_len = max([len(f) for f, s in output if s] or [0])
+    opts_len = max([len(first) for first, second in output if second] or [0])
     for first, second in output:
         if second:
             # wrap description at 70 chars
