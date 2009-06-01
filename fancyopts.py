@@ -90,7 +90,7 @@ def parse(args, options):
         argmap['-' + short] = argmap['--' + oname] = name
         state[name] = default
 
-        # it takes a parameter
+        # getopt wants indication that it takes a parameter
         if default not in (None, True, False):
             if short: short += ':'
             if oname: oname += '='
