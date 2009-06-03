@@ -17,7 +17,7 @@ Usage:
 ...         ('', 'pid-file', '',
 ...          'name of file to write process ID to')]
 >>> from fancyopts import fancyopts
->>> fancyopts(serve, 'serve [-l HOST] DIR', opts, ['--pid-file', 'test', 'dir'])
+>>> fancyopts(serve, 'serve [-l HOST] DIR', opts, '--pid-f test dir'.split())
 localhost test
 
 You have supplied directory name here and path to file with process id.
