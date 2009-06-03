@@ -1,10 +1,34 @@
 # (c) Alexander Solovyov, 2009, under terms of the new BSD License
 '''Fancy option parser
+
+Usage:
+
+>>> def serve(dirname, **opts):
+...     """this is a do-nothing command
+...
+...        you can do nothing with this command"""
+...     print opts.get('listen'), opts.get('pid_file')
+>>> opts = [('l', 'listen', 'localhost',
+...          'ip to listen on'),
+...         ('p', 'port', 8000,
+...          'port to listen on'),
+...         ('d', 'daemonize', False,
+...          'daemonize process'),
+...         ('', 'pid-file', '',
+...          'name of file to write process ID to')]
+>>> from fancyopts import fancyopts
+>>> fancyopts(serve, 'serve [-l HOST] DIR', opts, ['--pid-file', 'test', 'dir'])
+localhost test
+
+You have supplied directory name here and path to file with process id.
+Order of options is preserved.
 '''
 
 import getopt, types, textwrap
 
-def fancyopts(cmd, usage, args, options):
+__all__ = ['fancyopts']
+
+def fancyopts(cmd, usage, options, args):
     if not args:
         help_(cmd, usage, options)
     else:
@@ -37,11 +61,8 @@ def help_(cmd, usage, options):
     options:
     <BLANKLINE>
      -l --listen     ip to listen on (default: localhost)
-    <BLANKLINE>
      -p --port       port to listen on (default: 8000)
-    <BLANKLINE>
      -d --daemonize  daemonize process
-    <BLANKLINE>
         --pid-file   name of file to write process ID to
     <BLANKLINE>
     '''
@@ -49,11 +70,11 @@ def help_(cmd, usage, options):
     if not doc:
         doc = '(no help text available)'
     print '%s\n\n%s\n' % (usage, doc.strip())
-    print '\n'.join(help_options(options))
+    print ''.join(help_options(options))
 
 
 def help_options(options):
-    yield 'options:\n'
+    yield 'options:\n\n'
     output = []
     for short, name, default, desc in options:
         default = default and ' (default: %s)' % default or ''
