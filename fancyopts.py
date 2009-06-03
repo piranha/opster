@@ -112,20 +112,20 @@ def parse(args, options):
     shortlist = ''
     namelist = []
 
-    for short, oname, default, comment in options:
+    for short, name, default, comment in options:
         # change name to match Python styling
-        name = oname.replace('-', '_')
-        argmap['-' + short] = argmap['--' + oname] = name
-        state[name] = default
+        pyname = name.replace('-', '_')
+        argmap['-' + short] = argmap['--' + name] = pyname
+        defmap[pyname] = default
 
         # getopt wants indication that it takes a parameter
         if default not in (None, True, False):
             if short: short += ':'
-            if oname: oname += '='
+            if name: name += '='
         if short:
             shortlist += short
         if name:
-            namelist.append(oname)
+            namelist.append(name)
 
     opts, args = getopt.gnu_getopt(args, shortlist, namelist)
 
