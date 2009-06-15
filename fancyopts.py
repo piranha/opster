@@ -122,16 +122,22 @@ def parse(args, options):
     ({'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'}, ['all'])
 
     '''
-    argmap = {}
-    state = {}
-    shortlist = ''
-    namelist = []
+    argmap, defmap, state = {}, {}, {}
+    shortlist, namelist = '', []
 
     for short, name, default, comment in options:
         # change name to match Python styling
         pyname = name.replace('-', '_')
         argmap['-' + short] = argmap['--' + name] = pyname
         defmap[pyname] = default
+
+        # copy defaults to state
+        if isinstance(default, list):
+            state[pyname] = default[:]
+        elif hasattr(default, '__call__'):
+            state[pyname] = None
+        else:
+            state[pyname] = default
 
         # getopt wants indication that it takes a parameter
         if default not in (None, True, False):
@@ -147,9 +153,9 @@ def parse(args, options):
     # transfer result to state
     for opt, val in opts:
         name = argmap[opt]
-        t = type(state[name])
+        t = type(defmap[name])
         if t is types.FunctionType:
-            state[name] = state[name](val)
+            state[name] = defmap[name](val)
         elif t is types.IntType:
             state[name] = int(val)
         elif t is types.StringType:
@@ -157,7 +163,7 @@ def parse(args, options):
         elif t is types.ListType:
             state[name].append(val)
         elif t in (types.NoneType, types.BooleanType):
-            state[name] = not state[name]
+            state[name] = not defmap[name]
 
     return state, args
 
