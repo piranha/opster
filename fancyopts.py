@@ -1,27 +1,42 @@
 # (c) Alexander Solovyov, 2009, under terms of the new BSD License
 '''Fancy option parser
 
-Usage:
+Usage::
 
->>> def serve(dirname, **opts):
-...     """this is a do-nothing command
-...
-...        you can do nothing with this command"""
-...     print opts.get('listen'), opts.get('pid_file')
->>> opts = [('l', 'listen', 'localhost',
-...          'ip to listen on'),
-...         ('p', 'port', 8000,
-...          'port to listen on'),
-...         ('d', 'daemonize', False,
-...          'daemonize process'),
-...         ('', 'pid-file', '',
-...          'name of file to write process ID to')]
->>> from fancyopts import fancyopts
->>> fancyopts(serve, 'serve [-l HOST] DIR', opts, '--pid-f test dir'.split())
-localhost test
+  >>> def serve(dirname, **opts):
+  ...     """this is a do-nothing command
+  ...
+  ...        you can do nothing with this command"""
+  ...     print opts.get('listen'), opts.get('pid_file')
+  >>> opts = [('l', 'listen', 'localhost',
+  ...          'ip to listen on'),
+  ...         ('p', 'port', 8000,
+  ...          'port to listen on'),
+  ...         ('d', 'daemonize', False,
+  ...          'daemonize process'),
+  ...         ('', 'pid-file', '',
+  ...          'name of file to write process ID to')]
+  >>> from fancyopts import fancyopts
+  >>> fancyopts(serve, 'serve [-l HOST] DIR', opts, '--pid-f test dir'.split())
+  localhost test
 
 You have supplied directory name here and path to file with process id.
 Order of options is preserved.
+
+Each option definition is a tuple consisting of 4 elements:
+
+ - short name
+ - long name
+ - default value
+ - help string
+
+Default value determines option type, which is selected from this choices:
+
+ - function: return value of function called with a specified value is passed
+ - integer: value is convert to integer
+ - string: value is passed as is
+ - list: value is appended to this list
+ - boolean/None: `not default` is passed
 '''
 
 import getopt, types, textwrap
