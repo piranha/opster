@@ -45,12 +45,12 @@ __all__ = ['fancyopts']
 
 def fancyopts(cmd, usage, options, args):
     if not args:
-        help_(cmd, usage, options)
+        cmd_help(cmd, usage, options)
     else:
         opts, args = parse(args, options)
         cmd(*args, **opts)
 
-def help_(cmd, usage, options):
+def cmd_help(cmd, usage, options):
     '''show help for given command
 
     >>> def test(*args, **opts):
@@ -66,7 +66,7 @@ def help_(cmd, usage, options):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> help_(test, 'test [-l HOST] [NAME]', opts)
+    >>> cmd_help(test, 'test [-l HOST] [NAME]', opts)
     test [-l HOST] [NAME]
     <BLANKLINE>
     that's a test command
@@ -81,12 +81,12 @@ def help_(cmd, usage, options):
         --pid-file   name of file to write process ID to
     <BLANKLINE>
     '''
+    print '%s\n' % usage
     doc = cmd.__doc__
     if not doc:
         doc = '(no help text available)'
-    print '%s\n\n%s\n' % (usage, doc.strip())
+    print '%s\n' % doc.strip()
     print ''.join(help_options(options))
-
 
 def help_options(options):
     yield 'options:\n\n'
