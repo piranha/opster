@@ -102,7 +102,7 @@ def _dispatch(ui, args, cmdtable, globalopts):
     ui.quiet = globaloptions['quiet']
 
     if globaloptions['help']:
-        pass # help
+        return cmdtable['help'][0](ui, cmd)
     elif not cmd:
         return cmdtable['help'][0](ui, 'shortlist')
 
