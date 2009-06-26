@@ -99,7 +99,8 @@ def _dispatch(ui, args, cmdtable, globalopts):
                                                        globalopts)
 
     ui.verbose = globaloptions['verbose']
-    ui.quiet = globaloptions['quiet']
+    # see UI.__init__ for explanation
+    ui.quiet = (not ui.verbose and globaloptions['quiet'])
 
     if globaloptions['help']:
         return cmdtable['help'][0](ui, cmd)
@@ -201,7 +202,8 @@ class UI(object):
 
     def __init__(self, verbose=False, quiet=False):
         self.verbose = verbose
-        self.quiet = quiet
+        # disabling quiet in favor of verbose is more safe
+        self.quiet = (not verbose and quiet)
 
     def write(self, *messages):
         for m in messages:

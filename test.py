@@ -17,7 +17,12 @@ def complex_(ui, *args, **opts):
 
     Let's try to do that (damn, but what?!)
     '''
-    print args, opts
+    # test ui
+    ui.write('what the?!\n')
+    ui.warn('this is stderr\n')
+    ui.status('this would be invisible in quiet mode\n')
+    ui.note('this would be visible only in verbose mode\n')
+    ui.write('%s, %s\n' % (args, opts))
 
 cmdtable = {
     'simple':
