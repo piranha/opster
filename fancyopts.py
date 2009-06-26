@@ -86,7 +86,8 @@ def cmd_help(cmd, usage, options):
     if not doc:
         doc = '(no help text available)'
     print '%s\n' % doc.strip()
-    print ''.join(help_options(options))
+    if options:
+        print ''.join(help_options(options))
 
 def help_options(options):
     yield 'options:\n\n'

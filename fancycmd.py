@@ -3,38 +3,46 @@ from itertools import imap
 
 from fancyopts import parse, cmd_help
 
-def help_(ui, cmdtable, globalopts, name=None):
-    def helplist():
-        hlp = {}
-        # determine if there any command marked for shortlist
-        shortlist = (name == 'shortlist' and
-                     any(imap(lambda x: x.startswith('^'), cmdtable)))
+def help_(cmdtable, globalopts):
+    def inner(ui, name=None):
+        '''Show help for a given help topic or a help overview
 
-        for cmd, info in cmdtable.items():
-            if shortlist and not cmd.startswith('^'):
-                continue # short help contains only marked commands
-            cmd = cmd.lstrip('^')
-            doc = info[0].__doc__ or '(no help text available)'
-            hlp[cmd] = doc.splitlines()[0].rstrip()
+        With no arguments, print a list of commands with short help messages.
 
-        hlplist = sorted(hlp)
-        maxlen = max(map(len, hlplist))
-        for cmd in hlplist:
-            doc = hlp[cmd]
-            if ui.verbose:
-                ui.write(' %s:\n     %s\n' % (cmd.replace('|', ', '), doc))
-            else:
-                ui.write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0], doc))
+        Given a command name, print help for that command.
+        '''
+        def helplist():
+            hlp = {}
+            # determine if there any command marked for shortlist
+            shortlist = (name == 'shortlist' and
+                         any(imap(lambda x: x.startswith('^'), cmdtable)))
 
-    if not cmdtable:
-        return ui.warn('No commands specified!\n')
+            for cmd, info in cmdtable.items():
+                if shortlist and not cmd.startswith('^'):
+                    continue # short help contains only marked commands
+                cmd = cmd.lstrip('^')
+                doc = info[0].__doc__ or '(no help text available)'
+                hlp[cmd] = doc.splitlines()[0].rstrip()
 
-    if not name or name == 'shortlist':
-        return helplist()
+            hlplist = sorted(hlp)
+            maxlen = max(map(len, hlplist))
+            for cmd in hlplist:
+                doc = hlp[cmd]
+                if ui.verbose:
+                    ui.write(' %s:\n     %s\n' % (cmd.replace('|', ', '), doc))
+                else:
+                    ui.write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0],
+                                              doc))
 
-    cmd, options, usage = cmdtable[name]
-    return cmd_help(cmd, name + ': ' + usage, options)
+        if not cmdtable:
+            return ui.warn('No commands specified!\n')
 
+        if not name or name == 'shortlist':
+            return helplist()
+
+        aliases, (cmd, options, usage) = findcmd(name, cmdtable)
+        return cmd_help(cmd, aliases[0]  + ' ' + usage, options)
+    return inner
 
 def dispatch(args, cmdtable, globalopts=None):
     '''Dispatch command arguments based on subcommands.
@@ -64,6 +72,8 @@ def dispatch(args, cmdtable, globalopts=None):
             ('h', 'help', False, 'display help'),
             ('', 'traceback', False, 'display full traceback on error')]
 
+    cmdtable['help'] = (help_(cmdtable, globalopts), [], '[TOPIC]')
+
     try:
         return _dispatch(ui, args, cmdtable, globalopts + UI.options)
     except Abort, e:
@@ -75,7 +85,7 @@ def dispatch(args, cmdtable, globalopts=None):
                 (e.args[0], ' '.join(e.args[1])))
     except ParseError, e:
         ui.warn('%s: %s\n' % (e.args[0], e.args[1]))
-        help_(ui, cmdtable, globalopts, e.args[0])
+        cmdtable['help'][0](ui, e.args[0])
     except KeyboardInterrupt:
         ui.warn('interrupted!\n')
     except:
@@ -94,7 +104,7 @@ def _dispatch(ui, args, cmdtable, globalopts):
     if globaloptions['help']:
         pass # help
     elif not cmd:
-        return help_(ui, cmdtable, globalopts, 'shortlist')
+        return cmdtable['help'][0](ui, 'shortlist')
 
     try:
         return func(ui, *args, **options)
