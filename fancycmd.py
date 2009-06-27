@@ -88,6 +88,8 @@ def dispatch(args, cmdtable, globalopts=None):
         cmdtable['help'][0](ui, e.args[0])
     except KeyboardInterrupt:
         ui.warn('interrupted!\n')
+    except SystemExit:
+        raise
     except:
         ui.warn('unknown exception encountered')
         raise
