@@ -37,7 +37,7 @@ cmdtable = {
         (complex_,
          [('p', 'pass', False, 'don\'t run the command'),
           ('', 'exit', 0, 'exit with supplied code (default: 0)')],
-         '')}
+         '[-p] [--exit value] ...')}
 
 if __name__ == '__main__':
     dispatch(sys.argv[1:], cmdtable)
