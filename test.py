@@ -17,21 +17,26 @@ def complex_(ui, *args, **opts):
 
     Let's try to do that (damn, but what?!)
     '''
+    if opts.get('pass'):
+        return
     # test ui
     ui.write('what the?!\n')
     ui.warn('this is stderr\n')
     ui.status('this would be invisible in quiet mode\n')
     ui.note('this would be visible only in verbose mode\n')
     ui.write('%s, %s\n' % (args, opts))
+    if opts.get('exit'):
+        sys.exit(opts['exit'])
 
 cmdtable = {
-    'simple':
+    '^simple':
         (simple,
          [('t', 'test', False, 'just test execution')],
          '[-t] ...'),
-    'complex':
+    'complex|hard':
         (complex_,
-         [],
+         [('p', 'pass', False, 'don\'t run the command'),
+          ('', 'exit', 0, 'exit with supplied code (default: 0)')],
          '')}
 
 if __name__ == '__main__':
