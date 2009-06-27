@@ -141,7 +141,7 @@ def parse(args, options):
             state[pyname] = default
 
         # getopt wants indication that it takes a parameter
-        if default not in (None, True, False):
+        if not (default is None or default is True or default is False):
             if short: short += ':'
             if name: name += '='
         if short:
