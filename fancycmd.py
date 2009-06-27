@@ -13,7 +13,7 @@ def help_(cmdtable, globalopts):
         '''
         def helplist():
             hlp = {}
-            # determine if there any command marked for shortlist
+            # determine if any command is marked for shortlist
             shortlist = (name == 'shortlist' and
                          any(imap(lambda x: x.startswith('^'), cmdtable)))
 
