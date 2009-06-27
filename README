@@ -1,0 +1,113 @@
+.. -*- mode: rst -*-
+
+==========
+ Fancycmd
+==========
+
+Fancycmd is a command line parser, indented to make writing command line
+applications easy and painless. It uses built-in Python types (lists,
+dictionaries, etc) to define options (or subcommands in case you need them),
+which makes configuration clear and concise.
+
+
+Options
+-------
+
+Configuration of option parser is a list of tuples::
+
+    opts = [('l', 'listen', 'localhost', 'ip to listen on'),
+            ('p', 'port', 8000, 'port to listen on'),
+            ('d', 'daemonize', False, 'daemonize process'),
+            ('', 'pid-file', '', 'name of file to write process ID to')]
+
+Each tuple is a definition of some option, consisting of 4 elements:
+
+ 1. short name
+ 2. long name
+ 3. default value
+ 4. help string
+
+If a short name renders to False (for example, empty string), then it's not used
+at all. Long name is pretended to be available in any case. Default value also
+determines how supplied argument should be parsed:
+
+ - function: return value of function called with a specified value is passed
+ - integer: value is convert to integer
+ - string: value is passed as is
+ - list: value is appended to this list
+ - boolean/None: ``not default`` is passed and option takes no argument
+
+Usage is easy like that::
+
+    write example here
+
+Subcommands
+-----------
+
+It's pretty usual for complex application to have some system of subcommands,
+and fancycmd provides facility for handling them. Configuration is simple as
+well::
+
+    cmdtable = {
+        '^simple':
+            (simple,
+             [('t', 'test', False, 'just test execution')],
+             '[-t] ...'),
+        'complex|hard':
+            (complex_,
+             [('p', 'pass', False, 'don\'t run the command'),
+              ('', 'exit', 0, 'exit with supplied code (default: 0)')],
+             '[-p] [--exit value] ...')}
+
+Keys in this dictionary are subcommand names. You can add aliases for
+subcommands, separating them with the ``|`` sign (of course, there can be few
+aliases). Marking command with preceding ``^`` means that this commands should
+be included in short help (more on that later).
+
+Values here are tuples, consisting of 3 elements:
+
+ 1. function, which will handle this subcommand
+ 2. list of options
+ 3. usage string (used by help generator)
+
+Your application will also always have ``help`` command, when it uses subcommand
+system.
+
+You can define your functions for subcommands like this::
+
+    def simple(ui, *args, **opts):
+        '''some descriptive text here
+
+        more help, I'd said a lot of help here ;-)
+        '''
+        pass
+
+Naturally ``args`` is a list, containing all arguments to command, and ``opts``
+is a dictionary, containing every option. ``ui`` is an UI_ instance.
+
+Usage::
+
+   describe api here
+
+UI
+--
+
+``UI`` is a special object intended to ease output handling in your
+application. There are two global options added, which are used by this object:
+``-v/--verbose`` and ``-q/--quiet``. And then you are encouraged to use ``UI``
+instance to output instead of directly printing messages, which is possible by
+using one of following methods:
+
+  - ``UI.status`` prints by default, but hides output with quiet option
+  - ``UI.note`` prints only if verbose option supplied
+  - ``UI.write`` prints in any case
+  - ``UI.warn`` prints to stderr (in any case)
+
+
+Help generation
+---------------
+
+Help is generated automatically and is available by the ``--help`` command line
+option or by ``help`` subcommand (if you're using subcommand system).
+
+Help is wrapped to length of 70 characters.
