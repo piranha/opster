@@ -208,7 +208,7 @@ def parse(args, options):
         # copy defaults to state
         if isinstance(default, list):
             state[pyname] = default[:]
-        elif hasattr(default, '__call__'):
+        elif callable(default):
             state[pyname] = None
         else:
             state[pyname] = default
