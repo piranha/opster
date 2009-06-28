@@ -14,7 +14,7 @@ __all__ = ['fancyopts', 'dispatch']
 def fancyopts(cmd, options, usage):
     def inner(args):
         if not args:
-            cmd_help(cmd, usage, options)
+            help_cmd(cmd, usage, options)
         else:
             opts, args = parse(args, options)
             cmd(*args, **opts)
@@ -116,10 +116,10 @@ def help_(cmdtable, globalopts):
             return helplist()
 
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
-        return cmd_help(cmd, aliases[0]  + ' ' + usage, options)
+        return help_cmd(cmd, aliases[0]  + ' ' + usage, options)
     return inner
 
-def cmd_help(cmd, usage, options):
+def help_cmd(func, usage, options):
     '''show help for given command
 
     >>> def test(*args, **opts):
@@ -135,7 +135,7 @@ def cmd_help(cmd, usage, options):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> cmd_help(test, 'test [-l HOST] [NAME]', opts)
+    >>> help_cmd(test, 'test [-l HOST] [NAME]', opts)
     test [-l HOST] [NAME]
     <BLANKLINE>
     that's a test command
@@ -151,7 +151,7 @@ def cmd_help(cmd, usage, options):
     <BLANKLINE>
     '''
     print '%s\n' % usage
-    doc = cmd.__doc__
+    doc = func.__doc__
     if not doc:
         doc = '(no help text available)'
     print '%s\n' % doc.strip()
@@ -279,14 +279,14 @@ def cmdparse(args, cmdtable, globalopts):
 
         aliases, info = findcmd(cmd, cmdtable)
         cmd = aliases[0]
-        possibleargs = list(info[1])
+        possibleopts = list(info[1])
     else:
-        possibleargs = []
+        possibleopts = []
 
-    possibleargs.extend(globalopts)
+    possibleopts.extend(globalopts)
 
     try:
-        options, args = parse(args, possibleargs)
+        options, args = parse(args, possibleopts)
     except getopt.GetoptError, e:
         raise ParseError(cmd, e)
 
