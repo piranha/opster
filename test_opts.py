@@ -17,4 +17,4 @@ def main(dirname, **opts):
     print opts.get('pid_file')
 
 if __name__ == '__main__':
-    fancyopts(main, '%s [-l HOST] DIR' % sys.argv[0], opts, sys.argv[1:])
+    fancyopts(main, opts, usage='%s [-l HOST] DIR' % sys.argv[0])(sys.argv[1:])

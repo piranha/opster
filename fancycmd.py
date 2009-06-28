@@ -11,12 +11,14 @@ __all__ = ['fancyopts', 'dispatch']
 # Public interface
 # --------
 
-def fancyopts(cmd, usage, options, args):
-    if not args:
-        cmd_help(cmd, usage, options)
-    else:
-        opts, args = parse(args, options)
-        cmd(*args, **opts)
+def fancyopts(cmd, options, usage):
+    def inner(args):
+        if not args:
+            cmd_help(cmd, usage, options)
+        else:
+            opts, args = parse(args, options)
+            cmd(*args, **opts)
+    return inner
 
 def dispatch(args, cmdtable, globalopts=None):
     '''Dispatch command arguments based on subcommands.
