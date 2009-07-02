@@ -5,19 +5,32 @@
 import sys, traceback, getopt, types, textwrap
 from itertools import imap
 
-__all__ = ['fancyopts', 'dispatch']
+__all__ = ['fancyopts', 'dispatch', 'optionize']
 
 # --------
 # Public interface
 # --------
 
+def optionize(options, usage):
+    if '%prog' in usage.split():
+        name = sys.argv[0]
+        if name.startswith('./'):
+            name = name[2:]
+        usage = usage.replace('%prog', name, 1)
+
+    def wrapper(cmd):
+        def inner():
+            args = sys.argv[1:]
+            return fancyopts(cmd, options, usage)(args)
+        return inner
+    return wrapper
+
 def fancyopts(cmd, options, usage):
     def inner(args):
         if not args:
-            help_cmd(cmd, usage, options)
-        else:
-            opts, args = parse(args, options)
-            cmd(*args, **opts)
+            return help_cmd(cmd, usage, options)
+        opts, args = parse(args, options)
+        return cmd(*args, **opts)
     return inner
 
 def dispatch(args, cmdtable, globalopts=None):
