@@ -103,7 +103,7 @@ application. There are two global options added, which are used by this object:
 instance to output instead of directly printing messages, which is possible by
 using one of following methods:
 
-  - ``UI.status`` prints by default, but hides output with quiet option
+  - ``UI.info`` prints by default, but hides output with quiet option
   - ``UI.note`` prints only if verbose option supplied
   - ``UI.write`` prints in any case
   - ``UI.warn`` prints to stderr (in any case)

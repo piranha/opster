@@ -347,7 +347,7 @@ class UI(object):
 
     You have three methods to handle program messages output:
 
-      - ``UI.status`` is printed by default, but hidden with quiet option
+      - ``UI.info`` is printed by default, but hidden with quiet option
       - ``UI.note`` is printed only if output is verbose
       - ``UI.write`` is printed in any case
 
@@ -370,7 +370,7 @@ class UI(object):
         for m in messages:
             sys.stderr.write(m)
 
-    status = lambda self, *m: not self.quiet and self.write(*m)
+    info = lambda self, *m: not self.quiet and self.write(*m)
     note = lambda self, *m: self.verbose and self.write(*m)
 
 # Command exceptions
