@@ -39,7 +39,12 @@ determines how supplied argument should be parsed:
 
 Usage is easy like that::
 
-    write example here
+    from fancycmd import fancyopts
+    def main(dirname, **opts):
+        '''write some help here'''
+        pass
+    parser = fancyopts(main, opts, usage='%s [-l HOST] DIR' % sys.argv[0])
+    parser(sys.argv[1:])
 
 Subcommands
 -----------
