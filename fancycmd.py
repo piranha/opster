@@ -2,49 +2,74 @@
 '''Fancy command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap
+import sys, traceback, getopt, types, textwrap, inspect
 from itertools import imap
 
-__all__ = ['fancyopts', 'dispatch', 'optionize']
+__all__ = ['command', 'dispatch']
+
+write = sys.stdout.write
+err = sys.stderr.write
+
+CMDTABLE = {}
 
 # --------
 # Public interface
 # --------
 
-def optionize(options, usage):
-    if '%prog' in usage.split():
-        name = sys.argv[0]
-        if name.startswith('./'):
-            name = name[2:]
-        usage = usage.replace('%prog', name, 1)
+def command(options=None, usage='', name=None, shortlist=False):
+    '''Mark function to be used for command line processing.
+    '''
+    def wrapper(func):
+        if '%prog' in usage.split():
+            name_ = sys.argv[0]
+            if name_.startswith('./'):
+                name_ = name_[2:]
+            usage_ = usage.replace('%prog', name_, 1)
+        else:
+            name_ = name or func.__name__
+            usage_ = name_ + ': ' + usage
+        options_ = options or list(guess_options(func))
+        options_.append(('h', 'help', False, 'show help'))
 
-    def wrapper(cmd):
-        def inner():
-            args = sys.argv[1:]
-            return fancyopts(cmd, options, usage)(args)
+        CMDTABLE[(shortlist and '^' or '') + name_] = (
+            func, options_, usage_)
+
+        def help_func(name=None):
+            return help_cmd(func, usage_, options_)
+
+        def inner(args=None):
+            args = args or sys.argv[1:]
+            if not args:
+                return help_func()
+
+            try:
+                opts, args = catcher(lambda: parse(args, options_), help_func)
+                if opts.pop('help', False):
+                    return help_func()
+                return catcher(
+                    lambda: call_cmd(name_, func, *args, **opts),
+                    help_func)
+            except Abort:
+                return -1
+
         return inner
     return wrapper
 
-def fancyopts(cmd, options, usage):
-    def inner(args):
-        if not args:
-            return help_cmd(cmd, usage, options)
-        opts, args = parse(args, options)
-        return cmd(*args, **opts)
-    return inner
 
-def dispatch(args, cmdtable, globalopts=None):
+def dispatch(args=None, cmdtable=None, globalopts=None):
     '''Dispatch command arguments based on subcommands.
 
-     - ``args``: sys.argv[1:]
+     - ``args``: list of arguments, default: sys.argv[1:]
      - ``cmdtable``: dict of commands in next format::
 
      {'name': (function, options, usage)}
 
+       if not supplied, functions decorated with @command will be used.
+
      - ``globalopts``: list of options which are applied to all
        commands, if not supplied will contain ``--help`` option
 
-    where:
+    cmdtable format description follows:
 
      - ``name`` is the name used on command-line. Can containt
        aliases (separate them with '|') or pointer to the fact
@@ -54,45 +79,32 @@ def dispatch(args, cmdtable, globalopts=None):
      - ``options`` is options list in fancyopts format
      - ``usage`` is the short string of usage
     '''
+    args = args or sys.argv[1:]
+    cmdtable = cmdtable or CMDTABLE
 
-    ui = UI()
-    if not globalopts:
-        globalopts = [
-            ('h', 'help', False, 'display help'),
-            # is not used yet
-            ('', 'traceback', False, 'display full traceback on error')]
+    globalopts = globalopts or []
+    globalopts.append(('h', 'help', False, 'display help'))
 
     cmdtable['help'] = (help_(cmdtable, globalopts), [], '[TOPIC]')
+    help_func = cmdtable['help'][0]
 
     try:
-        return _dispatch(ui, args, cmdtable, globalopts + UI.options)
-    except Abort, e:
-        ui.warn('abort: %s\n' % e)
-    except UnknownCommand, e:
-        ui.warn("unknown command: '%s'\n" % e)
-    except AmbiguousCommand, e:
-        ui.warn("command '%s' is ambiguous:\n    %s\n" %
-                (e.args[0], ' '.join(e.args[1])))
-    except ParseError, e:
-        ui.warn('%s: %s\n' % (e.args[0], e.args[1]))
-        cmdtable['help'][0](ui, e.args[0])
-    except KeyboardInterrupt:
-        ui.warn('interrupted!\n')
-    except SystemExit:
-        raise
-    except:
-        ui.warn('unknown exception encountered')
-        raise
-
+        name, func, args, kwargs = catcher(
+            lambda: _dispatch(args, cmdtable, globalopts),
+            help_func)
+        return catcher(
+            lambda: call_cmd(name, func, *args, **kwargs),
+            help_func)
+    except Abort:
+        pass
     return -1
-
 
 # --------
 # Help
 # --------
 
 def help_(cmdtable, globalopts):
-    def inner(ui, name=None):
+    def inner(name=None):
         '''Show help for a given help topic or a help overview
 
         With no arguments, print a list of commands with short help messages.
@@ -116,14 +128,14 @@ def help_(cmdtable, globalopts):
             maxlen = max(map(len, hlplist))
             for cmd in hlplist:
                 doc = hlp[cmd]
-                if ui.verbose:
-                    ui.write(' %s:\n     %s\n' % (cmd.replace('|', ', '), doc))
+                if False: # verbose?
+                    write(' %s:\n     %s\n' % (cmd.replace('|', ', '), doc))
                 else:
-                    ui.write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0],
+                    write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0],
                                               doc))
 
         if not cmdtable:
-            return ui.warn('No commands specified!\n')
+            return err('No commands specified!\n')
 
         if not name or name == 'shortlist':
             return helplist()
@@ -259,25 +271,16 @@ def parse(args, options):
 # Subcommand system
 # --------
 
-def _dispatch(ui, args, cmdtable, globalopts):
+def _dispatch(args, cmdtable, globalopts):
     cmd, func, args, options, globaloptions = cmdparse(args, cmdtable,
                                                        globalopts)
 
-    ui.verbose = globaloptions['verbose']
-    # see UI.__init__ for explanation
-    ui.quiet = (not ui.verbose and globaloptions['quiet'])
-
     if globaloptions['help']:
-        return cmdtable['help'][0](ui, cmd)
+        return 'help', cmdtable['help'][0], [cmd], {}
     elif not cmd:
-        return cmdtable['help'][0](ui, 'shortlist')
+        return 'help', cmdtable['help'][0], ['shortlist'], {}
 
-    try:
-        return func(ui, *args, **options)
-    except TypeError:
-        if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
-            raise ParseError(cmd, "invalid arguments")
-        raise
+    return cmd, func, args, options
 
 def cmdparse(args, cmdtable, globalopts):
     # command is the first non-option
@@ -348,50 +351,55 @@ def findcmd(cmd, table):
 
     raise UnknownCommand(cmd)
 
+# --------
+# Helpers
+# --------
+
+def guess_options(func):
+    args, varargs, varkw, defaults = inspect.getargspec(func)
+    for lname, (sname, default, hlp) in zip(args[-len(defaults):], defaults):
+        yield (sname, lname, default, hlp)
+
+
+def catcher(target, help_func):
+    try:
+        return target()
+    except UnknownCommand, e:
+        err("unknown command: '%s'\n" % e)
+    except AmbiguousCommand, e:
+        err("command '%s' is ambiguous:\n    %s\n" %
+            (e.args[0], ' '.join(e.args[1])))
+    except ParseError, e:
+        err('%s: %s\n' % (e.args[0], e.args[1]))
+        help_func(e.args[0])
+    except getopt.GetoptError, e:
+        err('error: %s\n' % e)
+        help_func()
+    except KeyboardInterrupt:
+        err('interrupted!\n')
+    except SystemExit:
+        raise
+    except:
+        err('unknown exception encountered')
+        raise
+
+    raise Abort
+
+def call_cmd(name, func, *args, **kwargs):
+    try:
+        return func(*args, **kwargs)
+    except TypeError:
+        if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
+            raise ParseError(name, "invalid arguments")
+        raise
 
 # --------
-# UI and exceptions
+# Exceptions
 # --------
-
-class UI(object):
-    '''User interface helper.
-
-    Intended to ease handling of quiet/verbose output and more.
-
-    You have three methods to handle program messages output:
-
-      - ``UI.info`` is printed by default, but hidden with quiet option
-      - ``UI.note`` is printed only if output is verbose
-      - ``UI.write`` is printed in any case
-
-    Additionally there is ``UI.warn`` method, which prints to stderr.
-    '''
-
-    options = [('v', 'verbose', False, 'enable additional output'),
-               ('q', 'quiet', False, 'suppress output')]
-
-    def __init__(self, verbose=False, quiet=False):
-        self.verbose = verbose
-        # disabling quiet in favor of verbose is more safe
-        self.quiet = (not verbose and quiet)
-
-    def write(self, *messages):
-        for m in messages:
-            sys.stdout.write(m)
-
-    def warn(self, *messages):
-        for m in messages:
-            sys.stderr.write(m)
-
-    info = lambda self, *m: not self.quiet and self.write(*m)
-    note = lambda self, *m: self.verbose and self.write(*m)
 
 # Command exceptions
 class CommandException(Exception):
     'Base class for command exceptions'
-
-class Abort(CommandException):
-    'Raised if an error in command occured'
 
 class AmbiguousCommand(CommandException):
     'Raised if command is ambiguous'
@@ -405,6 +413,5 @@ class ParseError(CommandException):
 class SignatureError(CommandException):
     'Raised if function signature does not correspond to arguments'
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+class Abort(CommandException):
+    'Abort execution'

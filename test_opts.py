@@ -2,20 +2,33 @@
 
 import sys
 
-from fancycmd import optionize
+from fancycmd import command
 
 opts = [('l', 'listen', 'localhost', 'ip to listen on'),
         ('p', 'port', 8000, 'port to listen on'),
         ('d', 'daemonize', False, 'daemonize process'),
         ('', 'pid-file', '', 'name of file to write process ID to')]
 
-@optionize(opts, usage='%prog [-l HOST] DIR')
+@command(opts, usage='%prog [-l HOST] DIR')
 def main(dirname, **opts):
     '''This is some command
 
     It looks very similar to some serve command
     '''
-    print opts.get('pid_file')
+    print opts
+
+@command(usage='%prog [-l HOST] DIR')
+def another(dirname,
+            listen=('l', 'localhost', 'ip to listen on'),
+            port=('p', 8000, 'port to listen on'),
+            daemonize=('d', False, 'daemonize process'),
+            pid_file=('', '', 'name of file to write process ID to')):
+    '''Command with option declaration as keyword arguments
+
+    Otherwise it's the same as previons command
+    '''
+    print locals()
 
 if __name__ == '__main__':
-    main()
+    #main()
+    another()
