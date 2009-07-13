@@ -32,24 +32,18 @@ def command(options=None, usage='%name', name=None, shortlist=False):
        only for multiple subcommands
     '''
     def wrapper(func):
-        name_ = name or func.__name__
-        if '%name' in usage.split():
-            usage_ = usage.replace('%name', name_, 1)
-        else:
-            usage_ = name_ + (usage and ': ' + usage or '')
-
         options_ = options or list(guess_options(func))
         options_.append(('h', 'help', False, 'show help'))
 
+        name_ = name or func.__name__
         CMDTABLE[(shortlist and '^' or '') + name_] = (
-            func, options_, usage_)
+            func, options_, usage)
 
         def help_func(name=None):
             name_ = sys.argv[0]
             if name_.startswith('./'):
                 name_ = name_[2:]
-            usage_ = usage.replace('%name', name_, 1)
-            return help_cmd(func, usage_, options_)
+            return help_cmd(func, replace_name(usage, name_), options_)
 
         def inner(args=None):
 
@@ -156,7 +150,7 @@ def help_(cmdtable, globalopts):
             return helplist()
 
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
-        return help_cmd(cmd, aliases[0]  + ' ' + usage, options)
+        return help_cmd(cmd, replace_name(usage, aliases[0]), options)
     return inner
 
 def help_cmd(func, usage, options):
@@ -407,6 +401,12 @@ def call_cmd(name, func, *args, **kwargs):
         if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
             raise ParseError(name, "invalid arguments")
         raise
+
+
+def replace_name(usage, name):
+    if '%name' in usage:
+        return usage.replace('%name', name, 1)
+    return name + ' ' + usage
 
 # --------
 # Exceptions

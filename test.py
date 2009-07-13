@@ -20,7 +20,7 @@ cplx_opts = [('p', 'pass', False, 'don\'t run the command'),
 def complex_(*args, **opts):
     '''That's more complex command indented to do something
 
-    Let's try to do that (damn, but what?!)
+    Let's try to do that (what?!)
     '''
     if opts.get('pass'):
         return
