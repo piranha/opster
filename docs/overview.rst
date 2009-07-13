@@ -100,7 +100,8 @@ You can define your functions for subcommands like this::
 Naturally ``args`` is a list, containing all arguments to command, and ``opts``
 is a dictionary, containing every option.
 
-After definition of all elements you can call command dispatcher::
+After definition of all elements you can call command dispatcher (``cmdtable``
+is defined earlier)::
 
   from finaloption import dispatch
 
@@ -148,3 +149,16 @@ strings, wrapped to length of 70 characters and looks like that::
       --exit  exit with supplied code (default: 0)
    -h --help  show help
 
+
+Tips and tricks
+---------------
+
+There is one thing which may be obvious: it's easy to have "semi-global"
+options. If your subcommands (or scripts) tend to have same options in some
+cases - for example, few commands (not every) can receive database credentials -
+you can define this options in separate list and then add them to command's own
+options, i.e.::
+
+  @command(cmd_opts + dbopts)
+  def select(**opts):
+      pass
