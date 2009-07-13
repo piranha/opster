@@ -9,7 +9,7 @@ def read(fname):
 
 setup(
     name = 'finaloption',
-    description = 'command line arguments parser',
+    description = 'command line parsing done right',
     long_description = read('README'),
     version = finaloption.__version__,
     author = finaloption.__author__,
