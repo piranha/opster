@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys, os
-
 sys.path.append('..')
+import finaloption
 
 # -- General configuration -----------------------------------------------------
 
@@ -12,8 +12,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 project = u'Finaloption'
 copyright = u'2009, Alexander Solovyov'
-version = '0.9'
-release = '0.9'
+version = release = finaloption.__version__
 exclude_trees = ['_build']
 pygments_style = 'sphinx'
 
