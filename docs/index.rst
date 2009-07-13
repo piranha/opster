@@ -20,7 +20,10 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
-JFYI: name is derived from Die Krupps' song Final Option, featured in epigraph.
+JFYI: name is derived from Die Krupps' song `Final Option`_, featured in
+epigraph.
+
+.. _Final Option: http://musi.cx/music/Die_Krupps/III_Odyssey_of_the_Mind/The_Final_Option/
 
 Features
 --------
