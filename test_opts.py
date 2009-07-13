@@ -2,7 +2,7 @@
 
 import sys
 
-from fancycmd import command
+from finaloption import command
 
 opts = [('l', 'listen', 'localhost', 'ip to listen on'),
         ('p', 'port', 8000, 'port to listen on'),

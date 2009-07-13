@@ -2,7 +2,7 @@
 
 import sys
 
-from fancycmd import dispatch, command
+from finaloption import dispatch, command
 
 
 @command(usage='[-t]', shortlist=True)

@@ -1,5 +1,5 @@
 # (c) Alexander Solovyov, 2009, under terms of the new BSD License
-'''Fancy command line arguments parser
+'''Command line arguments parser
 '''
 
 import sys, traceback, getopt, types, textwrap, inspect
@@ -16,18 +16,28 @@ CMDTABLE = {}
 # Public interface
 # --------
 
-def command(options=None, usage='', name=None, shortlist=False):
-    '''Mark function to be used for command line processing.
+def command(options=None, usage='%name', name=None, shortlist=False):
+    '''Decorator to mark function to be used for command line processing.
+
+    All arguments are optional:
+
+     - ``options``: options in format described in docs. If not supplied,
+       will be determined from function.
+     - ``usage``: usage string for function, replaces %name with name
+       of program or subcommand. In case if it's subcommand and %name
+       is not present, usage is prepended by 'name: '
+     - ``name``: used for multiple subcommands. defaults to wrapped
+       function name
+     - ``shortlist``: if command should be included in shortlist. Used
+       only for multiple subcommands
     '''
     def wrapper(func):
-        if '%prog' in usage.split():
-            name_ = sys.argv[0]
-            if name_.startswith('./'):
-                name_ = name_[2:]
-            usage_ = usage.replace('%prog', name_, 1)
+        name_ = name or func.__name__
+        if '%name' in usage.split():
+            usage_ = usage.replace('%name', name_, 1)
         else:
-            name_ = name or func.__name__
-            usage_ = name_ + ': ' + usage
+            usage_ = name_ + (usage and ': ' + usage or '')
+
         options_ = options or list(guess_options(func))
         options_.append(('h', 'help', False, 'show help'))
 
@@ -35,9 +45,14 @@ def command(options=None, usage='', name=None, shortlist=False):
             func, options_, usage_)
 
         def help_func(name=None):
+            name_ = sys.argv[0]
+            if name_.startswith('./'):
+                name_ = name_[2:]
+            usage_ = usage.replace('%name', name_, 1)
             return help_cmd(func, usage_, options_)
 
         def inner(args=None):
+
             args = args or sys.argv[1:]
             if not args:
                 return help_func()
@@ -76,7 +91,7 @@ def dispatch(args=None, cmdtable=None, globalopts=None):
        that this command should be displayed in short help (start
        name with '^')
      - ``function`` is the actual callable
-     - ``options`` is options list in fancyopts format
+     - ``options`` is options list in format described in docs
      - ``usage`` is the short string of usage
     '''
     args = args or sys.argv[1:]
@@ -358,7 +373,7 @@ def findcmd(cmd, table):
 def guess_options(func):
     args, varargs, varkw, defaults = inspect.getargspec(func)
     for lname, (sname, default, hlp) in zip(args[-len(defaults):], defaults):
-        yield (sname, lname, default, hlp)
+        yield (sname, lname.replace('_', '-'), default, hlp)
 
 
 def catcher(target, help_func):
