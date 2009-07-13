@@ -23,10 +23,10 @@ def command(options=None, usage='%name', name=None, shortlist=False):
 
      - ``options``: options in format described in docs. If not supplied,
        will be determined from function.
-     - ``usage``: usage string for function, replaces %name with name
-       of program or subcommand. In case if it's subcommand and %name
-       is not present, usage is prepended by 'name: '
-     - ``name``: used for multiple subcommands. defaults to wrapped
+     - ``usage``: usage string for function, replaces ``%name`` with name
+       of program or subcommand. In case if it's subcommand and ``%name``
+       is not present, usage is prepended by ``name``
+     - ``name``: used for multiple subcommands. Defaults to wrapped
        function name
      - ``shortlist``: if command should be included in shortlist. Used
        only for multiple subcommands
@@ -68,25 +68,23 @@ def command(options=None, usage='%name', name=None, shortlist=False):
 def dispatch(args=None, cmdtable=None, globalopts=None):
     '''Dispatch command arguments based on subcommands.
 
-     - ``args``: list of arguments, default: sys.argv[1:]
-     - ``cmdtable``: dict of commands in next format::
+    - ``args``: list of arguments, default: ``sys.argv[1:]``
+    - ``cmdtable``: dict of commands in format described below.
+      If not supplied, functions decorated with ``@command`` will be used.
+    - ``globalopts``: list of options which are applied to all
+      commands, if not supplied will contain ``--help`` option
 
-     {'name': (function, options, usage)}
+    cmdtable format description::
 
-       if not supplied, functions decorated with @command will be used.
+      {'name': (function, options, usage)}
 
-     - ``globalopts``: list of options which are applied to all
-       commands, if not supplied will contain ``--help`` option
-
-    cmdtable format description follows:
-
-     - ``name`` is the name used on command-line. Can containt
-       aliases (separate them with '|') or pointer to the fact
-       that this command should be displayed in short help (start
-       name with '^')
-     - ``function`` is the actual callable
-     - ``options`` is options list in format described in docs
-     - ``usage`` is the short string of usage
+    - ``name`` is the name used on command-line. Can containt
+      aliases (separate them with ``|``) or pointer to the fact
+      that this command should be displayed in short help (start
+      name with ``^``)
+    - ``function`` is the actual callable
+    - ``options`` is options list in format described in docs
+    - ``usage`` is the short string of usage
     '''
     args = args or sys.argv[1:]
     cmdtable = cmdtable or CMDTABLE
@@ -155,6 +153,10 @@ def help_(cmdtable, globalopts):
 
 def help_cmd(func, usage, options):
     '''show help for given command
+
+    - ``func``: function to generate help for (``func.__doc__`` is taken)
+    - ``usage``: usage string
+    - ``options``: options in usual format
 
     >>> def test(*args, **opts):
     ...     """that's a test command
