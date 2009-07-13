@@ -107,6 +107,10 @@ After definition of all elements you can call command dispatcher::
   if __name__ == '__main__':
       dispatch(cmdtable=cmdtable)
 
+Example usage, calling ``complex_`` with 5 as argument for ``exit`` option::
+
+  app har --ex 5
+
 But if your program is something like program shown earlier, you can use
 shortened api::
 
