@@ -8,6 +8,7 @@ from itertools import imap
 __all__ = ['command', 'dispatch']
 __version__ = '0.9'
 __author__ = 'Alexander Solovyov'
+__email__ = 'piranha@piranha.org.ua'
 
 write = sys.stdout.write
 err = sys.stderr.write

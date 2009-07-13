@@ -13,6 +13,7 @@ setup(
     long_description = read('README'),
     version = finaloption.__version__,
     author = finaloption.__author__,
+    author_email = finaloption.__email__,
     url = 'http://hg.piranha.org.ua/finaloption/',
     classifiers = [
         'Development Status :: 4 - Beta',
@@ -20,7 +21,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
-        'Programming Languge :: Python',
+        'Programming Language :: Python',
         'Topic :: Software Development',
         ],
     py_modules = ['finaloption'],
