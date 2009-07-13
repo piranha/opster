@@ -48,4 +48,7 @@ Running this program will print the help::
    -n --nonewline  don't print a newline
    -h --help       show help
 
-I think this mostly describes what's going to. To learn more, read documentation.
+I think this mostly describes what's going to. To learn more, read
+`documentation`_.
+
+.. _documentation: http://hg.piranha.org.ua/finaloption/docs/
