@@ -6,7 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
-__version__ = '0.9'
+__version__ = '0.9.1'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
@@ -35,8 +35,8 @@ def command(options=None, usage='%name', name=None, shortlist=False):
        only for multiple subcommands
     '''
     def wrapper(func):
-        options_ = options or list(guess_options(func))
-        options_.append(('h', 'help', False, 'show help'))
+        # copy option list
+        options_ = list(options or guess_options(func))
 
         name_ = name or func.__name__
         CMDTABLE[(shortlist and '^' or '') + name_] = (
@@ -49,6 +49,11 @@ def command(options=None, usage='%name', name=None, shortlist=False):
             return help_cmd(func, replace_name(usage, name_), options_)
 
         def inner(args=None):
+            try:
+                (True for option in reversed(options_)
+                 if option[1] == 'help').next()
+            except StopIteration:
+                options_.append(('h', 'help', False, 'show help'))
 
             args = args or sys.argv[1:]
             if not args:
@@ -151,7 +156,8 @@ def help_(cmdtable, globalopts):
             return helplist()
 
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
-        return help_cmd(cmd, replace_name(usage, aliases[0]), options)
+        return help_cmd(cmd, replace_name(usage, aliases[0]),
+                        options + globalopts)
     return inner
 
 def help_cmd(func, usage, options):
