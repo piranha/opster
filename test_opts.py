@@ -9,7 +9,7 @@ opts = [('l', 'listen', 'localhost', 'ip to listen on'),
         ('d', 'daemonize', False, 'daemonize process'),
         ('', 'pid-file', '', 'name of file to write process ID to')]
 
-@command(opts, usage='%prog [-l HOST] DIR')
+@command(opts, usage='[-l HOST] DIR')
 def main(dirname, **opts):
     '''This is some command
 
@@ -17,7 +17,7 @@ def main(dirname, **opts):
     '''
     print opts
 
-@command(usage='%prog [-l HOST] DIR')
+@command(usage='[-l HOST] DIR')
 def another(dirname,
             listen=('l', 'localhost', 'ip to listen on'),
             port=('p', 8000, 'port to listen on'),
