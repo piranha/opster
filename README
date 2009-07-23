@@ -42,7 +42,10 @@ Running this program will print the help::
    -n --nonewline  don't print a newline
    -h --help       show help
 
-I think this mostly describes what's going to. To learn more, read
-`documentation`_.
+I think this mostly describes what's going on, except that I'd like to mention
+one interesting feature - if you are using long name for option, you can use
+only partial name, for example ``./echo.py --nonew`` is valid command line. This
+is also true for subcommands: read about that and everything else you'd like to
+know in `documentation`_.
 
 .. _documentation: http://hg.piranha.org.ua/finaloption/docs/

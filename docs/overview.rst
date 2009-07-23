@@ -55,7 +55,8 @@ name in a definition, it will be replaced with underscore when passed to
 function. This is done to comply with standarts of writing both console
 interfaces and Python application.
 
-To make your application work, just call ``main()`` to parse ``sys.argv``.
+To make your application work, just call ``main()`` (it will parse
+``sys.argv``).
 
 Subcommands
 -----------
@@ -108,7 +109,9 @@ is defined earlier)::
   if __name__ == '__main__':
       dispatch(cmdtable=cmdtable)
 
-Example usage, calling ``complex_`` with 5 as argument for ``exit`` option::
+Example usage, calling ``complex_`` with 5 as argument for ``exit`` option,
+showing that command dispatcher will understand partial names of commands and
+options::
 
   app har --ex 5
 
