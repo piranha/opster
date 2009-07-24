@@ -36,7 +36,11 @@ def command(options=None, usage='%name', name=None, shortlist=False):
     '''
     def wrapper(func):
         # copy option list
-        options_ = list(options or guess_options(func))
+        try:
+            options_ = list(options or guess_options(func))
+        except TypeError:
+            # no options supplied and no options present in func
+            options_ = []
 
         name_ = name or func.__name__
         CMDTABLE[(shortlist and '^' or '') + name_] = (
@@ -48,24 +52,33 @@ def command(options=None, usage='%name', name=None, shortlist=False):
                 name_ = name_[2:]
             return help_cmd(func, replace_name(usage, name_), options_)
 
-        def inner(args=None):
+        @wraps(func)
+        def inner(*arguments, **kwarguments):
+            # look if we need to add 'help' option
             try:
                 (True for option in reversed(options_)
                  if option[1] == 'help').next()
             except StopIteration:
                 options_.append(('h', 'help', False, 'show help'))
 
-            args = args or sys.argv[1:]
-            if not args:
-                return help_func()
+            args = kwarguments.pop('args', None)
+            if arguments or kwarguments:
+                args, opts = arguments, kwarguments
+            else:
+                args = args or sys.argv[1:]
+                if not args:
+                    return help_func()
+                try:
+                    opts, args = catcher(lambda: parse(args, options_),
+                                         help_func)
+                except Abort:
+                    return -1
 
             try:
-                opts, args = catcher(lambda: parse(args, options_), help_func)
                 if opts.pop('help', False):
                     return help_func()
-                return catcher(
-                    lambda: call_cmd(name_, func, *args, **opts),
-                    help_func)
+                return catcher(lambda: call_cmd(name_, func, *args, **opts),
+                               help_func)
             except Abort:
                 return -1
 
@@ -418,6 +431,19 @@ def replace_name(usage, name):
     if '%name' in usage:
         return usage.replace('%name', name, 1)
     return name + ' ' + usage
+
+try:
+    from functools import wraps
+except ImportError:
+    def wraps(wrapped, assigned=('__module__', '__name__', '__doc__'),
+              updated=('__dict__',)):
+        def inner(wrapper):
+            for attr in assigned:
+                setattr(wrapper, attr, getattr(wrapped, attr))
+            for attr in updated:
+                getattr(wrapper, attr).update(getattr(wrapped, attr, {}))
+            return wrapper
+        return inner
 
 # --------
 # Exceptions

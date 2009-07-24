@@ -25,7 +25,7 @@ def another(dirname,
             pid_file=('', '', 'name of file to write process ID to')):
     '''Command with option declaration as keyword arguments
 
-    Otherwise it's the same as previons command
+    Otherwise it's the same as previous command
     '''
     print locals()
 

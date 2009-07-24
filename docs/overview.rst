@@ -55,8 +55,27 @@ name in a definition, it will be replaced with underscore when passed to
 function. This is done to comply with standarts of writing both console
 interfaces and Python application.
 
-To make your application work, just call ``main()`` (it will parse
-``sys.argv``).
+After that you can simply call this function as an entry point to your program::
+
+  if __name__ == '__main__':
+      main()
+
+This will run command line parsing facility, using arguments from
+``sys.argv``. ``%name`` will be replaced with ``sys.argv[0]`` (or prepended to
+usage string if there is no ``%name``), and rest of arguments will be passed to
+command line parser. In case if rest is empty, help will be displayed.
+
+Of course, you can use your function programmatically, supplying list of
+arguments to function::
+
+  main('-l 0.0.0.0 /my/dir'.split())
+
+Or, if you need this, you can call this function as usual::
+
+  main('/my/dir', listen='0.0.0.0')
+
+In this case no type conversion (which is done upon arguments parsing) will be
+performed.
 
 Subcommands
 -----------
