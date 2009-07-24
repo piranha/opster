@@ -11,6 +11,7 @@
 .. toctree::
    :maxdepth: 2
 
+   changelog
    overview
    api
 

@@ -10,7 +10,7 @@ def read(fname):
 setup(
     name = 'finaloption',
     description = 'command line parsing done right',
-    long_description = read('README'),
+    long_description = read('README') + '\n\n' + read('docs/changelog.rst'),
     version = finaloption.__version__,
     author = finaloption.__author__,
     author_email = finaloption.__email__,
