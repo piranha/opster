@@ -128,8 +128,8 @@ is defined earlier)::
   if __name__ == '__main__':
       dispatch(cmdtable=cmdtable)
 
-Example usage, calling ``complex_`` with 5 as argument for ``exit`` option,
-showing that command dispatcher will understand partial names of commands and
+Example usage, calling ``complex_`` with 5 as an argument for ``exit`` option,
+shows that command dispatcher will understand partial names of commands and
 options::
 
   app har --ex 5
