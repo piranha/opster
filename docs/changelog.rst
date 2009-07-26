@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.9.3
+~~~~~
+Minor fix for setup.py, to avoid troubles with installing when there is no docs
+in package.
+
 0.9.2
 ~~~~~
 Ability to call commands as regular functions, using arguments and keyword

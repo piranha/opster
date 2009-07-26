@@ -7,10 +7,18 @@ import finaloption
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+def desc():
+    info = read('README')
+    try:
+        return info + '\n\n' + read('docs/changelog.rst')
+    except IOError:
+        # no docs
+        return info
+
 setup(
     name = 'finaloption',
     description = 'command line parsing done right',
-    long_description = read('README') + '\n\n' + read('docs/changelog.rst'),
+    long_description = desc(),
     version = finaloption.__version__,
     author = finaloption.__author__,
     author_email = finaloption.__email__,
