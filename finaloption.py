@@ -462,8 +462,5 @@ class UnknownCommand(CommandException):
 class ParseError(CommandException):
     'Raised on error in command line parsing'
 
-class SignatureError(CommandException):
-    'Raised if function signature does not correspond to arguments'
-
 class Abort(CommandException):
     'Abort execution'
