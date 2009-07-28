@@ -47,10 +47,7 @@ def command(options=None, usage='%name', name=None, shortlist=False):
             func, options_, usage)
 
         def help_func(name=None):
-            name_ = sys.argv[0]
-            if name_.startswith('./'):
-                name_ = name_[2:]
-            return help_cmd(func, replace_name(usage, name_), options_)
+            return help_cmd(func, replace_name(usage, sysname()), options_)
 
         @wraps(func)
         def inner(*arguments, **kwarguments):
@@ -154,6 +151,9 @@ def help_(cmdtable, globalopts):
 
             hlplist = sorted(hlp)
             maxlen = max(map(len, hlplist))
+
+            write('usage: %s <command> [options]\n' % sysname())
+            write('\ncommands:\n\n')
             for cmd in hlplist:
                 doc = hlp[cmd]
                 if False: # verbose?
@@ -426,11 +426,16 @@ def call_cmd(name, func, *args, **kwargs):
             raise ParseError(name, "invalid arguments")
         raise
 
-
 def replace_name(usage, name):
     if '%name' in usage:
         return usage.replace('%name', name, 1)
     return name + ' ' + usage
+
+def sysname():
+    name = sys.argv[0]
+    if name.startswith('./'):
+        return name[2:]
+    return name
 
 try:
     from functools import wraps
