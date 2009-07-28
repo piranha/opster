@@ -19,7 +19,7 @@ CMDTABLE = {}
 # Public interface
 # --------
 
-def command(options=None, usage='%name', name=None, shortlist=False):
+def command(options=None, usage=None, name=None, shortlist=False):
     '''Decorator to mark function to be used for command line processing.
 
     All arguments are optional:
@@ -43,11 +43,12 @@ def command(options=None, usage='%name', name=None, shortlist=False):
             options_ = []
 
         name_ = name or func.__name__
+        usage_ = usage or guess_usage(func, options_)
         CMDTABLE[(shortlist and '^' or '') + name_] = (
-            func, options_, usage)
+            func, options_, usage_)
 
         def help_func(name=None):
-            return help_cmd(func, replace_name(usage, sysname()), options_)
+            return help_cmd(func, replace_name(usage_, sysname()), options_)
 
         @wraps(func)
         def inner(*arguments, **kwarguments):
@@ -393,6 +394,19 @@ def guess_options(func):
     for lname, (sname, default, hlp) in zip(args[-len(defaults):], defaults):
         yield (sname, lname.replace('_', '-'), default, hlp)
 
+def guess_usage(func, options):
+    usage = '%name '
+    if options:
+        usage += '[OPTIONS] '
+    args, varargs = inspect.getargspec(func)[:2]
+    argnum = len(args) - len(options)
+    if argnum > 0:
+        usage += 'ARGUMENT'
+        if argnum > 1:
+            usage += 'S'
+    elif varargs:
+        usage += '[ARGUMENTS]'
+    return usage
 
 def catcher(target, help_func):
     try:
