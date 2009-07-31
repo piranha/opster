@@ -66,8 +66,6 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
                 args, opts = arguments, kwarguments
             else:
                 args = args or sys.argv[1:]
-                if not args:
-                    return help_func()
                 try:
                     opts, args = catcher(lambda: parse(args, options_),
                                          help_func)
