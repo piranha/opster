@@ -160,7 +160,7 @@ It is generated from usage, function docstring and a list of option help
 strings, wrapped to length of 70 characters and looks like that::
 
   > ./test.py help complex
-  complex: [-p] [--exit value] ...
+  test.py complex: [-p] [--exit value] ...
 
   That's more complex command indented to do something
 

@@ -3,7 +3,8 @@ Changelog
 
 0.9.4
 ~~~~~
-Ability to hide subcommands from help listing.
+ - Ability to hide subcommands from help listing.
+ - Append program name to subcommand usage.
 
 0.9.3
 ~~~~~

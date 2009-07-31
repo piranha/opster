@@ -174,7 +174,8 @@ def help_(cmdtable, globalopts):
             return helplist()
 
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
-        return help_cmd(cmd, replace_name(usage, aliases[0]),
+        return help_cmd(cmd,
+                        replace_name(usage, sysname() + ' ' + aliases[0]),
                         options + globalopts)
     return inner
 
