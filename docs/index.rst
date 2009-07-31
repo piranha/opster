@@ -31,7 +31,7 @@ Features
 
  - parsing arguments from sys.argv or custom strings
  - converting from string to appropriate Python objects
- - generating help message
+ - help message generation
  - positional and named arguments
  - subcommands support
  - short, clean and concise definitions

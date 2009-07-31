@@ -16,7 +16,7 @@ def simple(test=('t', False, 'just test execution')):
 cplx_opts = [('p', 'pass', False, 'don\'t run the command'),
              ('', 'exit', 0, 'exit with supplied code (default: 0)')]
 
-@command(cplx_opts, usage='[-p] [--exit value] ...', name='complex')
+@command(cplx_opts, usage='[-p] [--exit value] ...', name='complex', hide=True)
 def complex_(*args, **opts):
     '''That's more complex command indented to do something
 

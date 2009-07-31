@@ -19,7 +19,7 @@ CMDTABLE = {}
 # Public interface
 # --------
 
-def command(options=None, usage=None, name=None, shortlist=False):
+def command(options=None, usage=None, name=None, shortlist=False, hide=False):
     '''Decorator to mark function to be used for command line processing.
 
     All arguments are optional:
@@ -32,7 +32,9 @@ def command(options=None, usage=None, name=None, shortlist=False):
      - ``name``: used for multiple subcommands. Defaults to wrapped
        function name
      - ``shortlist``: if command should be included in shortlist. Used
-       only for multiple subcommands
+       only with multiple subcommands
+     - ``hide``: if command should be hidden from help listing. Used only
+       with multiple subcommands, overrides ``shortlist``
     '''
     def wrapper(func):
         # copy option list
@@ -44,8 +46,8 @@ def command(options=None, usage=None, name=None, shortlist=False):
 
         name_ = name or func.__name__
         usage_ = usage or guess_usage(func, options_)
-        CMDTABLE[(shortlist and '^' or '') + name_] = (
-            func, options_, usage_)
+        prefix = hide and '~' or (shortlist and '^' or '')
+        CMDTABLE[prefix + name_] = (func, options_, usage_)
 
         def help_func(name=None):
             return help_cmd(func, replace_name(usage_, sysname()), options_)
@@ -89,7 +91,7 @@ def dispatch(args=None, cmdtable=None, globalopts=None):
 
     - ``args``: list of arguments, default: ``sys.argv[1:]``
     - ``cmdtable``: dict of commands in format described below.
-      If not supplied, functions decorated with ``@command`` will be used.
+      If not supplied, will use functions decorated with ``@command``.
     - ``globalopts``: list of options which are applied to all
       commands, if not supplied will contain ``--help`` option
 
@@ -97,10 +99,10 @@ def dispatch(args=None, cmdtable=None, globalopts=None):
 
       {'name': (function, options, usage)}
 
-    - ``name`` is the name used on command-line. Can containt
-      aliases (separate them with ``|``) or pointer to the fact
-      that this command should be displayed in short help (start
-      name with ``^``)
+    - ``name`` is the name used on command-line. Can contain aliases
+      (separate them with ``|``), pointer to a fact that this command
+      should be displayed in short help (start name with ``^``), or to
+      a fact that this command should be hidden (start name with ``~``)
     - ``function`` is the actual callable
     - ``options`` is options list in format described in docs
     - ``usage`` is the short string of usage
@@ -144,9 +146,11 @@ def help_(cmdtable, globalopts):
                          any(imap(lambda x: x.startswith('^'), cmdtable)))
 
             for cmd, info in cmdtable.items():
+                if cmd.startswith('~'):
+                    continue # do not display hidden commands
                 if shortlist and not cmd.startswith('^'):
                     continue # short help contains only marked commands
-                cmd = cmd.lstrip('^')
+                cmd = cmd.lstrip('^~')
                 doc = info[0].__doc__ or '(no help text available)'
                 hlp[cmd] = doc.splitlines()[0].rstrip()
 
@@ -354,7 +358,7 @@ def findpossible(cmd, table):
     """
     choice = {}
     for e in table.keys():
-        aliases = e.lstrip("^").split("|")
+        aliases = e.lstrip("^~").split("|")
         found = None
         if cmd in aliases:
             found = cmd

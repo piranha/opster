@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+0.9.4
+~~~~~
+Ability to hide subcommands from help listing.
+
 0.9.3
 ~~~~~
 Minor fix for setup.py, to avoid troubles with installing when there is no docs

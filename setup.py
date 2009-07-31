@@ -19,6 +19,7 @@ setup(
     name = 'finaloption',
     description = 'command line parsing done right',
     long_description = desc(),
+    license = 'BSD',
     version = finaloption.__version__,
     author = finaloption.__author__,
     author_email = finaloption.__email__,
@@ -33,4 +34,5 @@ setup(
         'Topic :: Software Development',
         ],
     py_modules = ['finaloption'],
+    platforms='any',
     )

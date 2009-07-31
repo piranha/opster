@@ -96,8 +96,9 @@ and finaloption provides facility for handling them. Configuration is simple::
 
 Keys in this dictionary are subcommand names. You can add aliases for
 subcommands, separating them with the ``|`` sign (of course, there can be few
-aliases). Marking command with preceding ``^`` means that this commands should
-be included in short help (more on that later).
+aliases). Marking command with preceding ``^`` means that this command should
+be included in short help, marking with preceding ``~`` means that this command
+should be removed from all command listings (more on that later).
 
 Values here are tuples, consisting of 3 elements:
 
@@ -145,9 +146,9 @@ shortened api::
   if __name__ == '__main__':
       dispatch()
 
-Every ``@command`` stores information about decorated function in special global
-command table, which allows to call ``dispatch()`` without arguments.
-
+Every :ref:`@command <api-command>` stores information about decorated function in
+special global command table, which allows to call ``dispatch()`` without
+arguments.
 
 Help generation
 ---------------
