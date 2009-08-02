@@ -6,7 +6,7 @@
 
   If that's the Final Option,
   I'm gonna choose it.
-                   Die Krupps 
+                   Die Krupps
 
 .. toctree::
    :maxdepth: 2
@@ -21,10 +21,12 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
-JFYI: name is derived from Die Krupps' song `Final Option`_, featured in
+JFYI: name is derived from `Die Krupps'`_ song `Final Option`_, featured in
 epigraph.
 
 .. _Final Option: http://musi.cx/music/Die_Krupps/III_Odyssey_of_the_Mind/The_Final_Option/
+.. _Die Krupps': http://en.wikipedia.org/wiki/Die_Krupps
+
 
 Features
 --------
