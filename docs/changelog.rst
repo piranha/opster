@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.9.5
+~~~~~
+Fixed bug, which prevented programs to work without arguments (displayed help
+instead) if they are not using subcommands.
+
 0.9.4
 ~~~~~
  - Ability to hide subcommands from help listing.
