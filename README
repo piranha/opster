@@ -15,7 +15,7 @@ JFYI: name is derived from Die Krupps' song Final Option.
 Quick example
 -------------
 
-That's simple example to show you example of an option definition::
+That's an example of an option definition::
 
   import sys
   from finaloption import command
