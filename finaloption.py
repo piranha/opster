@@ -84,14 +84,16 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
     return wrapper
 
 
-def dispatch(args=None, cmdtable=None, globalopts=None):
+def dispatch(args=None, cmdtable=None, globaloptions=None,
+             middleware=lambda x: x):
     '''Dispatch command arguments based on subcommands.
 
     - ``args``: list of arguments, default: ``sys.argv[1:]``
     - ``cmdtable``: dict of commands in format described below.
       If not supplied, will use functions decorated with ``@command``.
-    - ``globalopts``: list of options which are applied to all
-      commands, if not supplied will contain ``--help`` option
+    - ``globaloptions``: list of options which are applied to all
+      commands, will contain ``--help`` option at least.
+    - ``middleware``: global decorator for all commands.
 
     cmdtable format description::
 
@@ -108,18 +110,18 @@ def dispatch(args=None, cmdtable=None, globalopts=None):
     args = args or sys.argv[1:]
     cmdtable = cmdtable or CMDTABLE
 
-    globalopts = globalopts or []
-    globalopts.append(('h', 'help', False, 'display help'))
+    globaloptions = globaloptions or []
+    globaloptions.append(('h', 'help', False, 'display help'))
 
-    cmdtable['help'] = (help_(cmdtable, globalopts), [], '[TOPIC]')
+    cmdtable['help'] = (help_(cmdtable, globaloptions), [], '[TOPIC]')
     help_func = cmdtable['help'][0]
 
     try:
         name, func, args, kwargs = catcher(
-            lambda: _dispatch(args, cmdtable, globalopts),
+            lambda: _dispatch(args, cmdtable, globaloptions),
             help_func)
         return catcher(
-            lambda: call_cmd(name, func, *args, **kwargs),
+            lambda: call_cmd(name, middleware(func), *args, **kwargs),
             help_func)
     except Abort:
         pass
@@ -130,7 +132,7 @@ def dispatch(args=None, cmdtable=None, globalopts=None):
 # --------
 
 def help_(cmdtable, globalopts):
-    def inner(name=None):
+    def help_inner(name=None):
         '''Show help for a given help topic or a help overview
 
         With no arguments, print a list of commands with short help messages.
@@ -175,7 +177,7 @@ def help_(cmdtable, globalopts):
         return help_cmd(cmd,
                         replace_name(usage, sysname() + ' ' + aliases[0]),
                         options + globalopts)
-    return inner
+    return help_inner
 
 def help_cmd(func, usage, options):
     '''show help for given command
