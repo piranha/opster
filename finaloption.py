@@ -404,11 +404,11 @@ def guess_usage(func, options):
     args, varargs = inspect.getargspec(func)[:2]
     argnum = len(args) - len(options)
     if argnum > 0:
-        usage += 'ARGUMENT'
+        usage += args[0].upper()
         if argnum > 1:
             usage += 'S'
     elif varargs:
-        usage += '[ARGUMENTS]'
+        usage += '[%s]' % varargs.upper()
     return usage
 
 def catcher(target, help_func):
