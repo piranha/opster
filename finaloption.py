@@ -264,6 +264,9 @@ def parse(args, options):
     shortlist, namelist = '', []
 
     for short, name, default, comment in options:
+        if short and len(short) != 1:
+            raise FOError('Short option should be only a single'
+                          ' character: %s' % short)
         # change name to match Python styling
         pyname = name.replace('-', '_')
         argmap['-' + short] = argmap['--' + name] = pyname
@@ -427,6 +430,8 @@ def catcher(target, help_func):
     except getopt.GetoptError, e:
         err('error: %s\n' % e)
         help_func()
+    except FOError, e:
+        err('%s\n' % e)
     except KeyboardInterrupt:
         err('interrupted!\n')
     except SystemExit:
@@ -488,3 +493,6 @@ class ParseError(CommandException):
 
 class Abort(CommandException):
     'Abort execution'
+
+class FOError(CommandException):
+    'Raised on trouble with finaloption configuration'
