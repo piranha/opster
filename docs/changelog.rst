@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.9.6
+~~~~~
+ - Checks for option definition: long name should be specified always, short
+   name should be 1 character in length if available.
+ - More specific argument name in guessed usage (this happens if you have not
+   specified usage for command).
+ - Ability to add global decorator for all commands. See ``test.py`` in
+   repository for example: ``ui`` object, to handle verbose/quiet options.
+
 0.9.5
 ~~~~~
 Fixed bug, which prevented programs to work without arguments (displayed help
