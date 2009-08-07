@@ -16,10 +16,9 @@ def initdb(config):
     ('p', 'port', 5000, 'The port for the server.'),
     ('', 'nolint', False, 'Do not use LintMiddleware')
 ])
-def runserver(config, host, port, nolint):
+def runserver(**opts):
     """Run development server"""
-
-    pass
+    print opts
 
 
 finaloption.dispatch()

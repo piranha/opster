@@ -124,8 +124,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
             lambda: call_cmd(name, middleware(func), *args, **kwargs),
             help_func)
     except Abort:
-        pass
-    return -1
+        return -1
 
 # --------
 # Help
@@ -267,6 +266,9 @@ def parse(args, options):
         if short and len(short) != 1:
             raise FOError('Short option should be only a single'
                           ' character: %s' % short)
+        if not name:
+            raise FOError(
+                'Long name should be defined for every option')
         # change name to match Python styling
         pyname = name.replace('-', '_')
         argmap['-' + short] = argmap['--' + name] = pyname
