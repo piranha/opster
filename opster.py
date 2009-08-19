@@ -497,4 +497,4 @@ class Abort(CommandException):
     'Abort execution'
 
 class FOError(CommandException):
-    'Raised on trouble with finaloption configuration'
+    'Raised on trouble with opster configuration'

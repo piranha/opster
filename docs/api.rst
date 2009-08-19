@@ -1,8 +1,8 @@
-=================
- Finaloption API
-=================
+============
+ Opster API
+============
 
-.. module:: finaloption
+.. module:: opster
 
 .. _api-command:
 .. autofunction:: command

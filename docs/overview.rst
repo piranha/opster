@@ -1,5 +1,5 @@
 ===================
- Finaloption usage
+ Opster usage
 ===================
 
 Options
@@ -31,7 +31,7 @@ determines how supplied argument should be parsed:
 
 Usage is easy like that::
 
-  from finaloption import command
+  from opster import command
 
   @command(options=opts, usage='%name [-l HOST] DIR')
   def main(dirname, **opts):
@@ -81,7 +81,7 @@ Subcommands
 -----------
 
 It's pretty usual for complex application to have some system of subcommands,
-and finaloption provides facility for handling them. Configuration is simple::
+and opster provides facility for handling them. Configuration is simple::
 
   cmdtable = {
       '^simple':
@@ -124,7 +124,7 @@ is a dictionary, containing every option.
 After definition of all elements you can call command dispatcher (``cmdtable``
 is defined earlier)::
 
-  from finaloption import dispatch
+  from opster import dispatch
 
   if __name__ == '__main__':
       dispatch(cmdtable=cmdtable)

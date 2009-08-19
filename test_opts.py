@@ -2,7 +2,7 @@
 
 import sys
 
-from finaloption import command
+from opster import command
 
 opts = [('l', 'listen', 'localhost', 'ip to listen on'),
         ('p', 'port', 8000, 'port to listen on'),

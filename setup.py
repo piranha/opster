@@ -2,7 +2,7 @@
 
 import os
 from distutils.core import setup
-import finaloption
+import opster
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -16,14 +16,14 @@ def desc():
         return info
 
 setup(
-    name = 'finaloption',
-    description = 'command line parsing done right',
+    name = 'opster',
+    description = 'command line parsing speedster',
     long_description = desc(),
     license = 'BSD',
-    version = finaloption.__version__,
-    author = finaloption.__author__,
-    author_email = finaloption.__email__,
-    url = 'http://hg.piranha.org.ua/finaloption/',
+    version = opster.__version__,
+    author = opster.__author__,
+    author_email = opster.__email__,
+    url = 'http://hg.piranha.org.ua/opster/',
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -33,6 +33,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development',
         ],
-    py_modules = ['finaloption'],
+    py_modules = ['opster'],
     platforms='any',
     )

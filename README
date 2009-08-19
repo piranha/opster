@@ -1,16 +1,14 @@
 .. -*- mode: rst -*-
 
-=============
- Finaloption
-=============
+========
+ Opster
+========
 
-Finaloption is a command line parser, intended to make writing command line
+Opster is a command line parser, intended to make writing command line
 applications easy and painless. It uses built-in Python types (lists,
 dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
-
-JFYI: name is derived from Die Krupps' song Final Option.
 
 Quick example
 -------------
@@ -18,7 +16,7 @@ Quick example
 That's an example of an option definition::
 
   import sys
-  from finaloption import command
+  from opster import command
 
   @command(usage='%name [-n] MESSAGE')
   def main(message,
@@ -48,4 +46,4 @@ only partial name, for example ``./echo.py --nonew`` a is valid command
 line. This is also true for subcommands: read about that and everything else
 you'd like to know in `documentation`_.
 
-.. _documentation: http://hg.piranha.org.ua/finaloption/docs/
+.. _documentation: http://hg.piranha.org.ua/opster/docs/

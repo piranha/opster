@@ -2,7 +2,7 @@
 
 import sys
 
-from finaloption import dispatch, command
+from opster import dispatch, command
 
 
 @command(usage='[-t]', shortlist=True)

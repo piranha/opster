@@ -2,7 +2,7 @@
 
 import sys, os
 sys.path.append('..')
-import finaloption
+import opster
 
 # -- General configuration -----------------------------------------------------
 
@@ -10,9 +10,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest']
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Finaloption'
+project = u'Opster'
 copyright = u'2009, Alexander Solovyov'
-version = release = finaloption.__version__
+version = release = opster.__version__
 exclude_trees = ['_build']
 pygments_style = 'sphinx'
 
@@ -29,12 +29,12 @@ html_theme = 'default'
 #html_favicon = None
 html_static_path = ['_static']
 html_use_smartypants = True
-htmlhelp_basename = 'Finaloptiondoc'
+htmlhelp_basename = 'Opsterdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_documents = [
-  ('index', 'Finaloption.tex', u'Finaloption Documentation',
+  ('index', 'Opster.tex', u'Opster Documentation',
    u'Alexander Solovyov', 'manual'),
 ]
