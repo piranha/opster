@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+0.9.7
+~~~~~
+Library renamed to opster.
+
 0.9.6
 ~~~~~
  - Checks for option definition: long name should be specified always, short

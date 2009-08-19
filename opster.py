@@ -6,7 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
-__version__ = '0.9.6'
+__version__ = '0.9.7'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
