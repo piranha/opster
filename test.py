@@ -16,7 +16,8 @@ def simple(ui,
     ui.write('\n')
 
 cplx_opts = [('p', 'pass', False, 'don\'t run the command'),
-             ('', 'exit', 0, 'exit with supplied code (default: 0)')]
+             ('', 'exit', 0, 'exit with supplied code (default: 0)'),
+             ('n', 'name', '', 'optional name')]
 
 @command(cplx_opts, usage='[-p] [--exit value] ...', name='complex', hide=True)
 def complex_(ui, *args, **opts):

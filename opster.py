@@ -75,7 +75,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
             try:
                 if opts.pop('help', False):
                     return help_func()
-                return catcher(lambda: call_cmd(name_, func, *args, **opts),
+                return catcher(lambda: call_cmd(name_, func)(*args, **opts),
                                help_func)
             except Abort:
                 return -1
@@ -121,7 +121,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
             lambda: _dispatch(args, cmdtable, globaloptions),
             help_func)
         return catcher(
-            lambda: call_cmd(name, middleware(func), *args, **kwargs),
+            lambda: call_cmd(name, middleware(func))(*args, **kwargs),
             help_func)
     except Abort:
         return -1
@@ -444,13 +444,15 @@ def catcher(target, help_func):
 
     raise Abort
 
-def call_cmd(name, func, *args, **kwargs):
-    try:
-        return func(*args, **kwargs)
-    except TypeError:
-        if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
-            raise ParseError(name, "invalid arguments")
-        raise
+def call_cmd(name, func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except TypeError:
+            if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
+                raise ParseError(name, "invalid arguments")
+            raise
+    return inner
 
 def replace_name(usage, name):
     if '%name' in usage:

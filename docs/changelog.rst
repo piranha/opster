@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+0.9.8
+~~~~~
+Fixed bug with option names clashing with name of arguments for call_cmd. 
+
 0.9.7
 ~~~~~
 Library renamed to opster.
