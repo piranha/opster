@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.9.9
+~~~~~
+ - globaloptions were simply dropped after parsing, fold them in regular options
+ - replace _ with - in command names, same as in options names
+ - respect empty strings as usage
+
 0.9.8
 ~~~~~
 Fixed bug with option names clashing with name of arguments for call_cmd. 
