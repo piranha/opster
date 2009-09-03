@@ -36,8 +36,6 @@ def complex_(ui, *args, **opts):
         sys.exit(opts['exit'])
 
 def ui_middleware(func):
-    if func.__name__ == 'help_inner':
-        return func
     def extract_dict(source, *keys):
         dest = {}
         for k in keys:
@@ -45,7 +43,10 @@ def ui_middleware(func):
         return dest
 
     def inner(*args, **kwargs):
-        ui = UI(**extract_dict(kwargs, 'verbose', 'quiet'))
+        opts = extract_dict(kwargs, 'verbose', 'quiet')
+        if func.__name__ == 'help_inner':
+            return func(*args, **kwargs)
+        ui = UI(**opts)
         return func(ui, *args, **kwargs)
     return inner
 
