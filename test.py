@@ -28,7 +28,10 @@ def complex_(ui, *args, **opts):
     if opts.get('pass'):
         return
     # test ui
-    ui.write('preved\n')
+    ui.write('write\n')
+    ui.note('note\n')
+    ui.info('info\n')
+    ui.warn('warn\n')
     if opts.get('exit'):
         sys.exit(opts['exit'])
 
@@ -82,5 +85,3 @@ class UI(object):
 
 if __name__ == '__main__':
     dispatch(globaloptions=UI.options, middleware=ui_middleware)
-
-

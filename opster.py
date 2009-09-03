@@ -316,10 +316,9 @@ def parse(args, options):
 # --------
 
 def _dispatch(args, cmdtable, globalopts):
-    cmd, func, args, options, globaloptions = cmdparse(args, cmdtable,
-                                                       globalopts)
+    cmd, func, args, options = cmdparse(args, cmdtable, globalopts)
 
-    if globaloptions['help']:
+    if options.pop('help', False):
         return 'help', cmdtable['help'][0], [cmd], {}
     elif not cmd:
         return 'help', cmdtable['help'][0], ['shortlist'], {}
@@ -350,12 +349,7 @@ def cmdparse(args, cmdtable, globalopts):
     except getopt.GetoptError, e:
         raise ParseError(cmd, e)
 
-    globaloptions = {}
-    for o in globalopts:
-        name = o[1]
-        globaloptions[name] = options.pop(name)
-
-    return (cmd, cmd and info[0] or None, args, options, globaloptions)
+    return (cmd, cmd and info[0] or None, args, options)
 
 def findpossible(cmd, table):
     """
