@@ -44,8 +44,11 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
             # no options supplied and no options present in func
             options_ = []
 
-        usage_ = usage or guess_usage(func, options_)
         name_ = name or func.__name__.replace('_', '-')
+        if usage is None:
+            usage_ = guess_options
+        else:
+            usage_ = usage
         prefix = hide and '~' or (shortlist and '^' or '')
         CMDTABLE[prefix + name_] = (func, options_, usage_)
 
