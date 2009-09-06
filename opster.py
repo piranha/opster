@@ -46,7 +46,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
 
         name_ = name or func.__name__.replace('_', '-')
         if usage is None:
-            usage_ = guess_options
+            usage_ = guess_usage(func, options_)
         else:
             usage_ = usage
         prefix = hide and '~' or (shortlist and '^' or '')
