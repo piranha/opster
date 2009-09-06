@@ -3,9 +3,11 @@ Changelog
 
 0.9.9
 ~~~~~
- - globaloptions were simply dropped after parsing, fold them in regular options
- - replace _ with - in command names, same as in options names
- - respect empty strings as usage
+ - Now it's possible to call commands as regular function, where every
+   non-supplied option will receive proper default (defined in option spec)
+ - Globaloptions were simply dropped after parsing, fold them in regular options
+ - Replace _ with - in command names, same as in options names
+ - Respect empty strings as usage
 
 0.9.8
 ~~~~~

@@ -56,7 +56,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
             return help_cmd(func, replace_name(usage_, sysname()), options_)
 
         @wraps(func)
-        def inner(*arguments, **kwarguments):
+        def inner(*args, **opts):
             # look if we need to add 'help' option
             try:
                 (True for option in reversed(options_)
@@ -64,16 +64,21 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
             except StopIteration:
                 options_.append(('h', 'help', False, 'show help'))
 
-            args = kwarguments.pop('args', None)
-            if arguments or kwarguments:
-                args, opts = arguments, kwarguments
-            else:
-                args = args or sys.argv[1:]
-                try:
-                    opts, args = catcher(lambda: parse(args, options_),
-                                         help_func)
-                except Abort:
-                    return -1
+            argv = opts.pop('args', None)
+            if opts.pop('help', False):
+                return help_func()
+
+            if args or opts:
+                # no catcher here because this is call from Python
+                return call_cmd_regular(func)(*args, **opts)
+
+            if argv is None:
+                argv = sys.argv[1:]
+
+            try:
+                opts, args = catcher(lambda: parse(argv, options_), help_func)
+            except Abort:
+                return -1
 
             try:
                 if opts.pop('help', False):
@@ -416,6 +421,8 @@ def guess_usage(func, options):
     return usage
 
 def catcher(target, help_func):
+    '''Catches all exceptions and prints human-readable information on them
+    '''
     try:
         return target()
     except UnknownCommand, e:
@@ -449,6 +456,18 @@ def call_cmd(name, func):
             if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
                 raise ParseError(name, "invalid arguments")
             raise
+    return inner
+
+def call_cmd_regular(func):
+    def inner(*args, **kwargs):
+        funcargs, varargs, varkw, defaults = inspect.getargspec(func)
+
+        funckwargs = funcargs[len(args):]
+        funckwargs = dict(zip(funckwargs, (default for _, default, _
+                                           in defaults[-len(funckwargs):])))
+        funckwargs.update(kwargs)
+
+        return func(*args, **funckwargs)
     return inner
 
 def replace_name(usage, name):

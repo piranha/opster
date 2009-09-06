@@ -21,4 +21,5 @@ def runserver(**opts):
     print opts
 
 
-opster.dispatch()
+if __name__ == '__main__':
+    opster.dispatch()
