@@ -37,12 +37,14 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
        with multiple subcommands, overrides ``shortlist``
     '''
     def wrapper(func):
-        # copy option list
         try:
-            options_ = list(options or guess_options(func))
+            options_ = list(guess_options(func))
         except TypeError:
-            # no options supplied and no options present in func
             options_ = []
+        try:
+            options_ = options_ + list(options)
+        except TypeError:
+            pass
 
         name_ = name or func.__name__.replace('_', '-')
         if usage is None:
@@ -64,13 +66,13 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
             except StopIteration:
                 options_.append(('h', 'help', False, 'show help'))
 
-            argv = opts.pop('args', None)
+            argv = opts.pop('argv', None)
             if opts.pop('help', False):
                 return help_func()
 
             if args or opts:
                 # no catcher here because this is call from Python
-                return call_cmd_regular(func)(*args, **opts)
+                return call_cmd_regular(func, options_)(*args, **opts)
 
             if argv is None:
                 argv = sys.argv[1:]
@@ -403,8 +405,12 @@ def findcmd(cmd, table):
 
 def guess_options(func):
     args, varargs, varkw, defaults = inspect.getargspec(func)
-    for lname, (sname, default, hlp) in zip(args[-len(defaults):], defaults):
-        yield (sname, lname.replace('_', '-'), default, hlp)
+    for name, option in zip(args[-len(defaults):], defaults):
+        try:
+            sname, default, hlp = option
+            yield (sname, name.replace('_', '-'), default, hlp)
+        except TypeError:
+            pass
 
 def guess_usage(func, options):
     usage = '%name '
@@ -458,15 +464,18 @@ def call_cmd(name, func):
             raise
     return inner
 
-def call_cmd_regular(func):
+def call_cmd_regular(func, opts):
     def inner(*args, **kwargs):
-        funcargs, varargs, varkw, defaults = inspect.getargspec(func)
+        funcargs, _, varkw, defaults = inspect.getargspec(func)
+        if len(args) > len(funcargs):
+            raise TypeError('You have supplied more positional arguments'
+                            ' than applicable')
 
-        funckwargs = funcargs[len(args):]
-        funckwargs = dict(zip(funckwargs, (default for _, default, _
-                                           in defaults[-len(funckwargs):])))
+        funckwargs = dict((lname.replace('-', '_'), default)
+                          for _, lname, default, _ in opts)
+        if 'help' not in (defaults or ()) and not varkw:
+            funckwargs.pop('help', None)
         funckwargs.update(kwargs)
-
         return func(*args, **funckwargs)
     return inner
 

@@ -15,7 +15,7 @@ def main(dirname, **opts):
 
     It looks very similar to some serve command
     '''
-    print opts
+    print locals()
 
 @command(usage='[-l HOST] DIR')
 def another(dirname,
