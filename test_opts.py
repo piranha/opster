@@ -10,14 +10,14 @@ opts = [('l', 'listen', 'localhost', 'ip to listen on'),
         ('', 'pid-file', '', 'name of file to write process ID to')]
 
 @command(opts, usage='[-l HOST] DIR')
-def main(dirname, **opts):
+def main(*dirs, **opts):
     '''This is some command
 
     It looks very similar to some serve command
     '''
     print locals()
 
-@command(usage='[-l HOST] DIR')
+@command(usage='[-l HOST] [DIR ...]')
 def another(dirname,
             listen=('l', 'localhost', 'ip to listen on'),
             port=('p', 8000, 'port to listen on'),
@@ -30,5 +30,5 @@ def another(dirname,
     print locals()
 
 if __name__ == '__main__':
-    #main()
-    another()
+    main()
+    #another()
