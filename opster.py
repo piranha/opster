@@ -270,7 +270,7 @@ def parse(args, options):
 
     '''
     argmap, defmap, state = {}, {}, {}
-    shortlist, namelist = '', []
+    shortlist, namelist, funlist = '', [], []
 
     for short, name, default, comment in options:
         if short and len(short) != 1:
@@ -288,6 +288,7 @@ def parse(args, options):
         if isinstance(default, list):
             state[pyname] = default[:]
         elif callable(default):
+            funlist.append(pyname)
             state[pyname] = None
         else:
             state[pyname] = default
@@ -308,6 +309,7 @@ def parse(args, options):
         name = argmap[opt]
         t = type(defmap[name])
         if t is types.FunctionType:
+            del funlist[funlist.index(name)]
             state[name] = defmap[name](val)
         elif t is types.IntType:
             state[name] = int(val)
@@ -317,6 +319,9 @@ def parse(args, options):
             state[name].append(val)
         elif t in (types.NoneType, types.BooleanType):
             state[name] = not defmap[name]
+
+    for name in funlist:
+        state[name] = defmap[name](None)
 
     return state, args
 

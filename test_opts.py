@@ -17,7 +17,7 @@ def main(*dirs, **opts):
     '''
     print locals()
 
-@command(usage='[-l HOST] [DIR ...]')
+@command(usage='[-l HOST] DIR')
 def another(dirname,
             listen=('l', 'localhost', 'ip to listen on'),
             port=('p', 8000, 'port to listen on'),
@@ -30,5 +30,5 @@ def another(dirname,
     print locals()
 
 if __name__ == '__main__':
-    main()
-    #another()
+    #main()
+    another()
