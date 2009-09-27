@@ -58,17 +58,18 @@ interfaces and Python application.
 After that you can simply call this function as an entry point to your program::
 
   if __name__ == '__main__':
-      main()
+      main(argv=sys.argv[1:])
 
 This will run command line parsing facility, using arguments from
-``sys.argv``. ``%name`` will be replaced with ``sys.argv[0]`` (or prepended to
-usage string if there is no ``%name``), and rest of arguments will be passed to
-command line parser. In case if rest is empty, help will be displayed.
+``sys.argv``. ``%name`` in usage string will be replaced with ``sys.argv[0]``
+(or prepended to usage string if there is no ``%name``), and rest of arguments
+will be passed to command line parser. In case if rest is empty, help will be
+displayed.
 
 Of course, you can use your function programmatically, supplying list of
 arguments to function::
 
-  main('-l 0.0.0.0 /my/dir'.split())
+  main(argv='-l 0.0.0.0 /my/dir'.split())
 
 Or, if you need this, you can call this function as usual::
 

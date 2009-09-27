@@ -74,9 +74,6 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
                 # no catcher here because this is call from Python
                 return call_cmd_regular(func, options_)(*args, **opts)
 
-            if argv is None:
-                argv = sys.argv[1:]
-
             try:
                 opts, args = catcher(lambda: parse(argv, options_), help_func)
             except Abort:

@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+0.9.10
+~~~~~~
+
+ - **backward incompatible change**: if you are calling function to parse
+   command line, earlier you could write ``main()`` to accomplish that
+   task. This syntax is unavailable now (this will try to actually call a
+   function), and you should use ``main(argv=sys.argv[1:])``.
+ - if default value of an option is a fuction, always call it (None is passed in
+   case when option is not supplied)
+
 0.9.9
 ~~~~~
  - Now it's possible to call commands as regular function, where every
