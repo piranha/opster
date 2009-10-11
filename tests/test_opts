@@ -1,0 +1,5 @@
+#!/bin/sh
+
+python test_opts.py --help
+python test_opts.py
+python test_opts.py .

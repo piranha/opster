@@ -1,0 +1,5 @@
+#!/bin/sh
+
+python test.py
+python test.py simple
+python test.py help complex

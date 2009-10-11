@@ -1,0 +1,17 @@
+#!/bin/sh
+
+BASE=$(dirname $0)/..
+STDOUT=$BASE/tests/tmp.out
+STDERR=$BASE/tests/tmp.err
+
+for f in `ls .`; do
+    if [ -x "$f" -a $f != "runtests" ]; then
+        echo ---------------- $f
+        PYTHONPATH=$BASE $BASE/tests/$f >$STDOUT 2>$STDERR
+        diff -N $BASE/tests/$f.out $STDOUT
+        diff -N $BASE/tests/$f.err $STDERR
+    fi
+done
+
+rm -f $STDOUT
+rm -f $STDERR

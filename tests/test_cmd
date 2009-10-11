@@ -1,0 +1,5 @@
+#!/bin/sh
+
+python test_cmd.py
+python test_cmd.py help runserver
+python test_cmd.py initdb
