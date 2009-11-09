@@ -220,13 +220,13 @@ def help_cmd(func, usage, options):
         --pid-file   name of file to write process ID to
     <BLANKLINE>
     '''
-    print '%s\n' % usage
+    write(usage + '\n')
     doc = func.__doc__
     if not doc:
         doc = '(no help text available)'
-    print '%s\n' % doc.strip()
+    write(doc.strip() + '\n')
     if options:
-        print ''.join(help_options(options))
+        write(''.join(help_options(options)))
 
 def help_options(options):
     yield 'options:\n\n'
@@ -284,7 +284,7 @@ def parse(args, options):
         # copy defaults to state
         if isinstance(default, list):
             state[pyname] = default[:]
-        elif callable(default):
+        elif hasattr(default, '__call__'):
             funlist.append(pyname)
             state[pyname] = None
         else:
