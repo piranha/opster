@@ -6,13 +6,10 @@ commands:
  initdb     Initialize database
  runserver  Run development server
 test_cmd.py runserver [OPTIONS] 
-
 Run development server
-
 options:
 
  -l --listen  ip to listen on (default: localhost)
  -p --port    port to listen on (default: 5000)
  -c --config  config file to use (default: webshops.ini)
  -h --help    display help
-

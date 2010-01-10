@@ -12,7 +12,7 @@ def simple(ui,
 
     I assure you! Nothing to look here. ;-)
     '''
-    ui.write(str(locals()))
+    ui.write(str(locals().keys()))
     ui.write('\n')
 
 cplx_opts = [('p', 'pass', False, 'don\'t run the command'),

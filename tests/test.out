@@ -3,13 +3,11 @@ usage: test.py <command> [options]
 commands:
 
  simple  Just simple command to do nothing.
-{'test': False, 'ui': <__main__.UI object at 0x100511750>}
+['test', 'ui']
 test.py complex [-p] [--exit value] ...
-
 That's more complex command indented to do something
 
     Let's try to do that (what?!)
-
 options:
 
  -p --pass     don't run the command
@@ -18,4 +16,3 @@ options:
  -v --verbose  enable additional output
  -q --quiet    suppress output
  -h --help     display help
-
