@@ -224,7 +224,7 @@ def help_cmd(func, usage, options):
     doc = func.__doc__
     if not doc:
         doc = '(no help text available)'
-    write(doc.strip() + '\n')
+    write('\n' + doc.strip() + '\n\n')
     if options:
         write(''.join(help_options(options)))
 

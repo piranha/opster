@@ -1,7 +1,9 @@
 test_opts.py [-l HOST] DIR
+
 Command with option declaration as keyword arguments
 
     Otherwise it's the same as previous command
+
 options:
 
  -l --listen     ip to listen on (default: localhost)
@@ -10,9 +12,11 @@ options:
     --pid-file   name of file to write process ID to
  -h --help       show help
 test_opts.py [-l HOST] DIR
+
 Command with option declaration as keyword arguments
 
     Otherwise it's the same as previous command
+
 options:
 
  -l --listen     ip to listen on (default: localhost)

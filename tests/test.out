@@ -5,9 +5,11 @@ commands:
  simple  Just simple command to do nothing.
 ['test', 'ui']
 test.py complex [-p] [--exit value] ...
+
 That's more complex command indented to do something
 
     Let's try to do that (what?!)
+
 options:
 
  -p --pass     don't run the command
