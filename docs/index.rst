@@ -36,8 +36,7 @@ What's nice
  - It's easy to switch between usual command line options parser and
    subcommands.
 
-Read more in `overview`_.
+Read more in :doc:`overview`.
 
 
 .. _single file: http://hg.piranha.org.ua/opster/file/tip/opster.py
-.. _overview: overview

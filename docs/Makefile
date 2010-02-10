@@ -13,8 +13,7 @@ ALLSPHINXOPTS   = -d _build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: all help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
 
-all:
-	make html
+all: html
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"

@@ -49,9 +49,9 @@ There is alternative declaration, easier for simple cases::
 .. _note:
 
 I think it's easy to understand what's going on here, except that you need to
-know that underscores in the long name will be replaced with dash at the command
-line. Of course, reverse process happens: if you have option with a dash in long
-name in a definition, it will be replaced with underscore when passed to
+know that underscores in the long name will be replaced with dashes at the
+command line. Of course, reverse process happens: if you have option with a dash
+in long name in a definition, it will be replaced with underscore when passed to
 function. This is done to comply with standarts of writing both console
 interfaces and Python application.
 
