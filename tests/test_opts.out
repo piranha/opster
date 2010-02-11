@@ -10,6 +10,7 @@ options:
  -p --port       port to listen on (default: 8000)
  -d --daemonize  daemonize process
     --pid-file   name of file to write process ID to
+ -t --test       testing help for a function (default: test)
  -h --help       show help
 test_opts.py [-l HOST] DIR
 
@@ -23,5 +24,6 @@ options:
  -p --port       port to listen on (default: 8000)
  -d --daemonize  daemonize process
     --pid-file   name of file to write process ID to
+ -t --test       testing help for a function (default: test)
  -h --help       show help
-{'pid_file': '', 'daemonize': False, 'dirname': '.', 'port': 8000, 'listen': 'localhost'}
+{'pid_file': '', 'daemonize': False, 'test': 'test', 'dirname': '.', 'port': 8000, 'listen': 'localhost'}

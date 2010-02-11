@@ -232,6 +232,8 @@ def help_options(options):
     yield 'options:\n\n'
     output = []
     for short, name, default, desc in options:
+        if hasattr(default, '__call__'):
+            default = default(None)
         default = default and ' (default: %s)' % default or ''
         output.append(('%2s%s' % (short and '-%s' % short,
                                   name and ' --%s' % name),
