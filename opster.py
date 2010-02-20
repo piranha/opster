@@ -133,9 +133,14 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
         name, func, args, kwargs = catcher(
             lambda: _dispatch(args, cmdtable, globaloptions),
             help_func)
-        return catcher(
-            lambda: call_cmd(name, middleware(func))(*args, **kwargs),
-            help_func)
+        if name == '_completion':       # skip middleware
+            return catcher(
+                lambda: call_cmd(name, func)(*args, **kwargs),
+                help_func)
+        else:
+            return catcher(
+                lambda: call_cmd(name, middleware(func))(*args, **kwargs),
+                help_func)
     except Abort:
         return -1
 
@@ -373,7 +378,7 @@ def autocomplete(cmdtable, args):
     
     sys.exit(1)
 
-def completion_(ui, **opts):
+def completion_(**opts):
     """Outputs the completion script for bash or zsh."""
 
     (head, prog_name) = os.path.split(sys.argv[0])
