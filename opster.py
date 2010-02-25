@@ -323,6 +323,8 @@ def parse(args, options):
             state[name] = defmap[name](val)
         elif t is types.IntType:
             state[name] = int(val)
+        elif t is types.FloatType:
+            state[name] = float(val)
         elif t is types.StringType:
             state[name] = val
         elif t is types.ListType:
