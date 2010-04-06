@@ -123,10 +123,6 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
     cmdtable['help'] = (help_(cmdtable, globaloptions), [], '[TOPIC]')
     help_func = cmdtable['help'][0]
 
-    cmdtable['~_completion'] = (completion_,
-                              [('b', 'bash', False, 'Output bash competion'),
-                               ('z', 'zsh',  False, 'Output zsh completion')],
-                              '--bash OR --zsh')
     autocomplete(cmdtable, args)
 
     try:
@@ -327,84 +323,6 @@ def parse(args, options):
         state[name] = defmap[name](None)
 
     return state, args
-
-# --------
-# Autocomplete system
-# --------
-
-# Borrowed from PIP
-def autocomplete(cmdtable, args):
-    """Command and option completion.
-
-    Enable by sourcing one of the completion shell scripts (bash or zsh).
-    """
-
-    # Don't complete if user hasn't sourced bash_completion file.
-    if not os.environ.has_key('OPSTER_AUTO_COMPLETE'):
-        return
-    cwords = os.environ['COMP_WORDS'].split()[1:]
-    cword = int(os.environ['COMP_CWORD'])
-
-    try:
-        current = cwords[cword-1]
-    except IndexError:
-        current = ''
-
-    commands = []
-    for k in cmdtable.keys():
-        commands += aliases_(k)
-
-    # command
-    if cword == 1:
-        print ' '.join(filter(lambda x: x.startswith(current), commands))
-
-    # command options
-    elif cwords[0] in commands:
-        options = []
-        aliases, (cmd, opts, usage) = findcmd(cwords[0], cmdtable)
-        for (short, long, default, help) in opts:
-            options.append('-%s'  % short)
-            options.append('--%s' % long)
-
-        options = [o for o in options if o.startswith(current)]
-        print ' '.join(filter(lambda x: x.startswith(current), options))
-
-    sys.exit(1)
-
-def completion_(**opts):
-    """Outputs the completion script for bash or zsh."""
-
-    (head, prog_name) = os.path.split(sys.argv[0])
-
-    if opts['bash']:
-        print """
-# opster bash completion start
-_opster_completion()
-{
-    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \\
-                   COMP_CWORD=$COMP_CWORD \\
-                   OPSTER_AUTO_COMPLETE=1 $1 ) )
-}
-complete -o default -F _opster_completion %s
-# opster bash completion end
-              """ % prog_name
-
-    if opts['zsh']:
-        print """
-# opster zsh completion start
-function _opster_completion {
-  local words cword
-  read -Ac words
-  read -cn cword
-  reply=( $( COMP_WORDS="$words[*]" \\
-             COMP_CWORD=$(( cword-1 )) \\
-             OPSTER_AUTO_COMPLETE=1 $words[1] ) )
-}
-compctl -K _opster_completion %s
-# opster zsh completion end
-              """ % prog_name
-
-
 # --------
 # Subcommand system
 # --------
@@ -589,6 +507,86 @@ except ImportError:
                 getattr(wrapper, attr).update(getattr(wrapped, attr, {}))
             return wrapper
         return inner
+
+# --------
+# Autocomplete system
+# --------
+
+# Borrowed from PIP
+def autocomplete(cmdtable, args):
+    """Command and option completion.
+
+    Enable by sourcing one of the completion shell scripts (bash or zsh).
+    """
+
+    # Don't complete if user hasn't sourced bash_completion file.
+    if not os.environ.has_key('OPSTER_AUTO_COMPLETE'):
+        return
+    cwords = os.environ['COMP_WORDS'].split()[1:]
+    cword = int(os.environ['COMP_CWORD'])
+
+    try:
+        current = cwords[cword-1]
+    except IndexError:
+        current = ''
+
+    commands = []
+    for k in cmdtable.keys():
+        commands += aliases_(k)
+
+    # command
+    if cword == 1:
+        print ' '.join(filter(lambda x: x.startswith(current), commands))
+
+    # command options
+    elif cwords[0] in commands:
+        options = []
+        aliases, (cmd, opts, usage) = findcmd(cwords[0], cmdtable)
+        for (short, long, default, help) in opts:
+            options.append('-%s'  % short)
+            options.append('--%s' % long)
+
+        options = [o for o in options if o.startswith(current)]
+        print ' '.join(filter(lambda x: x.startswith(current), options))
+
+    sys.exit(1)
+
+
+COMPLETIONS = {
+    'bash':
+        """
+# opster bash completion start
+_opster_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \\
+                   COMP_CWORD=$COMP_CWORD \\
+                   OPSTER_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _opster_completion %s
+# opster bash completion end
+""",
+    'zsh':
+            """
+# opster zsh completion start
+function _opster_completion {
+  local words cword
+  read -Ac words
+  read -cn cword
+  reply=( $( COMP_WORDS="$words[*]" \\
+             COMP_CWORD=$(( cword-1 )) \\
+             OPSTER_AUTO_COMPLETE=1 $words[1] ) )
+}
+compctl -K _opster_completion %s
+# opster zsh completion end
+"""
+    }
+
+@command(name='_completion')
+def completion(type=('t', 'bash', 'Completion type (bash or zsh)')):
+    """Outputs completion script for bash or zsh."""
+
+    prog_name = os.path.split(sys.argv[0])[1]
+    print COMPLETIONS[type] % prog_name
 
 # --------
 # Exceptions
