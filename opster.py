@@ -123,7 +123,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
     cmdtable['help'] = (help_(cmdtable, globaloptions), [], '[TOPIC]')
     help_func = cmdtable['help'][0]
 
-    cmdtable['_completion'] = (completion_,
+    cmdtable['~_completion'] = (completion_,
                               [('b', 'bash', False, 'Output bash competion'),
                                ('z', 'zsh',  False, 'Output zsh completion')],
                               '--bash OR --zsh')
