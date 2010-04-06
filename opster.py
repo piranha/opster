@@ -316,14 +316,12 @@ def parse(args, options):
         if t is types.FunctionType:
             del funlist[funlist.index(name)]
             state[name] = defmap[name](val)
-        elif t is types.IntType:
-            state[name] = int(val)
-        elif t is types.StringType:
-            state[name] = val
         elif t is types.ListType:
             state[name].append(val)
         elif t in (types.NoneType, types.BooleanType):
             state[name] = not defmap[name]
+        else:
+            state[name] = t(val)
 
     for name in funlist:
         state[name] = defmap[name](None)
