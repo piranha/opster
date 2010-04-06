@@ -58,7 +58,7 @@ interfaces and Python application.
 After that you can simply call this function as an entry point to your program::
 
   if __name__ == '__main__':
-      main(argv=sys.argv[1:])
+      main()
 
 This will run command line parsing facility, using arguments from
 ``sys.argv``. ``%name`` in usage string will be replaced with ``sys.argv[0]``

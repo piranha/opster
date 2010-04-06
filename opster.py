@@ -66,7 +66,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
             except StopIteration:
                 options_.append(('h', 'help', False, 'show help'))
 
-            argv = opts.pop('argv', None)
+            argv = opts.pop('argv', sys.argv[1:])
             if opts.pop('help', False):
                 return help_func()
 

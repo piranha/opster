@@ -31,5 +31,5 @@ def another(dirname,
     print locals()
 
 if __name__ == '__main__':
-    #main(argv=sys.argv[1:])
-    another(argv=sys.argv[1:])
+    #main()
+    another()
