@@ -124,8 +124,8 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
     help_func = cmdtable['help'][0]
 
     cmdtable['_completion'] = (completion_,
-                              [('b', 'bash', False, 'Output bash competion'), 
-                               ('z', 'zsh',  False, 'Output zsh completion')], 
+                              [('b', 'bash', False, 'Output bash competion'),
+                               ('z', 'zsh',  False, 'Output zsh completion')],
                               '--bash OR --zsh')
     autocomplete(cmdtable, args)
 
@@ -340,7 +340,7 @@ def autocomplete(cmdtable, args):
 
     Enable by sourcing one of the completion shell scripts (bash or zsh).
     """
-    
+
     # Don't complete if user hasn't sourced bash_completion file.
     if not os.environ.has_key('OPSTER_AUTO_COMPLETE'):
         return
@@ -359,7 +359,7 @@ def autocomplete(cmdtable, args):
     # command
     if cword == 1:
         print ' '.join(filter(lambda x: x.startswith(current), commands))
-    
+
     # command options
     elif cwords[0] in commands:
         options = []
@@ -367,13 +367,13 @@ def autocomplete(cmdtable, args):
         for (short, long, default, help) in opts:
             options.append('-%s'  % short)
             options.append('--%s' % long)
-        
+
         options = [o for o in options if o.startswith(current)]
         print ' '.join(filter(lambda x: x.startswith(current), options))
-    
+
     sys.exit(1)
 
-def completion_(ui, **opts):
+def completion_(**opts):
     """Outputs the completion script for bash or zsh."""
 
     (head, prog_name) = os.path.split(sys.argv[0])
@@ -398,7 +398,7 @@ function _opster_completion {
   local words cword
   read -Ac words
   read -cn cword
-  reply=( $( COMP_WORDS="$words[*]" \\ 
+  reply=( $( COMP_WORDS="$words[*]" \\
              COMP_CWORD=$(( cword-1 )) \\
              OPSTER_AUTO_COMPLETE=1 $words[1] ) )
 }
