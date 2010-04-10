@@ -6,7 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect, os
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
-__version__ = '0.9.9'
+__version__ = '0.9.10'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
@@ -581,7 +581,7 @@ compctl -K _opster_completion %s
 """
     }
 
-@command(name='_completion')
+@command(name='_completion', hide=True)
 def completion(type=('t', 'bash', 'Completion type (bash or zsh)')):
     """Outputs completion script for bash or zsh."""
 
