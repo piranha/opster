@@ -127,7 +127,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
                               [('b', 'bash', False, 'Output bash competion'), 
                                ('z', 'zsh',  False, 'Output zsh completion')], 
                               '--bash OR --zsh')
-    autocomplete(cmdtable, args)
+    autocomplete(cmdtable, args, middleware)
 
     try:
         name, func, args, kwargs = catcher(
@@ -282,7 +282,8 @@ def parse(args, options):
     argmap, defmap, state = {}, {}, {}
     shortlist, namelist, funlist = '', [], []
 
-    for short, name, default, comment in options:
+    for o in options:
+        short, name, default, comment = o[:4]       # might have the fifth completer element
         if short and len(short) != 1:
             raise FOError('Short option should be only a single'
                           ' character: %s' % short)
@@ -342,7 +343,7 @@ def parse(args, options):
 # --------
 
 # Borrowed from PIP
-def autocomplete(cmdtable, args):
+def autocomplete(cmdtable, args, middleware):
     """Command and option completion.
 
     Enable by sourcing one of the completion shell scripts (bash or zsh).
@@ -369,14 +370,21 @@ def autocomplete(cmdtable, args):
     
     # command options
     elif cwords[0] in commands:
+        idx = -2 if current else -1
         options = []
         aliases, (cmd, opts, usage) = findcmd(cwords[0], cmdtable)
-        for (short, long, default, help) in opts:
-            options.append('-%s'  % short)
-            options.append('--%s' % long)
+
+        for o in opts:
+            short, long, default, help = o[:4]
+            completer = o[4] if len(o) > 4 else None
+            short, long = '-%s' % short, '--%s' % long
+            options += [short,long]
+
+            if (cwords[idx] in [short,long]) and completer:
+                args = middleware(completer)(current)
+                print ' '.join(args),
         
-        options = [o for o in options if o.startswith(current)]
-        print ' '.join(filter(lambda x: x.startswith(current), options))
+        print ' '.join((o for o in options if o.startswith(current)))
     
     sys.exit(1)
 
@@ -503,8 +511,9 @@ def guess_options(func):
     args, varargs, varkw, defaults = inspect.getargspec(func)
     for name, option in zip(args[-len(defaults):], defaults):
         try:
-            sname, default, hlp = option
-            yield (sname, name.replace('_', '-'), default, hlp)
+            sname, default, hlp = option[:3]
+            completer = option[3] if len(option) > 3 else None
+            yield (sname, name.replace('_', '-'), default, hlp, completer)
         except TypeError:
             pass
 
