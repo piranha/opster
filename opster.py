@@ -74,18 +74,12 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
                 # no catcher here because this is call from Python
                 return call_cmd_regular(func, options_)(*args, **opts)
 
-            try:
-                opts, args = catcher(lambda: parse(argv, options_), help_func)
-            except Abort:
-                return -1
+            opts, args = catcher(lambda: parse(argv, options_), help_func)
 
-            try:
-                if opts.pop('help', False):
-                    return help_func()
-                return catcher(lambda: call_cmd(name_, func)(*args, **opts),
-                               help_func)
-            except Abort:
-                return -1
+            if opts.pop('help', False):
+                return help_func()
+            return catcher(lambda: call_cmd(name_, func)(*args, **opts),
+                           help_func)
 
         return inner
     return wrapper
@@ -125,20 +119,17 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
 
     autocomplete(cmdtable, args, middleware)
 
-    try:
-        name, func, args, kwargs = catcher(
-            lambda: _dispatch(args, cmdtable, globaloptions),
+    name, func, args, kwargs = catcher(
+        lambda: _dispatch(args, cmdtable, globaloptions),
+        help_func)
+    if name == '_completion':       # skip middleware
+        return catcher(
+            lambda: call_cmd(name, func)(*args, **kwargs),
             help_func)
-        if name == '_completion':       # skip middleware
-            return catcher(
-                lambda: call_cmd(name, func)(*args, **kwargs),
-                help_func)
-        else:
-            return catcher(
-                lambda: call_cmd(name, middleware(func))(*args, **kwargs),
-                help_func)
-    except Abort:
-        return -1
+    else:
+        return catcher(
+            lambda: call_cmd(name, middleware(func))(*args, **kwargs),
+            help_func)
 
 # --------
 # Help
@@ -460,15 +451,6 @@ def catcher(target, help_func):
         help_func()
     except FOError, e:
         err('%s\n' % e)
-    except KeyboardInterrupt:
-        err('interrupted!\n')
-    except SystemExit:
-        raise
-    except:
-        err('unknown exception encountered')
-        raise
-
-    raise Abort
 
 def call_cmd(name, func):
     def inner(*args, **kwargs):
@@ -621,9 +603,6 @@ class UnknownCommand(CommandException):
 
 class ParseError(CommandException):
     'Raised on error in command line parsing'
-
-class Abort(CommandException):
-    'Abort execution'
 
 class FOError(CommandException):
     'Raised on trouble with opster configuration'
