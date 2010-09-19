@@ -160,9 +160,9 @@ def help_(cmdtable, globalopts):
 
             for cmd, info in cmdtable.items():
                 if cmd.startswith('~'):
-                    continue # do not display hidden commands
+                    continue  # do not display hidden commands
                 if shortlist and not cmd.startswith('^'):
-                    continue # short help contains only marked commands
+                    continue  # short help contains only marked commands
                 cmd = cmd.lstrip('^~')
                 doc = info[0].__doc__ or '(no help text available)'
                 hlp[cmd] = doc.splitlines()[0].rstrip()
@@ -174,7 +174,7 @@ def help_(cmdtable, globalopts):
             write('\ncommands:\n\n')
             for cmd in hlplist:
                 doc = hlp[cmd]
-                if False: # verbose?
+                if False:  # verbose?
                     write(' %s:\n     %s\n' % (cmd.replace('|', ', '), doc))
                 else:
                     write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0],
@@ -280,7 +280,8 @@ def parse(args, options):
     shortlist, namelist, funlist = '', [], []
 
     for o in options:
-        short, name, default, comment = o[:4]       # might have the fifth completer element
+        # might have the fifth completer element
+        short, name, default, comment = o[:4]
         if short and len(short) != 1:
             raise FOError('Short option should be only a single'
                           ' character: %s' % short)
@@ -330,7 +331,6 @@ def parse(args, options):
         state[name] = defmap[name](None)
 
     return state, args
-
 
 
 # --------
@@ -531,13 +531,13 @@ def autocomplete(cmdtable, args, middleware):
     """
 
     # Don't complete if user hasn't sourced bash_completion file.
-    if not os.environ.has_key('OPSTER_AUTO_COMPLETE'):
+    if 'OPSTER_AUTO_COMPLETE' not in os.environ:
         return
     cwords = os.environ['COMP_WORDS'].split()[1:]
     cword = int(os.environ['COMP_CWORD'])
 
     try:
-        current = cwords[cword-1]
+        current = cwords[cword - 1]
     except IndexError:
         current = ''
 
@@ -559,7 +559,7 @@ def autocomplete(cmdtable, args, middleware):
             short, long, default, help = o[:4]
             completer = o[4] if len(o) > 4 else None
             short, long = '-%s' % short, '--%s' % long
-            options += [short,long]
+            options += [short, long]
 
             if cwords[idx] in (short, long) and completer:
                 args = middleware(completer)(current)
