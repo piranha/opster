@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.9.11
+~~~~~~
+
+ - fixed exceptions handling
+ - autocompletion improvements (skips middleware, ability of options completion)
+
 0.9.10
 ~~~~~~
 
