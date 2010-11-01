@@ -1,21 +1,5 @@
-#!/usr/bin/env python
-
-import sys
-
+import pprint
 from opster import command
-
-opts = [('l', 'listen', 'localhost', 'ip to listen on'),
-        ('p', 'port', 8000, 'port to listen on'),
-        ('d', 'daemonize', False, 'daemonize process'),
-        ('', 'pid-file', '', 'name of file to write process ID to')]
-
-@command(opts, usage='[-l HOST] DIR')
-def main(*dirs, **opts):
-    '''This is some command
-
-    It looks very similar to some serve command
-    '''
-    print locals()
 
 @command(usage='[-l HOST] DIR')
 def another(dirname,
@@ -25,11 +9,8 @@ def another(dirname,
             pid_file=('', '', 'name of file to write process ID to'),
             test=('t', lambda x: x or 'test', 'testing help for a function')):
     '''Command with option declaration as keyword arguments
-
-    Otherwise it's the same as previous command
     '''
-    print locals()
+    pprint.pprint(locals())
 
 if __name__ == '__main__':
-    #main()
     another()

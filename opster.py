@@ -10,8 +10,22 @@ __version__ = '0.9.11'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
-write = sys.stdout.write
-err = sys.stderr.write
+try:
+    import locale
+    ENCODING = locale.getpreferredencoding()
+    if not ENCODING or ENCODING == 'mac-roman':
+        ENCODING = 'utf-8'
+except locale.Error:
+    ENCODING = 'utf-8'
+
+def write(text, out=sys.stdout):
+    encoding = locale.getpreferredencoding()
+    if isinstance(text, unicode):
+        return out.write(text.encode(encoding))
+    out.write(text)
+
+def err(text):
+    write(text, out=sys.stderr)
 
 CMDTABLE = {}
 
@@ -219,9 +233,7 @@ def help_cmd(func, usage, options):
     <BLANKLINE>
     '''
     write(usage + '\n')
-    doc = func.__doc__
-    if not doc:
-        doc = '(no help text available)'
+    doc = func.__doc__ or '(no help text available)'
     write('\n' + doc.strip() + '\n\n')
     if options:
         write(''.join(help_options(options)))
@@ -274,10 +286,10 @@ def parse(args, options):
         # might have the fifth completer element
         short, name, default, comment = o[:4]
         if short and len(short) != 1:
-            raise FOError('Short option should be only a single'
-                          ' character: %s' % short)
+            raise OpsterError(
+                'Short option should be only a single character: %s' % short)
         if not name:
-            raise FOError(
+            raise OpsterError(
                 'Long name should be defined for every option')
         # change name to match Python styling
         pyname = name.replace('-', '_')
@@ -449,7 +461,7 @@ def catcher(target, help_func):
     except getopt.GetoptError, e:
         err('error: %s\n' % e)
         help_func()
-    except FOError, e:
+    except OpsterError, e:
         err('%s\n' % e)
 
 def call_cmd(name, func):
@@ -604,5 +616,5 @@ class UnknownCommand(CommandException):
 class ParseError(CommandException):
     'Raised on error in command line parsing'
 
-class FOError(CommandException):
+class OpsterError(CommandException):
     'Raised on trouble with opster configuration'

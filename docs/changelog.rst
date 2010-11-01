@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.9.12
+~~~~~~
+
+ - fixed trouble with non-ascii characters in docstrings
+
 0.9.11
 ~~~~~~
 

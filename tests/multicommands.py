@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import sys
 
@@ -8,7 +9,7 @@ from opster import dispatch, command
 @command(usage='[-t]', shortlist=True)
 def simple(ui,
            test=('t', False, 'just test execution')):
-    '''Just simple command to do nothing.
+    '''Just simple command to print keys of received arguments.
 
     I assure you! Nothing to look here. ;-)
     '''
@@ -21,9 +22,10 @@ cplx_opts = [('p', 'pass', False, 'don\'t run the command'),
 
 @command(cplx_opts, usage='[-p] [--exit value] ...', name='complex', hide=True)
 def complex_(ui, *args, **opts):
-    '''That's more complex command indented to do something
+    u'''That's more complex command indented to do something
 
-    Let's try to do that (what?!)
+    И самое главное - мы тут немножечко текста не в ascii напишем
+    и посмотрим, что будет. :)
     '''
     if opts.get('pass'):
         return
