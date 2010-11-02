@@ -13,15 +13,14 @@ __email__ = 'piranha@piranha.org.ua'
 try:
     import locale
     ENCODING = locale.getpreferredencoding()
-    if not ENCODING or ENCODING == 'mac-roman':
-        ENCODING = 'utf-8'
+    if not ENCODING or ENCODING == 'mac-roman' or 'ascii' in ENCODING.lower():
+        ENCODING = 'UTF-8'
 except locale.Error:
-    ENCODING = 'utf-8'
+    ENCODING = 'UTF-8'
 
 def write(text, out=sys.stdout):
-    encoding = locale.getpreferredencoding()
     if isinstance(text, unicode):
-        return out.write(text.encode(encoding))
+        return out.write(text.encode(ENCODING))
     out.write(text)
 
 def err(text):

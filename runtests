@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd tests
-cram -E *
+cram *
