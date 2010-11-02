@@ -3,7 +3,7 @@ works.
 
 Define some help functions::
 
-  $ function run() { python $TESTDIR/$@; }
+  $ function run() { name=$1; shift; python "$TESTDIR/$name" "$@"; }
 
 Check if usage is working::
 
