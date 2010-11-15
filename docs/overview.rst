@@ -1,6 +1,6 @@
-===================
+==============
  Opster usage
-===================
+==============
 
 Options
 -------
@@ -12,6 +12,9 @@ Configuration of option parser is a list of tuples::
           ('d', 'daemonize', False, 'daemonize process'),
           ('', 'pid-file', '', 'name of file to write process ID to')]
 
+Options contents
+^^^^^^^^^^^^^^^^
+
 Each tuple is a definition of some option, consisting of 4 elements:
 
  1. short name
@@ -20,14 +23,21 @@ Each tuple is a definition of some option, consisting of 4 elements:
  4. help string
 
 If a short name renders to False (for example, empty string), then it's not used
-at all. Long name is pretended to be available in any case. Default value also
-determines how supplied argument should be parsed:
+at all. Long name is pretended to be available in any case.
+
+Options processing
+^^^^^^^^^^^^^^^^^^
+
+Default value also determines how supplied argument should be parsed:
 
  - function: return value of function called with a specified value is passed
  - integer: value is convert to integer
  - string: value is passed as is
  - list: value is appended to this list
- - boolean/None: ``not default`` is passed and option takes no argument
+ - boolean/None: ``not default`` is passed and option takes no value
+
+Usage
+^^^^^
 
 Usage is easy like that::
 
