@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.9.13
+~~~~~~
+
+ - fixed exception handling (cleanup previous fix, actually)
+ - display only name of application, without full path
+
 0.9.12
 ~~~~~~
 
