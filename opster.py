@@ -473,7 +473,7 @@ def catcher(target, help_func):
         help_func(e.args[0])
         raise Abort()
     except getopt.GetoptError, e:
-        err('error: %s\n' % e)
+        err('error: %s\n\n' % e)
         help_func()
         raise Abort()
     except OpsterError, e:
@@ -512,7 +512,9 @@ def replace_name(usage, name):
 
 def sysname():
     name = sys.argv[0]
-    if name.startswith('./'):
+    if name.startswith('/'):
+        return name.rsplit('/', 1)[1]
+    elif name.startswith('./'):
         return name[2:]
     return name
 

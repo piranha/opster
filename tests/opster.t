@@ -8,7 +8,7 @@ Define some help functions::
 Check if usage is working::
 
   $ run multicommands.py
-  usage: /Users/piranha/dev/misc/opster/tests/multicommands.py <command> [options]
+  usage: multicommands.py <command> [options]
   
   commands:
   
@@ -23,7 +23,7 @@ Yeah, nice one, but we know that command ``complex`` is just hidden there. Let's
 check it out::
 
   $ run multicommands.py help complex
-  /Users/piranha/dev/misc/opster/tests/multicommands.py complex [-p] [--exit value] ...
+  multicommands.py complex [-p] [--exit value] ...
   
   That's more complex command intended to do something
   
@@ -44,7 +44,7 @@ everyone needs subcommands, you know)::
 
   $ run test_opts.py
   another: invalid arguments
-  /Users/piranha/dev/misc/opster/tests/test_opts.py [-l HOST] DIR
+  test_opts.py [-l HOST] DIR
   
   Command with option declaration as keyword arguments
   
@@ -71,7 +71,8 @@ Should we check passing some invalid arguments? I think so::
 
   $ run test_opts.py --wrong-option
   error: option --wrong-option not recognized
-  /Users/piranha/dev/misc/opster/tests/test_opts.py [-l HOST] DIR
+  
+  test_opts.py [-l HOST] DIR
   
   Command with option declaration as keyword arguments
   
