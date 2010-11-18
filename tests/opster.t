@@ -25,7 +25,7 @@ check it out::
   $ run multicommands.py help complex
   /Users/piranha/dev/misc/opster/tests/multicommands.py complex [-p] [--exit value] ...
   
-  That's more complex command indented to do something
+  That's more complex command intended to do something
   
       И самое главное - мы тут немножечко текста не в ascii напишем
       и посмотрим, что будет. :)
@@ -66,5 +66,22 @@ Yeah, I've got it, I should supply some argument::
    'pid_file': '',
    'port': 8000,
    'test': 'test'}
+
+Should we check passing some invalid arguments? I think so::
+
+  $ run test_opts.py --wrong-option
+  error: option --wrong-option not recognized
+  /Users/piranha/dev/misc/opster/tests/test_opts.py [-l HOST] DIR
+  
+  Command with option declaration as keyword arguments
+  
+  options:
+  
+   -l --listen     ip to listen on (default: localhost)
+   -p --port       port to listen on (default: 8000)
+   -d --daemonize  daemonize process
+      --pid-file   name of file to write process ID to
+   -t --test       testing help for a function (default: test)
+   -h --help       show help
 
 That's all for today; see you next time!

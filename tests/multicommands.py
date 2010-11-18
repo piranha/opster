@@ -22,7 +22,7 @@ cplx_opts = [('p', 'pass', False, 'don\'t run the command'),
 
 @command(cplx_opts, usage='[-p] [--exit value] ...', name='complex', hide=True)
 def complex_(ui, *args, **opts):
-    u'''That's more complex command indented to do something
+    u'''That's more complex command intended to do something
 
     И самое главное - мы тут немножечко текста не в ascii напишем
     и посмотрим, что будет. :)

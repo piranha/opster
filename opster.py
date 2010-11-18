@@ -87,12 +87,19 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
                 # no catcher here because this is call from Python
                 return call_cmd_regular(func, options_)(*args, **opts)
 
-            opts, args = catcher(lambda: parse(argv, options_), help_func)
+            try:
+                opts, args = catcher(lambda: parse(argv, options_), help_func)
+            except Abort:
+                return -1
 
             if opts.pop('help', False):
                 return help_func()
-            return catcher(lambda: call_cmd(name_, func)(*args, **opts),
-                           help_func)
+
+            try:
+                return catcher(lambda: call_cmd(name_, func)(*args, **opts),
+                               help_func)
+            except Abort:
+                return -1
 
         return inner
     return wrapper
@@ -132,17 +139,22 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
 
     autocomplete(cmdtable, args, middleware)
 
-    name, func, args, kwargs = catcher(
-        lambda: _dispatch(args, cmdtable, globaloptions),
-        help_func)
+    try:
+        name, func, args, kwargs = catcher(
+            lambda: _dispatch(args, cmdtable, globaloptions),
+            help_func)
+    except Abort:
+        return -1
+
     if name == '_completion':       # skip middleware
-        return catcher(
-            lambda: call_cmd(name, func)(*args, **kwargs),
-            help_func)
+        worker = lambda: call_cmd(name, func)(*args, **kwargs)
     else:
-        return catcher(
-            lambda: call_cmd(name, middleware(func))(*args, **kwargs),
-            help_func)
+        worker = lambda: call_cmd(name, middleware(func))(*args, **kwargs)
+
+    try:
+        return catcher(worker, help_func)
+    except Abort:
+        return -1
 
 # --------
 # Help
@@ -451,17 +463,22 @@ def catcher(target, help_func):
         return target()
     except UnknownCommand, e:
         err("unknown command: '%s'\n" % e)
+        raise Abort()
     except AmbiguousCommand, e:
         err("command '%s' is ambiguous:\n    %s\n" %
             (e.args[0], ' '.join(e.args[1])))
+        raise Abort()
     except ParseError, e:
         err('%s: %s\n' % (e.args[0], e.args[1]))
         help_func(e.args[0])
+        raise Abort()
     except getopt.GetoptError, e:
         err('error: %s\n' % e)
         help_func()
+        raise Abort()
     except OpsterError, e:
         err('%s\n' % e)
+        raise Abort()
 
 def call_cmd(name, func):
     def inner(*args, **kwargs):
@@ -603,17 +620,17 @@ def completion(type=('t', 'bash', 'Completion type (bash or zsh)')):
 # --------
 
 # Command exceptions
-class CommandException(Exception):
-    'Base class for command exceptions'
+class OpsterError(Exception):
+    'Base opster exception'
 
-class AmbiguousCommand(CommandException):
+class AmbiguousCommand(OpsterError):
     'Raised if command is ambiguous'
 
-class UnknownCommand(CommandException):
+class UnknownCommand(OpsterError):
     'Raised if command is unknown'
 
-class ParseError(CommandException):
+class ParseError(OpsterError):
     'Raised on error in command line parsing'
 
-class OpsterError(CommandException):
-    'Raised on trouble with opster configuration'
+class Abort(OpsterError):
+    'Processing error, abort execution'
