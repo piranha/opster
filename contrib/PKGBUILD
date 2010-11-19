@@ -1,7 +1,7 @@
 # Maintainer: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
 
 pkgname=python-opster
-pkgver=0.9.12
+pkgver=0.9.13
 pkgrel=1
 pkgdesc="Python command line parsing speedster"
 arch=(any)
@@ -9,7 +9,7 @@ url="http://hg.piranha.org.ua/opster/"
 license=('BSD')
 depends=('python2')
 source=("http://pypi.python.org/packages/source/o/opster/opster-$pkgver.tar.gz")
-md5sums=('eed94b4cd16752e426d115cb0843f1d2')
+md5sums=('462b102563886fc9dda9719470549c9e')
 
 build() {
     cd "$srcdir/opster-$pkgver"
