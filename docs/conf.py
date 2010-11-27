@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, os
+import sys
 sys.path.append('..')
 import opster
 
@@ -11,7 +11,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
 project = u'Opster'
-copyright = u'2009, Alexander Solovyov'
+copyright = u'2009-2010, Alexander Solovyov'
 version = release = opster.__version__
 exclude_trees = ['_build']
 pygments_style = 'sphinx'
@@ -20,21 +20,8 @@ pygments_style = 'sphinx'
 # -- Options for HTML output ---------------------------------------------------
 
 html_theme = 'default'
-# "<project> v<release> documentation".
-#html_title = None
-# A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
-
-#html_logo = None
-#html_favicon = None
+html_title = "%s v%s" % (project, version)
 html_static_path = ['_static']
 html_use_smartypants = True
-htmlhelp_basename = 'Opsterdoc'
-
-
-# -- Options for LaTeX output --------------------------------------------------
-
-latex_documents = [
-  ('index', 'Opster.tex', u'Opster Documentation',
-   u'Alexander Solovyov', 'manual'),
-]
+html_use_index = False
+html_show_sourcelink = False
