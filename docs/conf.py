@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append('..')
+sys.path.insert(0, '..')
 import opster
 
 # -- General configuration -----------------------------------------------------
@@ -20,6 +20,7 @@ pygments_style = 'sphinx'
 # -- Options for HTML output ---------------------------------------------------
 
 html_theme = 'default'
+html_style = 'custom.css'
 html_title = "%s v%s" % (project, version)
 html_static_path = ['_static']
 html_use_smartypants = True
