@@ -1,25 +1,31 @@
 Changelog
 ---------
 
-0.9.13
-~~~~~~
+1.0 (2010.12.06)
+~~~~~~~~~~~~~~~~
+
+ - when middleware was used and command called without arguments, instead of
+   help, traceback was displayed
+
+0.9.13 (2010.11.18)
+~~~~~~~~~~~~~~~~~~~
 
  - fixed exception handling (cleanup previous fix, actually)
  - display only name of application, without full path
 
-0.9.12
-~~~~~~
+0.9.12 (2010.11.02)
+~~~~~~~~~~~~~~~~~~~
 
  - fixed trouble with non-ascii characters in docstrings
 
-0.9.11
-~~~~~~
+0.9.11 (2010.09.19)
+~~~~~~~~~~~~~~~~~~~
 
  - fixed exceptions handling
  - autocompletion improvements (skips middleware, ability of options completion)
 
-0.9.10
-~~~~~~
+0.9.10 (2010.04.10)
+~~~~~~~~~~~~~~~~~~~
 
  - if default value of an option is a fuction, always call it (None is passed in
    case when option is not supplied)
@@ -27,55 +33,7 @@ Changelog
  - some cleanup with better support for python 3
  - initial support for autocompletion (borrowed from PIP)
 
-0.9.9
-~~~~~
- - Now it's possible to call commands as regular function, where every
-   non-supplied option will receive proper default (defined in option spec)
- - Globaloptions were simply dropped after parsing, fold them in regular options
- - Replace _ with - in command names, same as in options names
- - Respect empty strings as usage
+0.9 - 0.9.9 (since 2009.07.13)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-0.9.8
-~~~~~
-Fixed bug with option names clashing with name of arguments for call_cmd. 
-
-0.9.7
-~~~~~
-Library renamed to opster.
-
-0.9.6
-~~~~~
- - Checks for option definition: long name should be specified always, short
-   name should be 1 character in length if available.
- - More specific argument name in guessed usage (this happens if you have not
-   specified usage for command).
- - Ability to add global decorator for all commands. See ``test.py`` in
-   repository for example: ``ui`` object, to handle verbose/quiet options.
-
-0.9.5
-~~~~~
-Fixed bug, which prevented programs to work without arguments (displayed help
-instead) if they are not using subcommands.
-
-0.9.4
-~~~~~
- - Ability to hide subcommands from help listing.
- - Append program name to subcommand usage.
-
-0.9.3
-~~~~~
-Minor fix for setup.py, to avoid troubles with installing when there is no docs
-in package.
-
-0.9.2
-~~~~~
-Ability to call commands as regular functions, using arguments and keyword
-arguments.
-
-0.9.1
-~~~~~
-Fixed problem with multiple help options in subcommands
-
-0.9
-~~~
-Initial version
+Ancient history ;-)

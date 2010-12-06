@@ -1,4 +1,4 @@
-# (c) Alexander Solovyov, 2009, under terms of the new BSD License
+# (c) Alexander Solovyov, 2009-2010, under terms of the new BSD License
 '''Command line arguments parser
 '''
 
@@ -6,7 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect, os
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
-__version__ = '0.9.13'
+__version__ = '1.0'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
@@ -149,7 +149,8 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
     if name == '_completion':       # skip middleware
         worker = lambda: call_cmd(name, func)(*args, **kwargs)
     else:
-        worker = lambda: call_cmd(name, middleware(func))(*args, **kwargs)
+        worker = lambda: (call_cmd(name, middleware(func), depth=2)
+                          (*args, **kwargs))
 
     try:
         return catcher(worker, help_func)
@@ -480,12 +481,16 @@ def catcher(target, help_func):
         err('%s\n' % e)
         raise Abort()
 
-def call_cmd(name, func):
+def call_cmd(name, func, depth=1):
+    '''Wrapper for command call, catching situation with insufficient arguments
+
+    ``depth`` is necessary when there is a middleware in setup
+    '''
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except TypeError:
-            if len(traceback.extract_tb(sys.exc_info()[2])) == 1:
+            if len(traceback.extract_tb(sys.exc_info()[2])) == depth:
                 raise ParseError(name, "invalid arguments")
             raise
     return inner

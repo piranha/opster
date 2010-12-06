@@ -23,9 +23,8 @@ setup(
     version = opster.__version__,
     author = opster.__author__,
     author_email = opster.__email__,
-    url = 'http://hg.piranha.org.ua/opster/',
+    url = 'http://hg.piranha.org.ua/opster/docs/',
     classifiers = [
-        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
