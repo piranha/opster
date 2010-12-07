@@ -1,9 +1,16 @@
+.. -*- mode: rst -*-
+
+==============
+ Opster tests
+==============
+
 This is a test suite for opster library. Just read it to get some idea of how it
 works.
 
 Define some help functions::
 
   $ function run() { name=$1; shift; python "$TESTDIR/$name" "$@"; }
+
 
 Check if usage is working::
 
@@ -13,7 +20,6 @@ Check if usage is working::
   commands:
   
    simple  Just simple command to print keys of received arguments.
-
 
 
 Ok, then let's run it::

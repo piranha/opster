@@ -2,18 +2,14 @@
  Opster
 =============
 
-.. toctree::
-   :maxdepth: 1
-
-   changelog
-   overview
-   api
-
 Opster is a command line parser, intended to make writing command line
 applications easy and painless. It uses built-in Python types (lists,
 dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
+
+* Page on PyPI: http://pypi.python.org/pypi/opster
+* Repository: http://hg.piranha.org.ua/opster/
 
 Features
 --------
@@ -38,5 +34,12 @@ What's nice
 
 Read more in :doc:`overview`.
 
+.. toctree::
+   :maxdepth: 1
+
+   changelog
+   overview
+   api
+   tests
 
 .. _single file: http://hg.piranha.org.ua/opster/file/tip/opster.py

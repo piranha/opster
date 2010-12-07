@@ -1,0 +1,1 @@
+../tests/opster.t
