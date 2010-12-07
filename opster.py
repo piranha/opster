@@ -6,7 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect, os
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
@@ -616,11 +616,14 @@ compctl -K _opster_completion %s
     }
 
 @command(name='_completion', hide=True)
-def completion(type=('t', 'bash', 'Completion type (bash or zsh)')):
+def completion(type=('t', 'bash', 'Completion type (bash or zsh)'),
+               # kwargs will catch every global option, which we get
+               # anyway, because middleware is skipped
+               **kwargs):
     """Outputs completion script for bash or zsh."""
 
     prog_name = os.path.split(sys.argv[0])[1]
-    print COMPLETIONS[type] % prog_name
+    print COMPLETIONS[type].strip() % prog_name
 
 # --------
 # Exceptions

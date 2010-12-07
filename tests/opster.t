@@ -14,6 +14,8 @@ Check if usage is working::
   
    simple  Just simple command to print keys of received arguments.
 
+
+
 Ok, then let's run it::
 
   $ run multicommands.py simple
@@ -39,6 +41,21 @@ check it out::
    -q --quiet    suppress output
    -h --help     display help
 
+
+We also have completion::
+
+  $ run multicommands.py _completion
+  # opster bash completion start
+  _opster_completion()
+  {
+      COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                     COMP_CWORD=$COMP_CWORD \
+                     OPSTER_AUTO_COMPLETE=1 $1 ) )
+  }
+  complete -o default -F _opster_completion multicommands.py
+  # opster bash completion end
+
+
 Now we're going to test if a script with a single command will work (not
 everyone needs subcommands, you know)::
 
@@ -57,6 +74,7 @@ everyone needs subcommands, you know)::
    -t --test       testing help for a function (default: test)
    -h --help       show help
 
+
 Yeah, I've got it, I should supply some argument::
 
   $ run test_opts.py right-here
@@ -66,6 +84,7 @@ Yeah, I've got it, I should supply some argument::
    'pid_file': '',
    'port': 8000,
    'test': 'test'}
+
 
 Should we check passing some invalid arguments? I think so::
 
@@ -84,5 +103,6 @@ Should we check passing some invalid arguments? I think so::
       --pid-file   name of file to write process ID to
    -t --test       testing help for a function (default: test)
    -h --help       show help
+
 
 That's all for today; see you next time!

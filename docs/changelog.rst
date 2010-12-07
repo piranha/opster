@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.1 (2010.12.07)
+~~~~~~~~~~~~~~~~
+
+ - _completion was failing to work when global options were supplied to command
+   dispatcher
+
 1.0 (2010.12.06)
 ~~~~~~~~~~~~~~~~
 
