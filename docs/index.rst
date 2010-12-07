@@ -8,7 +8,7 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
-* Page on PyPI: http://pypi.python.org/pypi/opster
+* Page on PyPI: http://pypi.python.org/pypi/opster/
 * Repository: http://hg.piranha.org.ua/opster/
 
 Features
@@ -33,6 +33,9 @@ What's nice
    subcommands.
 
 Read more in :doc:`overview`.
+
+More documentation
+------------------
 
 .. toctree::
    :maxdepth: 1

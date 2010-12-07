@@ -7,10 +7,22 @@
 This is a test suite for opster library. Just read it to get some idea of how it
 works.
 
+
+Actors cast
+-----------
+
 Define some help functions::
 
   $ function run() { name=$1; shift; python "$TESTDIR/$name" "$@"; }
 
+Main characters:
+
+* `multicommands.py <http://hg.piranha.org.ua/opster/file/tip/tests/multicommands.py>`_
+* `test_opts.py <http://hg.piranha.org.ua/opster/file/tip/tests/test_opts.py>`_
+
+
+Action
+------
 
 Check if usage is working::
 
