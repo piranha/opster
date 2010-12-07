@@ -9,7 +9,7 @@ url="http://hg.piranha.org.ua/opster/"
 license=('BSD')
 depends=('python2')
 source=("http://pypi.python.org/packages/source/o/opster/opster-$pkgver.tar.gz")
-md5sums=('b5b7bf16f406645fff7edb5ea8bdf33d')
+md5sums=('412c3ebfc70e6d3b094a7f5847edb481')
 
 build() {
     cd "$srcdir/opster-$pkgver"
