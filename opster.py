@@ -6,7 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect, os
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
-__version__ = '1.1'
+__version__ = '1.2'
 __author__ = 'Alexander Solovyov'
 __email__ = 'piranha@piranha.org.ua'
 
@@ -181,7 +181,7 @@ def help_(cmdtable, globalopts):
                 if shortlist and not cmd.startswith('^'):
                     continue  # short help contains only marked commands
                 cmd = cmd.lstrip('^~')
-                doc = info[0].__doc__ or '(no help text available)'
+                doc = info[0].__doc__.strip() or '(no help text available)'
                 hlp[cmd] = doc.splitlines()[0].rstrip()
 
             hlplist = sorted(hlp)

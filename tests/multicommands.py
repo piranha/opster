@@ -9,7 +9,8 @@ from opster import dispatch, command
 @command(usage='[-t]', shortlist=True)
 def simple(ui,
            test=('t', False, 'just test execution')):
-    '''Just simple command to print keys of received arguments.
+    '''
+    Just simple command to print keys of received arguments.
 
     I assure you! Nothing to look here. ;-)
     '''

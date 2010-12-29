@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.2 (2010.12.29)
+~~~~~~~~~~~~~~~~
+
+ - fix option display for a list of subcommands if docstring starts with a blank
+   line
+
 1.1 (2010.12.07)
 ~~~~~~~~~~~~~~~~
 
