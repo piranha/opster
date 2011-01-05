@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os
+import sys, traceback, getopt, types, textwrap, inspect, os, copy
 from itertools import imap
 
 __all__ = ['command', 'dispatch']
@@ -192,11 +192,7 @@ def help_(cmdtable, globalopts):
             write('\ncommands:\n\n')
             for cmd in hlplist:
                 doc = hlp[cmd]
-                if False:  # verbose?
-                    write(' %s:\n     %s\n' % (cmd.replace('|', ', '), doc))
-                else:
-                    write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0],
-                                              doc))
+                write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0], doc))
 
         if not cmdtable:
             return err('No commands specified!\n')
@@ -251,6 +247,8 @@ def help_cmd(func, usage, options):
         write(''.join(help_options(options)))
 
 def help_options(options):
+    '''Generator for help on options
+    '''
     yield 'options:\n\n'
     output = []
     for o in options:
@@ -309,8 +307,8 @@ def parse(args, options):
         defmap[pyname] = default
 
         # copy defaults to state
-        if isinstance(default, list):
-            state[pyname] = default[:]
+        if isinstance(default, (list, dict)):
+            state[pyname] = copy.copy(default)
         elif hasattr(default, '__call__'):
             funlist.append(pyname)
             state[pyname] = None
@@ -319,8 +317,10 @@ def parse(args, options):
 
         # getopt wants indication that it takes a parameter
         if not (default is None or default is True or default is False):
-            if short: short += ':'
-            if name: name += '='
+            if short:
+                short += ':'
+            if name:
+                name += '='
         if short:
             shortlist += short
         if name:
@@ -335,8 +335,15 @@ def parse(args, options):
         if t is types.FunctionType:
             del funlist[funlist.index(name)]
             state[name] = defmap[name](val)
-        elif t is types.ListType:
+        elif t is list:
             state[name].append(val)
+        elif t is dict:
+            try:
+                k, v = val.split('=')
+            except ValueError:
+                raise ParseError(name, "wrong definition: '%s' "
+                                 "(should be in format KEY=VALUE)" % val)
+            state[name][k] = v
         elif t in (types.NoneType, types.BooleanType):
             state[name] = not defmap[name]
         else:
@@ -470,7 +477,7 @@ def catcher(target, help_func):
             (e.args[0], ' '.join(e.args[1])))
         raise Abort()
     except ParseError, e:
-        err('%s: %s\n' % (e.args[0], e.args[1]))
+        err('%s: %s\n\n' % (e.args[0], e.args[1].strip()))
         help_func(e.args[0])
         raise Abort()
     except getopt.GetoptError, e:
@@ -496,6 +503,8 @@ def call_cmd(name, func, depth=1):
     return inner
 
 def call_cmd_regular(func, opts):
+    '''Wrapper for command for handling function calls from Python
+    '''
     def inner(*args, **kwargs):
         funcargs, _, varkw, defaults = inspect.getargspec(func)
         if len(args) > len(funcargs):

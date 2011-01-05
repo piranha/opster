@@ -79,29 +79,60 @@ everyone needs subcommands, you know)::
 
   $ run test_opts.py
   another: invalid arguments
+  
   test_opts.py [-l HOST] DIR
   
   Command with option declaration as keyword arguments
   
   options:
   
-   -l --listen     ip to listen on (default: localhost)
-   -p --port       port to listen on (default: 8000)
-   -d --daemonize  daemonize process
-      --pid-file   name of file to write process ID to
-   -t --test       testing help for a function (default: test)
-   -h --help       show help
+   -l --listen       ip to listen on (default: localhost)
+   -p --port         port to listen on (default: 8000)
+   -d --daemonize    daemonize process
+      --pid-file     name of file to write process ID to
+   -D --definitions  just some definitions
+   -t --test         testing help for a function (default: test)
+   -h --help         show help
 
 
-Yeah, I've got it, I should supply some argument::
+Yeah, I've got it, I should supply some arguments::
 
-  $ run test_opts.py right-here
-  {'daemonize': False,
+  $ run test_opts.py -d -p 5656 --listen anywhere right-here
+  {'daemonize': True,
+   'definitions': {},
    'dirname': 'right-here',
+   'listen': 'anywhere',
+   'pid_file': '',
+   'port': 5656,
+   'test': 'test'}
+
+Now let's test our definitions::
+
+  $ run test_opts.py -D a=b so-what?
+  {'daemonize': False,
+   'definitions': {'a': 'b'},
+   'dirname': 'so-what?',
    'listen': 'localhost',
    'pid_file': '',
    'port': 8000,
    'test': 'test'}
+
+  $ run test_opts.py -D can-i-haz fail?
+  definitions: wrong definition: 'can-i-haz' (should be in format KEY=VALUE)
+  
+  test_opts.py [-l HOST] DIR
+  
+  Command with option declaration as keyword arguments
+  
+  options:
+  
+   -l --listen       ip to listen on (default: localhost)
+   -p --port         port to listen on (default: 8000)
+   -d --daemonize    daemonize process
+      --pid-file     name of file to write process ID to
+   -D --definitions  just some definitions
+   -t --test         testing help for a function (default: test)
+   -h --help         show help
 
 
 Should we check passing some invalid arguments? I think so::
@@ -115,12 +146,13 @@ Should we check passing some invalid arguments? I think so::
   
   options:
   
-   -l --listen     ip to listen on (default: localhost)
-   -p --port       port to listen on (default: 8000)
-   -d --daemonize  daemonize process
-      --pid-file   name of file to write process ID to
-   -t --test       testing help for a function (default: test)
-   -h --help       show help
+   -l --listen       ip to listen on (default: localhost)
+   -p --port         port to listen on (default: 8000)
+   -d --daemonize    daemonize process
+      --pid-file     name of file to write process ID to
+   -D --definitions  just some definitions
+   -t --test         testing help for a function (default: test)
+   -h --help         show help
 
 
 That's all for today; see you next time!

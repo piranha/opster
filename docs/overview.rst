@@ -34,6 +34,8 @@ Default value also determines how supplied argument should be parsed:
  - integer: value is convert to integer
  - string: value is passed as is
  - list: value is appended to this list
+ - dictionary: value is then assumed being in format ``key=value`` and is
+   then assigned to this dictionary
  - boolean/None: ``not default`` is passed and option takes no value
 
 Usage
