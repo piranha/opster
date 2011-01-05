@@ -18,7 +18,8 @@ try:
 except locale.Error:
     ENCODING = 'UTF-8'
 
-def write(text, out=sys.stdout):
+def write(text, out=None):
+    out = out or sys.stdout
     if isinstance(text, unicode):
         return out.write(text.encode(ENCODING))
     out.write(text)
@@ -242,7 +243,6 @@ def help_cmd(func, usage, options):
      -p --port       port to listen on (default: 8000)
      -d --daemonize  daemonize process
         --pid-file   name of file to write process ID to
-    <BLANKLINE>
     '''
     write(usage + '\n')
     doc = func.__doc__ or '(no help text available)'
@@ -644,3 +644,7 @@ class ParseError(OpsterError):
 
 class Abort(OpsterError):
     'Processing error, abort execution'
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
