@@ -11,7 +11,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
 project = u'Opster'
-copyright = u'2009-2010, Alexander Solovyov'
+copyright = u'2009-2011, Alexander Solovyov'
 version = release = opster.__version__
 exclude_trees = ['_build']
 pygments_style = 'sphinx'

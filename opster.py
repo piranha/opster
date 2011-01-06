@@ -1,4 +1,4 @@
-# (c) Alexander Solovyov, 2009-2010, under terms of the new BSD License
+# (c) Alexander Solovyov, 2009-2011, under terms of the new BSD License
 '''Command line arguments parser
 '''
 
