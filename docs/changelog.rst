@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+2.1 (2010.01.23)
+~~~~~~~~~~~~~~~~
+
+ - fix help display in case middleware returns original function
+
 2.0 (2010.01.23)
 ~~~~~~~~~~~~~~~~
 
