@@ -151,8 +151,9 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
     if name == '_completion':       # skip middleware
         worker = lambda: call_cmd(name, func)(*args, **kwargs)
     else:
-        worker = lambda: (call_cmd(name, middleware(func), depth=2)
-                          (*args, **kwargs))
+        mwfunc = middleware(func)
+        depth = func == mwfunc and 1 or 2
+        worker = lambda: call_cmd(name, mwfunc, depth=depth)(*args, **kwargs)
 
     try:
         return catcher(worker, help_func)
