@@ -38,6 +38,10 @@ def complex_(ui, *args, **opts):
     if opts.get('exit'):
         sys.exit(opts['exit'])
 
+@command(shortlist=True)
+def nodoc():
+    pass
+
 def ui_middleware(func):
     def extract_dict(source, *keys):
         dest = {}

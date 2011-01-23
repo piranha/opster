@@ -31,6 +31,7 @@ Check if usage is working::
   
   commands:
   
+   nodoc   (no help text available)
    simple  Just simple command to print keys of received arguments.
 
 
