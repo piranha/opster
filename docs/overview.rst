@@ -187,6 +187,8 @@ strings, wrapped to length of 70 characters and looks like that::
       --exit  exit with supplied code (default: 0)
    -h --help  show help
 
+.. _innerhelp:
+
 If you need to display help from inside your application, you can always use the
 fact that help-displaying function is attached to your function object, i.e.::
 
