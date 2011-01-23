@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+2.0 (2010.01.23)
+~~~~~~~~~~~~~~~~
+
+ - fix help display when there is no __doc__ declared for function
+ - ``dict`` type :ref:`handling <opthandling>`
+ - ``.help()`` attribute for every function, printing help on call
+
 1.2 (2010.12.29)
 ~~~~~~~~~~~~~~~~
 

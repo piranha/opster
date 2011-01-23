@@ -25,6 +25,8 @@ Each tuple is a definition of some option, consisting of 4 elements:
 If a short name renders to False (for example, empty string), then it's not used
 at all. Long name is pretended to be available in any case.
 
+.. _opthandling:
+
 Options processing
 ^^^^^^^^^^^^^^^^^^
 
@@ -35,8 +37,10 @@ Default value also determines how supplied argument should be parsed:
  - string: value is passed as is
  - list: value is appended to this list
  - dictionary: value is then assumed being in format ``key=value`` and is
-   then assigned to this dictionary
+   then assigned to this dictionary, `example`_
  - boolean/None: ``not default`` is passed and option takes no value
+
+.. _example: http://hg.piranha.org.ua/opster/file/default/tests/opster.t#l109
 
 Usage
 ^^^^^
@@ -184,6 +188,18 @@ strings, wrapped to length of 70 characters and looks like that::
    -p --pass  don't run the command
       --exit  exit with supplied code (default: 0)
    -h --help  show help
+
+If you need to display help from inside your application, you can always use the
+fact that help-displaying function is attached to your function object, i.e.::
+
+  @command()
+  def something():
+      if some_consiquences:
+          something.help()
+
+See `example from tests`_.
+
+.. _example from tests: http://hg.piranha.org.ua/opster/file/default/tests/selfhelp.py
 
 
 Tips and tricks
