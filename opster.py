@@ -19,12 +19,14 @@ except locale.Error:
     ENCODING = 'UTF-8'
 
 def write(text, out=None):
+    '''Write output to a given stream (stdout by default)'''
     out = out or sys.stdout
     if isinstance(text, unicode):
         return out.write(text.encode(ENCODING))
     out.write(text)
 
 def err(text):
+    '''Write output to stderr'''
     write(text, out=sys.stderr)
 
 CMDTABLE = {}
@@ -38,7 +40,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
 
     All arguments are optional:
 
-     - ``options``: options in format described in docs. If not supplied,
+     - ``options``: options in format described later. If not supplied,
        will be determined from function.
      - ``usage``: usage string for function, replaces ``%name`` with name
        of program or subcommand. In case if it's subcommand and ``%name``
@@ -49,6 +51,21 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
        only with multiple subcommands
      - ``hide``: if command should be hidden from help listing. Used only
        with multiple subcommands, overrides ``shortlist``
+
+    Options should be a list of 4-tuples in format::
+
+      (shortname, longname, default, help)
+
+    Where:
+
+     - ``shortname`` is a single letter which can be used then as an option
+       specifier on command line (like ``-a``). Will be not used if contains
+       falsy value (empty string, for example)
+     - ``longname`` - main identificator of an option, can be used as on a
+       command line with double dashes (like ``--longname``)
+     - ``default`` value for an option, type of it determines how option will be
+       processed
+     - ``help`` string displayed as a help for an option when asked to
     '''
     def wrapper(func):
         try:
@@ -165,6 +182,8 @@ def dispatch(args=None, cmdtable=None, globaloptions=None,
 # --------
 
 def help_(cmdtable, globalopts):
+    '''Help generator for a command table
+    '''
     def help_inner(name=None):
         '''Show help for a given help topic or a help overview
 
@@ -362,6 +381,8 @@ def parse(args, options):
 # --------
 
 def _dispatch(args, cmdtable, globalopts):
+    '''Dispatch arguments list by a command table
+    '''
     cmd, func, args, options = cmdparse(args, cmdtable, globalopts)
 
     if options.pop('help', False):
@@ -372,6 +393,8 @@ def _dispatch(args, cmdtable, globalopts):
     return cmd, func, args, options
 
 def cmdparse(args, cmdtable, globalopts):
+    '''Parse arguments list to find a command, options and arguments
+    '''
     # command is the first non-option
     cmd = None
     for arg in args:
@@ -398,6 +421,7 @@ def cmdparse(args, cmdtable, globalopts):
     return (cmd, cmd and info[0] or None, args, options)
 
 def aliases_(cmdtable_key):
+    '''Get aliases from a command table key'''
     return cmdtable_key.lstrip("^~").split("|")
 
 def findpossible(cmd, table):
@@ -443,7 +467,16 @@ def findcmd(cmd, table):
 # --------
 
 def guess_options(func):
-    args, varargs, varkw, defaults = inspect.getargspec(func)
+    '''Get options definitions from function
+
+    They should be declared in a following way:
+
+    def func(longname=(shortname, default, help)):
+        pass
+
+    See docstring of ``command()`` for description of those variables.
+    '''
+    args, _, _, defaults = inspect.getargspec(func)
     for name, option in zip(args[-len(defaults):], defaults):
         try:
             sname, default, hlp = option[:3]
@@ -453,6 +486,8 @@ def guess_options(func):
             pass
 
 def guess_usage(func, options):
+    '''Get usage definition for a function
+    '''
     usage = '%name '
     if options:
         usage += '[OPTIONS] '
@@ -522,11 +557,13 @@ def call_cmd_regular(func, opts):
     return inner
 
 def replace_name(usage, name):
+    '''Replace name placeholder with a command name'''
     if '%name' in usage:
         return usage.replace('%name', name, 1)
     return name + ' ' + usage
 
 def sysname():
+    '''Returns name of executing file'''
     name = sys.argv[0]
     if name.startswith('/'):
         return name.rsplit('/', 1)[1]
@@ -539,6 +576,8 @@ try:
 except ImportError:
     def wraps(wrapped, assigned=('__module__', '__name__', '__doc__'),
               updated=('__dict__',)):
+        '''functools.wraps replacement for Python 2.4
+        '''
         def inner(wrapper):
             for attr in assigned:
                 setattr(wrapper, attr, getattr(wrapped, attr))
