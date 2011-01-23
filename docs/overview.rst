@@ -25,8 +25,6 @@ Each tuple is a definition of some option, consisting of 4 elements:
 If a short name renders to False (for example, empty string), then it's not used
 at all. Long name is pretended to be available in any case.
 
-.. _opthandling:
-
 Options processing
 ^^^^^^^^^^^^^^^^^^
 

@@ -5,8 +5,10 @@ Changelog
 ~~~~~~~~~~~~~~~~
 
  - fix help display when there is no __doc__ declared for function
- - ``dict`` type :ref:`handling <opthandling>`
+ - ``dict`` type `handling`_
  - ``.help()`` attribute for every function, printing help on call
+
+.. _handling: http://hg.piranha.org.ua/opster/docs/overview.html#options-processing
 
 1.2 (2010.12.29)
 ~~~~~~~~~~~~~~~~
