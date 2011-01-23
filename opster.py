@@ -70,6 +70,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
 
         def help_func(name=None):
             return help_cmd(func, replace_name(usage_, sysname()), options_)
+        func.help = help_func
 
         @wraps(func)
         def inner(*args, **opts):
@@ -82,23 +83,23 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False):
 
             argv = opts.pop('argv', sys.argv[1:])
             if opts.pop('help', False):
-                return help_func()
+                return func.help()
 
             if args or opts:
                 # no catcher here because this is call from Python
                 return call_cmd_regular(func, options_)(*args, **opts)
 
             try:
-                opts, args = catcher(lambda: parse(argv, options_), help_func)
+                opts, args = catcher(lambda: parse(argv, options_), func.help)
             except Abort:
                 return -1
 
             if opts.pop('help', False):
-                return help_func()
+                return func.help()
 
             try:
                 return catcher(lambda: call_cmd(name_, func)(*args, **opts),
-                               help_func)
+                               func.help)
             except Abort:
                 return -1
 

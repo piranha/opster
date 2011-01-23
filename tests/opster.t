@@ -156,4 +156,17 @@ Should we check passing some invalid arguments? I think so::
    -h --help         show help
 
 
+Another things should be checked: calling help display from the function
+itself::
+
+  $ run selfhelp.py --assist
+  selfhelp.py [OPTIONS] 
+  
+  Displays ability to show help
+  
+  options:
+  
+      --assist  show help
+   -h --help    show help
+
 That's all for today; see you next time!
