@@ -194,7 +194,7 @@ fact that help-displaying function is attached to your function object, i.e.::
 
   @command()
   def something():
-      if some_consiquences:
+      if some_consequences:
           something.help()
 
 See `example from tests`_.
