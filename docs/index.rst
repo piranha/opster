@@ -1,6 +1,6 @@
-=============
+========
  Opster
-=============
+========
 
 Opster is a command line parser, intended to make writing command line
 applications easy and painless. It uses built-in Python types (lists,
@@ -14,13 +14,59 @@ concise. Additionally it contains possibility to handle subcommands (i.e.
 Features
 --------
 
-- parsing arguments from sys.argv or custom strings
-- converting from string to appropriate Python objects
-- help message generation
-- positional and named arguments
-- subcommands support
+- parsing arguments from ``sys.argv`` or custom strings
+- :ref:`converting <options-processing>` from string to appropriate Python
+  objects
+- :ref:`help message <help-generation>` generation
+- positional and named arguments (i.e. arguments and options)
+- :ref:`subcommands <subcommands>` support
 - short, clean and concise definitions
-- ability to shorten names of subcommand and long options
+- :ref:`ability to shorten <partial-names>` names of subcommand and long options
+
+Quick example
+-------------
+
+That's an example of an option definition::
+
+  import sys
+  from opster import command
+
+  @command(usage='%name [-n] MESSAGE')
+  def main(message,
+           no_newline=('n', False, "don't print a newline")):
+      'Simple echo program'
+      sys.stdout.write(message)
+      if not no_newline:
+          sys.stdout.write('\n')
+
+  if __name__ == '__main__':
+      main()
+
+Running this program will print the help::
+
+  > ./echo.py
+  echo.py: invalid arguments
+  echo.py [-n] MESSAGE
+
+  Simple echo program
+
+  options:
+
+   -n --no-newline  don't print a newline
+   -h --help        show help
+
+As you can see, here we have defined option to not print newline: keyword
+argument name is a long name for option, default value is a 3-tuple, containing
+short name for an option (can be empty), default value (on base of which
+processing is applied - :ref:`see description <options-processing>`) and a help
+string.
+
+Underscores in long names are converted into dashes.
+
+If you are calling a command with option using long name, you can supply it
+partially. In this case it could look like ``./echo.py --nonew``. This is also
+true for subcommands: read about them and everything else you'd like to know
+further in documentation.
 
 What's nice
 -----------

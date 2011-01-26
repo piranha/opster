@@ -107,6 +107,8 @@ Yeah, I've got it, I should supply some arguments::
    'port': 5656,
    'test': 'test'}
 
+.. _definitions-test:
+
 Now let's test our definitions::
 
   $ run test_opts.py -D a=b so-what?

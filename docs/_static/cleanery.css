@@ -1,7 +1,7 @@
 @import url("default.css");
 
 body {
-    max-width: 60em;
+    max-width: 50em;
     margin: 0 auto;
     background-color: white;
 }

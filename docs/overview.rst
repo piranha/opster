@@ -3,7 +3,7 @@
 ==============
 
 Options
--------
+=======
 
 Configuration of option parser is a list of tuples::
 
@@ -13,35 +13,35 @@ Configuration of option parser is a list of tuples::
           ('', 'pid-file', '', 'name of file to write process ID to')]
 
 Options contents
-^^^^^^^^^^^^^^^^
+----------------
 
 Each tuple is a definition of some option, consisting of 4 elements:
 
- 1. short name
- 2. long name (read note_)
- 3. default value
- 4. help string
+1. short name
+2. long name (read :ref:`note <renaming-note>`)
+3. default value
+4. help string
 
 If a short name renders to False (for example, empty string), then it's not used
 at all. Long name is pretended to be available in any case.
 
+.. _options-processing:
+
 Options processing
-^^^^^^^^^^^^^^^^^^
+------------------
 
 Default value also determines how supplied argument should be parsed:
 
- - function: return value of function called with a specified value is passed
- - integer: value is convert to integer
- - string: value is passed as is
- - list: value is appended to this list
- - dictionary: value is then assumed being in format ``key=value`` and is
-   then assigned to this dictionary, `example`_
- - boolean/None: ``not default`` is passed and option takes no value
-
-.. _example: http://hg.piranha.org.ua/opster/file/default/tests/opster.t#l109
+- function: return value of function called with a specified value is passed
+- integer: value is convert to integer
+- string: value is passed as is
+- list: value is appended to this list
+- dictionary: value is then assumed being in format ``key=value`` and is
+  then assigned to this dictionary, :ref:`example <definitions-test>`
+- boolean/None: ``not default`` is passed and option takes no value
 
 Usage
-^^^^^
+-----
 
 Usage is easy like that::
 
@@ -60,14 +60,15 @@ There is alternative declaration, easier for simple cases::
            pid_file=('', '', 'name of file to write process ID to')):
       pass
 
-.. _note:
+.. _renaming-note:
+.. note::
 
-I think it's easy to understand what's going on here, except that you need to
-know that underscores in the long name will be replaced with dashes at the
-command line. Of course, reverse process happens: if you have option with a dash
-in long name in a definition, it will be replaced with underscore when passed to
-function. This is done to comply with standarts of writing both console
-interfaces and Python application.
+  I think it's easy to understand what's going on here, except that you need to
+  know that underscores in the long name will be replaced with dashes at the
+  command line. Of course, reverse process happens: if you have option with a
+  dash in long name in a definition, it will be replaced with underscore when
+  passed to function. This is done to comply with standarts of writing both
+  console interfaces and Python applications.
 
 After that you can simply call this function as an entry point to your program::
 
@@ -92,8 +93,10 @@ Or, if you need this, you can call this function as usual::
 In this case no type conversion (which is done upon arguments parsing) will be
 performed.
 
+.. _subcommands:
+
 Subcommands
------------
+===========
 
 It's pretty usual for complex application to have some system of subcommands,
 and opster provides facility for handling them. Configuration is simple::
@@ -144,11 +147,13 @@ is defined earlier)::
   if __name__ == '__main__':
       dispatch(cmdtable=cmdtable)
 
+.. _partial-names:
+
 Example usage, calling ``complex_`` with 5 as an argument for ``exit`` option,
 shows that command dispatcher will understand partial names of commands and
 options::
 
-  app har --ex 5
+  app comp --ex 5
 
 But if your program is something like program shown earlier, you can use
 shortened api::
@@ -165,8 +170,10 @@ Every :ref:`@command <api-command>` stores information about decorated function 
 special global command table, which allows to call ``dispatch()`` without
 arguments.
 
+.. _help-generation:
+
 Help generation
----------------
+===============
 
 Help is generated automatically and is available by the ``-h/--help`` command
 line option or by ``help`` subcommand (if you're using subcommand system).
@@ -203,7 +210,7 @@ See `example from tests`_.
 
 
 Tips and tricks
----------------
+===============
 
 There is one thing which may be obvious: it's easy to have "semi-global"
 options. If your subcommands (or scripts) tend to have same options in some

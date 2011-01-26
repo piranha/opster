@@ -20,7 +20,7 @@ pygments_style = 'sphinx'
 # -- Options for HTML output ---------------------------------------------------
 
 html_theme = 'default'
-html_style = 'custom.css'
+html_style = 'cleanery.css'
 html_theme_options = {'nosidebar': True}
 html_title = "%s v%s" % (project, version)
 html_static_path = ['_static']
