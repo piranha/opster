@@ -18,7 +18,3 @@ div.related {
 div.related a {
     color: #20435C
 }
-
-div.related .right, div.document + div.related {
-    display: none;
-}
