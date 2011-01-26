@@ -20,9 +20,13 @@ pygments_style = 'sphinx'
 # -- Options for HTML output ---------------------------------------------------
 
 html_theme = 'default'
-html_style = 'custom.css'
 html_title = "%s v%s" % (project, version)
 html_static_path = ['_static']
 html_use_smartypants = True
 html_use_index = False
 html_show_sourcelink = False
+
+html_style = 'custom.css'
+html_theme_options = {
+    'nosidebar': True,
+    }

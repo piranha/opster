@@ -1,3 +1,24 @@
 @import url("default.css");
 
-body { max-width: 70em; margin: 0 auto; }
+body {
+    max-width: 60em;
+    margin: 0 auto;
+    background-color: white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    background-color: white !important;
+    border-bottom: none !important;
+}
+
+div.related {
+    background-color: white;
+    color: black;
+}
+div.related a {
+    color: #20435C
+}
+
+div.related .right, div.document + div.related {
+    display: none;
+}
