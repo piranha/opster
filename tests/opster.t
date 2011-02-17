@@ -171,4 +171,21 @@ itself::
       --assist  show help
    -h --help    show help
 
+
+Are we getting nicely stripped body when not following subject/body convention
+of writing commands?
+
+  $ run hello.py --help
+  hello.py [options]
+  
+  Hello world continues the long established tradition
+  of delivering simple, but working programs in all
+  kinds of programming languages.
+  
+  options:
+  
+   -n --name  your name (default: world)
+   -h --help  show help
+
+
 That's all for today; see you next time!

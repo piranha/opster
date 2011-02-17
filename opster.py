@@ -203,7 +203,7 @@ def help_(cmdtable, globalopts):
                 if shortlist and not cmd.startswith('^'):
                     continue  # short help contains only marked commands
                 cmd = cmd.lstrip('^~')
-                doc = info[0].__doc__ or '(no help text available)'
+                doc = pretty_doc_string(info[0])
                 hlp[cmd] = doc.strip().splitlines()[0].rstrip()
 
             hlplist = sorted(hlp)
@@ -262,7 +262,7 @@ def help_cmd(func, usage, options):
         --pid-file   name of file to write process ID to
     '''
     write(usage + '\n')
-    doc = func.__doc__ or '(no help text available)'
+    doc = pretty_doc_string(func)
     write('\n' + doc.strip() + '\n\n')
     if options:
         write(''.join(help_options(options)))
@@ -570,6 +570,15 @@ def sysname():
     elif name.startswith('./'):
         return name[2:]
     return name
+
+def pretty_doc_string(item):
+    "Doc string with adjusted indentation level of the 2nd line and beyond."
+    raw_doc = item.__doc__ or '(no help text available)'
+    lines = raw_doc.strip().splitlines()
+    if len(lines) <= 1:
+        return raw_doc
+    indent = len(lines[1]) - len(lines[1].lstrip())
+    return '\n'.join([lines[0]] + map(lambda l: l[indent:], lines[1:]))
 
 try:
     from functools import wraps
