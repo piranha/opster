@@ -175,6 +175,8 @@ itself::
 Are we getting nicely stripped body when not following subject/body convention
 of writing commands?
 
+::
+
   $ run hello.py --help
   hello.py [options]
   
