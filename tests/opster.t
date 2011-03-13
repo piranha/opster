@@ -7,6 +7,7 @@
 This is a test suite for opster library. Just read it to get some idea of how it
 works.
 
+.. highlight:: console
 
 Actors cast
 -----------
