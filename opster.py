@@ -413,12 +413,8 @@ def cmdparse(args, cmdtable, globalopts):
 
     possibleopts.extend(globalopts)
 
-    try:
-        options, args = parse(args, possibleopts)
-    except getopt.GetoptError, e:
-        raise ParseError(cmd, e)
-
-    return (cmd, cmd and info[0] or None, args, options)
+    options, args = parse(args, possibleopts)
+    return cmd, cmd and info[0] or None, args, options
 
 def aliases_(cmdtable_key):
     '''Get aliases from a command table key'''
