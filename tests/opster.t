@@ -41,6 +41,8 @@ Ok, then let's run it::
   $ run multicommands.py simple
   ['test', 'ui']
 
+.. _multihelp1:
+
 Yeah, nice one, but we know that command ``complex`` is just hidden there. Let's
 check it out::
 
@@ -172,6 +174,8 @@ itself::
       --assist  show help
    -h --help    show help
 
+
+.. _multihelp2:
 
 Are we getting nicely stripped body when not following subject/body convention
 of writing commands?

@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+2.2 (2010.03.23)
+~~~~~~~~~~~~~~~~
+
+ - adjust indentation level in multiline docstrings (compare `1`_ and `2`_)
+ - small fix for internal getopt exception handling
+
+.. _1: http://solovyov.net/opster/tests.html#multihelp1
+.. _2: http://solovyov.net/opster/tests.html#multihelp2
+
+
 2.1 (2010.01.23)
 ~~~~~~~~~~~~~~~~
 
