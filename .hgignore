@@ -3,3 +3,4 @@
 ^MANIFEST$
 ^dist/
 ^opster.egg-info/
+tests/.*\.t\.err$

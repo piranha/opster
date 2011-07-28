@@ -5,10 +5,12 @@
 import sys, traceback, getopt, types, textwrap, inspect, os, copy
 from itertools import imap
 
-__all__ = ['command', 'dispatch']
-__version__ = '2.2'
+
+__all__ = ['Dispatcher', 'command', 'dispatch']
+__version__ = '3.0-pre'
 __author__ = 'Alexander Solovyov'
-__email__ = 'piranha@piranha.org.ua'
+__email__ = 'alexander@solovyov.net'
+
 
 try:
     import locale
@@ -29,153 +31,189 @@ def err(text):
     '''Write output to stderr'''
     write(text, out=sys.stderr)
 
-CMDTABLE = {}
 
-# --------
-# Public interface
-# --------
+class Dispatcher(object):
+    def __init__(self, cmdtable=None, globaloptions=None, middleware=None):
+        '''Central object for command dispatching system
 
-def command(options=None, usage=None, name=None, shortlist=False, hide=False):
-    '''Decorator to mark function to be used for command line processing.
+        - ``cmdtable``: dict of commands. Will be populated with functions,
+          decorated with ``Dispatcher.command``.
+        - ``globaloptions``: list of options which are applied to all
+          commands, will contain ``--help`` option at least.
+        - ``middleware``: global decorator for all commands.
+        '''
+        self._cmdtable = cmdtable or {}
+        self._globaloptions = globaloptions or []
+        self.middleware = middleware or (lambda x: x)
 
-    All arguments are optional:
 
-     - ``options``: options in format described later. If not supplied,
-       will be determined from function.
-     - ``usage``: usage string for function, replaces ``%name`` with name
-       of program or subcommand. In case if it's subcommand and ``%name``
-       is not present, usage is prepended by ``name``
-     - ``name``: used for multiple subcommands. Defaults to wrapped
-       function name
-     - ``shortlist``: if command should be included in shortlist. Used
-       only with multiple subcommands
-     - ``hide``: if command should be hidden from help listing. Used only
-       with multiple subcommands, overrides ``shortlist``
+    @property
+    def globaloptions(self):
+        opts = self._globaloptions[:]
+        if not next((True for o in opts if o[1] == 'help'), None):
+            opts.append(('h', 'help', False, 'display help'))
+        return opts
 
-    Options should be a list of 4-tuples in format::
+    @property
+    def cmdtable(self):
+        table = self._cmdtable.copy()
+        table['help'] = help_(table, self.globaloptions), [], '[TOPIC]'
+        return table
 
-      (shortname, longname, default, help)
+    def command(self, options=None, usage=None, name=None, shortlist=False,
+                hide=False):
+        '''Decorator to mark function to be used as command for CLI.
 
-    Where:
+        Usage::
 
-     - ``shortname`` is a single letter which can be used then as an option
-       specifier on command line (like ``-a``). Will be not used if contains
-       falsy value (empty string, for example)
-     - ``longname`` - main identificator of an option, can be used as on a
-       command line with double dashes (like ``--longname``)
-     - ``default`` value for an option, type of it determines how option will be
-       processed
-     - ``help`` string displayed as a help for an option when asked to
-    '''
-    def wrapper(func):
-        try:
-            options_ = list(guess_options(func))
-        except TypeError:
-            options_ = []
-        try:
-            options_ = options_ + list(options)
-        except TypeError:
-            pass
+          from opster import command, dispatch
 
-        name_ = name or func.__name__.replace('_', '-')
-        if usage is None:
-            usage_ = guess_usage(func, options_)
-        else:
-            usage_ = usage
-        prefix = hide and '~' or (shortlist and '^' or '')
-        CMDTABLE[prefix + name_] = (func, options_, usage_)
+          @command()
+          def run(argument,
+                  option=('o', 'default', 'help for option'),
+                  no_short_name=('', False, 'help for this option')):
+              print argument, option, no_short_name
 
-        def help_func(name=None):
-            return help_cmd(func, replace_name(usage_, sysname()), options_)
-        func.help = help_func
+          if __name__ == '__main__':
+              run.command()
 
-        @wraps(func)
-        def inner(*args, **opts):
-            # look if we need to add 'help' option
+          # or, if you want to have multiple subcommands:
+          if __name__ == '__main__':
+              dispatch()
+
+        Optional arguments:
+         - ``options``: options in format described later. If not supplied,
+           will be determined from function.
+         - ``usage``: usage string for function, replaces ``%name`` with name
+           of program or subcommand. In case if it's subcommand and ``%name``
+           is not present, usage is prepended by ``name``
+         - ``name``: used for multiple subcommands. Defaults to wrapped
+           function name
+         - ``shortlist``: if command should be included in shortlist. Used
+           only with multiple subcommands
+         - ``hide``: if command should be hidden from help listing. Used only
+           with multiple subcommands, overrides ``shortlist``
+
+        If defined, options should be a list of 4-tuples in format::
+
+          (shortname, longname, default, help)
+
+        Where:
+
+         - ``shortname`` is a single letter which can be used then as an option
+           specifier on command line (like ``-a``). Will be not used if contains
+           falsy value (empty string, for example)
+         - ``longname`` - main identificator of an option, can be used as on a
+           command line with double dashes (like ``--longname``)
+         - ``default`` value for an option, type of it determines how option
+           will be processed
+         - ``help`` string displayed as a help for an option when asked to
+        '''
+        def wrapper(func):
             try:
-                (True for option in reversed(options_)
-                 if option[1] == 'help').next()
-            except StopIteration:
-                options_.append(('h', 'help', False, 'show help'))
+                options_ = list(options or guess_options(func))
+            except TypeError:
+                options_ = []
 
-            argv = opts.pop('argv', sys.argv[1:])
-            if opts.pop('help', False):
-                return func.help()
+            name_ = name or func.__name__.replace('_', '-')
+            if usage is None:
+                usage_ = guess_usage(func, options_)
+            else:
+                usage_ = usage
+            prefix = hide and '~' or (shortlist and '^' or '')
+            self._cmdtable[prefix + name_] = (func, options_, usage_)
 
-            if args or opts:
-                # no catcher here because this is call from Python
+            def help_func(name=None):
+                return help_cmd(func, replace_name(usage_, sysname()), options_)
+            func.help = help_func
+
+            def command(argv=None):
+                for o in self.globaloptions:
+                    if not next((x for x in options_ if
+                                 x[1] == o[1] or (x[0] and x[0] == o[0])),
+                                None):
+                        options_.append(o)
+
+                argv = argv or sys.argv[1:]
+                try:
+                    opts, args = catcher(lambda: parse(argv, options_),
+                                         func.help)
+                except Abort:
+                    return -1
+
+                if opts.pop('help', False):
+                    return func.help()
+
+                try:
+                    return catcher(lambda: call_cmd(name_, func)(*args, **opts),
+                                   func.help)
+                except Abort:
+                    return -1
+            func.command = command
+
+            @wraps(func)
+            def inner(*args, **opts):
                 return call_cmd_regular(func, options_)(*args, **opts)
 
-            try:
-                opts, args = catcher(lambda: parse(argv, options_), func.help)
-            except Abort:
-                return -1
+            return inner
 
-            if opts.pop('help', False):
-                return func.help()
+        return wrapper
 
-            try:
-                return catcher(lambda: call_cmd(name_, func)(*args, **opts),
-                               func.help)
-            except Abort:
-                return -1
+    def dispatch(self, args=None):
+        '''Dispatch command line arguments using subcommands
 
-        return inner
-    return wrapper
+        - ``args``: list of arguments, default: ``sys.argv[1:]``
+        '''
+        args = args or sys.argv[1:]
+
+        help_func = self.cmdtable['help'][0]
+        autocomplete(self.cmdtable, args, self.middleware)
+
+        try:
+            name, func, args, kwargs = catcher(
+                lambda: _dispatch(args, self.cmdtable, self.globaloptions),
+                help_func)
+        except Abort:
+            return -1
+
+        if name == '_completion':       # skip middleware
+            worker = lambda: call_cmd(name, func)(*args, **kwargs)
+        else:
+            mwfunc = self.middleware(func)
+            depth = func == mwfunc and 1 or 2
+            worker = lambda: call_cmd(name, mwfunc, depth=depth)(*args,
+                                                                  **kwargs)
+
+        try:
+            return catcher(worker, help_func)
+        except Abort:
+            return -1
 
 
-def dispatch(args=None, cmdtable=None, globaloptions=None,
-             middleware=lambda x: x):
-    '''Dispatch command arguments based on subcommands.
+_dispatcher = None
 
-    - ``args``: list of arguments, default: ``sys.argv[1:]``
-    - ``cmdtable``: dict of commands in format described below.
-      If not supplied, will use functions decorated with ``@command``.
-    - ``globaloptions``: list of options which are applied to all
-      commands, will contain ``--help`` option at least.
-    - ``middleware``: global decorator for all commands.
+def command(options=None, usage=None, name=None, shortlist=False, hide=False):
+    global _dispatcher
+    if not _dispatcher:
+        _dispatcher = Dispatcher()
+    return _dispatcher.command(options=options, usage=usage, name=name,
+                               shortlist=shortlist, hide=hide)
+command.__doc__ = Dispatcher.command.__doc__
 
-    cmdtable format description::
-
-      {'name': (function, options, usage)}
-
-    - ``name`` is the name used on command-line. Can contain aliases
-      (separate them with ``|``), pointer to a fact that this command
-      should be displayed in short help (start name with ``^``), or to
-      a fact that this command should be hidden (start name with ``~``)
-    - ``function`` is the actual callable
-    - ``options`` is options list in format described in docs
-    - ``usage`` is the short string of usage
-    '''
-    args = args or sys.argv[1:]
-    cmdtable = cmdtable or CMDTABLE
-
-    globaloptions = globaloptions or []
-    globaloptions.append(('h', 'help', False, 'display help'))
-
-    cmdtable['help'] = (help_(cmdtable, globaloptions), [], '[TOPIC]')
-    help_func = cmdtable['help'][0]
-
-    autocomplete(cmdtable, args, middleware)
-
-    try:
-        name, func, args, kwargs = catcher(
-            lambda: _dispatch(args, cmdtable, globaloptions),
-            help_func)
-    except Abort:
-        return -1
-
-    if name == '_completion':       # skip middleware
-        worker = lambda: call_cmd(name, func)(*args, **kwargs)
+def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
+    global _dispatcher
+    if not _dispatcher:
+        _dispatcher = Dispatcher(cmdtable, globaloptions, middleware)
     else:
-        mwfunc = middleware(func)
-        depth = func == mwfunc and 1 or 2
-        worker = lambda: call_cmd(name, mwfunc, depth=depth)(*args, **kwargs)
+        if cmdtable:
+            _dispatcher.cmdtable = cmdtable
+        if globaloptions:
+            _dispatcher._globaloptions = globaloptions
+        if middleware:
+            _dispatcher.middleware = middleware
+    return _dispatcher.dispatch(args)
+dispatch.__doc__ = Dispatcher.dispatch.__doc__
 
-    try:
-        return catcher(worker, help_func)
-    except Abort:
-        return -1
 
 # --------
 # Help
@@ -544,8 +582,9 @@ def call_cmd_regular(func, opts):
             raise TypeError('You have supplied more positional arguments'
                             ' than applicable')
 
-        funckwargs = dict((lname.replace('-', '_'), default)
-                          for _, lname, default, _ in opts)
+        # short name, long name, default, help, (maybe) completer
+        funckwargs = dict((o[1].replace('-', '_'), o[2])
+                          for o in opts)
         if 'help' not in (defaults or ()) and not varkw:
             funckwargs.pop('help', None)
         funckwargs.update(kwargs)

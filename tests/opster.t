@@ -51,8 +51,8 @@ check it out::
   
   That's more complex command intended to do something
   
-      И самое главное - мы тут немножечко текста не в ascii напишем
-      и посмотрим, что будет. :)
+      \xd0\x98 \xd1\x81\xd0\xb0\xd0\xbc\xd0\xbe\xd0\xb5 \xd0\xb3\xd0\xbb\xd0\xb0\xd0\xb2\xd0\xbd\xd0\xbe\xd0\xb5 - \xd0\xbc\xd1\x8b \xd1\x82\xd1\x83\xd1\x82 \xd0\xbd\xd0\xb5\xd0\xbc\xd0\xbd\xd0\xbe\xd0\xb6\xd0\xb5\xd1\x87\xd0\xba\xd0\xbe \xd1\x82\xd0\xb5\xd0\xba\xd1\x81\xd1\x82\xd0\xb0 \xd0\xbd\xd0\xb5 \xd0\xb2 ascii \xd0\xbd\xd0\xb0\xd0\xbf\xd0\xb8\xd1\x88\xd0\xb5\xd0\xbc (esc)
+      \xd0\xb8 \xd0\xbf\xd0\xbe\xd1\x81\xd0\xbc\xd0\xbe\xd1\x82\xd1\x80\xd0\xb8\xd0\xbc, \xd1\x87\xd1\x82\xd0\xbe \xd0\xb1\xd1\x83\xd0\xb4\xd0\xb5\xd1\x82. :) (esc)
   
   options:
   
@@ -96,7 +96,7 @@ everyone needs subcommands, you know)::
       --pid-file     name of file to write process ID to
    -D --definitions  just some definitions
    -t --test         testing help for a function (default: test)
-   -h --help         show help
+   -h --help         display help
 
 
 Yeah, I've got it, I should supply some arguments::
@@ -138,7 +138,7 @@ Now let's test our definitions::
       --pid-file     name of file to write process ID to
    -D --definitions  just some definitions
    -t --test         testing help for a function (default: test)
-   -h --help         show help
+   -h --help         display help
 
 
 Should we check passing some invalid arguments? I think so::
@@ -158,7 +158,7 @@ Should we check passing some invalid arguments? I think so::
       --pid-file     name of file to write process ID to
    -D --definitions  just some definitions
    -t --test         testing help for a function (default: test)
-   -h --help         show help
+   -h --help         display help
 
 
 Another things should be checked: calling help display from the function
@@ -172,7 +172,7 @@ itself::
   options:
   
       --assist  show help
-   -h --help    show help
+   -h --help    display help
 
 
 .. _multihelp2:
@@ -192,7 +192,7 @@ of writing commands?
   options:
   
    -n --name  your name (default: world)
-   -h --help  show help
+   -h --help  display help
 
 
 That's all for today; see you next time!

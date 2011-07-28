@@ -14,4 +14,4 @@ def another(dirname,
     pprint.pprint(locals())
 
 if __name__ == '__main__':
-    another()
+    another.command()

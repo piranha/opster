@@ -10,5 +10,5 @@ def hello(name=('n', 'world', 'your name')):
     print "Hello %s" % name
 
 if __name__ == "__main__":
-    hello()
+    hello.command()
 
