@@ -187,16 +187,28 @@ of writing commands?
 ::
 
   $ run hello.py --help
-  hello.py [options]
+  hello.py [options] NAME [TIMES]
   
   Hello world continues the long established tradition
   of delivering simple, but working programs in all
   kinds of programming languages.
   
+  This tests different docstring formatting (just text instead of having
+  subject and body).
+  
   options:
   
-   -n --name  your name (default: world)
-   -h --help  display help
+   -g --greeting  Greeting to use (default: Hello)
+   -h --help      display help
 
+
+There is no problems with having required and optional arguments at the same
+time::
+
+  $ run hello.py stranger
+  Hello stranger
+  $ run hello.py stranger 2 -g 'Good bye'
+  Good bye stranger
+  Good bye stranger
 
 That's all for today; see you next time!
