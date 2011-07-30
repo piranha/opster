@@ -44,7 +44,7 @@ class Dispatcher(object):
         '''
         self._cmdtable = cmdtable or {}
         self._globaloptions = globaloptions or []
-        self.middleware = middleware or (lambda x: x)
+        self.middleware = middleware
 
 
     @property
@@ -136,19 +136,22 @@ class Dispatcher(object):
 
                 argv = argv or sys.argv[1:]
                 try:
-                    opts, args = catcher(lambda: parse(argv, options_),
-                                         func.help)
-                except Abort:
-                    return -1
+                    opts, args = parse(argv, options_)
+                except Exception, e:
+                    if exchandle(e, func.help):
+                        return -1
+                    raise
 
                 if opts.pop('help', False):
                     return func.help()
 
                 try:
-                    return catcher(lambda: call_cmd(name_, func)(*args, **opts),
-                                   func.help)
-                except Abort:
-                    return -1
+                    return call_cmd(name_, func)(*args, **opts)
+                except Exception, e:
+                    if exchandle(e, func.help):
+                        return -1
+                    raise
+
             func.command = command
 
             @wraps(func)
@@ -170,24 +173,23 @@ class Dispatcher(object):
         autocomplete(self.cmdtable, args, self.middleware)
 
         try:
-            name, func, args, kwargs = catcher(
-                lambda: _dispatch(args, self.cmdtable, self.globaloptions),
-                help_func)
-        except Abort:
-            return -1
-
-        if name == '_completion':       # skip middleware
-            worker = lambda: call_cmd(name, func)(*args, **kwargs)
-        else:
-            mwfunc = self.middleware(func)
-            depth = func == mwfunc and 1 or 2
-            worker = lambda: call_cmd(name, mwfunc, depth=depth)(*args,
-                                                                  **kwargs)
+            name, func, args, kwargs = _dispatch(args, self.cmdtable,
+                                                 self.globaloptions)
+        except Exception, e:
+            if exchandle(e, help_func):
+                return -1
+            raise
 
         try:
-            return catcher(worker, help_func)
-        except Abort:
-            return -1
+            if name == '_completion' or not self.middleware:
+                return call_cmd(name, func)(*args, **kwargs)
+            else:
+                return call_cmd(name, self.middleware(func), depth=2)(
+                    *args, **kwargs)
+        except Exception, e:
+            if exchandle(e, help_func):
+                return -1
+            raise
 
 
 _dispatcher = None
@@ -535,29 +537,27 @@ def guess_usage(func, options):
         usage += '[%s]' % varargs.upper()
     return usage
 
-def catcher(target, help_func):
-    '''Catches all exceptions and prints human-readable information on them
+def exchandle(e, help_func):
+    '''Handle internal exceptions and print human-readable information on them
+
+    Returns False is exception is not suitable
     '''
-    try:
-        return target()
-    except UnknownCommand, e:
+    if isinstance(e, UnknownCommand):
         err("unknown command: '%s'\n" % e)
-        raise Abort()
-    except AmbiguousCommand, e:
+    elif isinstance(e, AmbiguousCommand):
         err("command '%s' is ambiguous:\n    %s\n" %
             (e.args[0], ' '.join(e.args[1])))
-        raise Abort()
-    except ParseError, e:
+    elif isinstance(e, ParseError):
         err('%s: %s\n\n' % (e.args[0], e.args[1].strip()))
         help_func(e.args[0])
-        raise Abort()
-    except getopt.GetoptError, e:
+    elif isinstance(e, getopt.GetoptError):
         err('error: %s\n\n' % e)
         help_func()
-        raise Abort()
-    except OpsterError, e:
+    elif isinstance(e, OpsterError):
         err('%s\n' % e)
-        raise Abort()
+    else:
+        return False
+    return True
 
 def call_cmd(name, func, depth=1):
     '''Wrapper for command call, catching situation with insufficient arguments
@@ -673,7 +673,9 @@ def autocomplete(cmdtable, args, middleware):
             options += [short, long]
 
             if cwords[idx] in (short, long) and completer:
-                args = middleware(completer)(current)
+                if middleware:
+                    completer = middleware(completer)
+                args = completer(current)
                 print ' '.join(args),
 
         print ' '.join((o for o in options if o.startswith(current)))
