@@ -12,9 +12,13 @@ works.
 Actors cast
 -----------
 
-Define some help functions::
+Define function to make it simpler::
 
-  $ function run() { name=$1; shift; python "$TESTDIR/$name" "$@"; }
+  $ function run() {
+  >   name=$1
+  >   shift
+  >   PYTHONPATH=$TESTDIR/../ python "$TESTDIR/$name" "$@"
+  > }
 
 Main characters:
 
