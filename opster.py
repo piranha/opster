@@ -70,9 +70,10 @@ class Dispatcher(object):
 
           @command()
           def run(argument,
+                  optionalargument=None,
                   option=('o', 'default', 'help for option'),
                   no_short_name=('', False, 'help for this option')):
-              print argument, option, no_short_name
+              print argument, optionalargument, option, no_short_name
 
           if __name__ == '__main__':
               run.command()
@@ -162,6 +163,17 @@ class Dispatcher(object):
 
         return wrapper
 
+    def _dispatch(self, args):
+        cmd, func, args, options = cmdparse(args, self.cmdtable,
+                                            self.globaloptions)
+
+        if options.pop('help', False):
+            return 'help', self.cmdtable['help'][0], [cmd], {}
+        elif not cmd:
+            return 'help', self.cmdtable['help'][0], ['shortlist'], {}
+
+        return cmd, func, args, options
+
     def dispatch(self, args=None):
         '''Dispatch command line arguments using subcommands
 
@@ -173,8 +185,7 @@ class Dispatcher(object):
         autocomplete(self.cmdtable, args, self.middleware)
 
         try:
-            name, func, args, kwargs = _dispatch(args, self.cmdtable,
-                                                 self.globaloptions)
+            name, func, args, kwargs = self._dispatch(args)
         except Exception, e:
             if exchandle(e, help_func):
                 return -1
@@ -419,18 +430,6 @@ def parse(args, options):
 # --------
 # Subcommand system
 # --------
-
-def _dispatch(args, cmdtable, globalopts):
-    '''Dispatch arguments list by a command table
-    '''
-    cmd, func, args, options = cmdparse(args, cmdtable, globalopts)
-
-    if options.pop('help', False):
-        return 'help', cmdtable['help'][0], [cmd], {}
-    elif not cmd:
-        return 'help', cmdtable['help'][0], ['shortlist'], {}
-
-    return cmd, func, args, options
 
 def cmdparse(args, cmdtable, globalopts):
     '''Parse arguments list to find a command, options and arguments
