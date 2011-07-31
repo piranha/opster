@@ -1,6 +1,6 @@
 from opster import command
 
-@command(usage="%name [options] NAME [TIMES]")
+@command()
 def hello(name,
           times=1,
           greeting=('g', 'Hello', 'Greeting to use')):

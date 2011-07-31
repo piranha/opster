@@ -169,7 +169,7 @@ Another things should be checked: calling help display from the function
 itself::
 
   $ run selfhelp.py --assist
-  selfhelp.py [OPTIONS] 
+  selfhelp.py [OPTIONS]
   
   Displays ability to show help
   
@@ -187,7 +187,7 @@ of writing commands?
 ::
 
   $ run hello.py --help
-  hello.py [options] NAME [TIMES]
+  hello.py [OPTIONS] NAME [TIMES]
   
   Hello world continues the long established tradition
   of delivering simple, but working programs in all

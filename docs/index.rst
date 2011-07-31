@@ -31,29 +31,29 @@ That's an example of an option definition::
   import sys
   from opster import command
 
-  @command(usage='%name [-n] MESSAGE')
+  @command()
   def main(message,
            no_newline=('n', False, "don't print a newline")):
-      'Simple echo program'
+      '''Simple echo program'''
       sys.stdout.write(message)
       if not no_newline:
           sys.stdout.write('\n')
 
   if __name__ == '__main__':
-      main()
+      main.command()
 
 Running this program will print the help::
 
   > ./echo.py
   echo.py: invalid arguments
-  echo.py [-n] MESSAGE
+  echo.py [OPTIONS] MESSAGE
 
   Simple echo program
 
   options:
 
    -n --no-newline  don't print a newline
-   -h --help        show help
+   -h --help        display help
 
 As you can see, here we have defined option to not print newline: keyword
 argument name is a long name for option, default value is a 3-tuple, containing
@@ -61,7 +61,7 @@ short name for an option (can be empty), default value (on base of which
 processing is applied - :ref:`see description <options-processing>`) and a help
 string.
 
-Underscores in long names are converted into dashes.
+Underscores in long names of options are converted into dashes.
 
 If you are calling a command with option using long name, you can supply it
 partially. In this case it could look like ``./echo.py --nonew``. This is also
@@ -71,7 +71,7 @@ further in documentation.
 What's nice
 -----------
 
-- Opster is a `single file`_, which means that you can easily include it with
+- Opster is a `single file`_, which means that you can easily include it in
   your application
 - When you've decorated function as command, you can continue to use it as
   usual Python function.

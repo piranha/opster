@@ -523,18 +523,21 @@ def guess_options(func):
 def guess_usage(func, options):
     '''Get usage definition for a function
     '''
-    usage = '%name '
+    usage = ['%name']
     if options:
-        usage += '[OPTIONS] '
-    args, varargs = inspect.getargspec(func)[:2]
-    argnum = len(args) - len(options)
-    if argnum > 0:
-        usage += args[0].upper()
-        if argnum > 1:
-            usage += 'S'
-    elif varargs:
-        usage += '[%s]' % varargs.upper()
-    return usage
+        usage.append('[OPTIONS]')
+    arginfo = inspect.getargspec(func)
+
+    argnum = len(arginfo.args or ()) - len(options)
+    nonoptional = len(arginfo.args or ()) - len(arginfo.defaults or ())
+
+    for i in xrange(argnum):
+        usage.append((i > nonoptional - 1 and '[%s]' or '%s') %
+                     arginfo.args[i].upper())
+
+    if arginfo.varargs:
+        usage.append('[%s ...]' % arginfo.varargs.upper())
+    return ' '.join(usage)
 
 def exchandle(e, help_func):
     '''Handle internal exceptions and print human-readable information on them
@@ -736,9 +739,6 @@ class UnknownCommand(OpsterError):
 
 class ParseError(OpsterError):
     'Raised on error in command line parsing'
-
-class Abort(OpsterError):
-    'Processing error, abort execution'
 
 if __name__ == '__main__':
     import doctest
