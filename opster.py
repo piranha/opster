@@ -127,7 +127,6 @@ class Dispatcher(object):
 
             def help_func(name=None):
                 return help_cmd(func, replace_name(usage_, sysname()), options_)
-            func.help = help_func
 
             def command(argv=None):
                 for o in self.globaloptions:
@@ -154,7 +153,11 @@ class Dispatcher(object):
                         return -1
                     raise
 
+            func.usage = usage_
+            func.help = help_func
             func.command = command
+            func.opts = options_
+            func.orig = func
 
             @wraps(func)
             def inner(*args, **opts):
@@ -580,15 +583,15 @@ def call_cmd_regular(func, opts):
     '''Wrapper for command for handling function calls from Python
     '''
     def inner(*args, **kwargs):
-        funcargs, _, varkw, defaults = inspect.getargspec(func)
-        if len(args) > len(funcargs):
+        arginfo = inspect.getargspec(func)
+        if len(args) > len(arginfo.args):
             raise TypeError('You have supplied more positional arguments'
                             ' than applicable')
 
         # short name, long name, default, help, (maybe) completer
         funckwargs = dict((o[1].replace('-', '_'), o[2])
                           for o in opts)
-        if 'help' not in (defaults or ()) and not varkw:
+        if 'help' not in (arginfo.defaults or ()) and not arginfo.keywords:
             funckwargs.pop('help', None)
         funckwargs.update(kwargs)
         return func(*args, **funckwargs)
