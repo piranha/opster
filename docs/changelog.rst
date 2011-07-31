@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+3.0 (TBA)
+~~~~~~~~~
+
+ - **Backward incompatiblity** Single commands now don't attempt to parse
+   arguments if you call them. Use ``function.command()`` attribute (much like
+   earlier ``function.help()``) to parse arguments now.
+ - Switch to Python 2.6
+ - Ability to have few subcommand dispatchers in a single runtime (no dependency
+   on single global ``CMDTABLE`` dictionary)
+
 2.2 (2010.03.23)
 ~~~~~~~~~~~~~~~~
 

@@ -4,6 +4,7 @@
 
 import sys, traceback, getopt, types, textwrap, inspect, os, copy
 from itertools import imap
+from functools import wraps
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
@@ -616,21 +617,6 @@ def pretty_doc_string(item):
         return raw_doc
     indent = len(lines[1]) - len(lines[1].lstrip())
     return '\n'.join([lines[0]] + map(lambda l: l[indent:], lines[1:]))
-
-try:
-    from functools import wraps
-except ImportError:
-    def wraps(wrapped, assigned=('__module__', '__name__', '__doc__'),
-              updated=('__dict__',)):
-        '''functools.wraps replacement for Python 2.4
-        '''
-        def inner(wrapper):
-            for attr in assigned:
-                setattr(wrapper, attr, getattr(wrapped, attr))
-            for attr in updated:
-                getattr(wrapper, attr).update(getattr(wrapped, attr, {}))
-            return wrapper
-        return inner
 
 # --------
 # Autocomplete system

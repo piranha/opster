@@ -10,6 +10,10 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
+
+.. note:: Requires at least Python 2.6
+
+
 Quick example
 -------------
 
@@ -18,20 +22,22 @@ That's an example of an option definition::
   import sys
   from opster import command
 
-  @command(usage='%name [-n] MESSAGE')
+  @command()
   def main(message,
-           no_newline=('n', False, 'don\'t print a newline')):
-      'Simple echo program'
+           no_newline=('n', False, "don't print a newline")):
+      '''Simple echo program'''
       sys.stdout.write(message)
       if not no_newline:
           sys.stdout.write('\n')
 
   if __name__ == '__main__':
-      main()
+      main.command()
 
 Running this program will print the help::
 
-  echo.py [-n] MESSAGE
+  > ./echo.py
+  echo.py: invalid arguments
+  echo.py [OPTIONS] MESSAGE
 
   Simple echo program
 
@@ -45,20 +51,12 @@ argument name is a long name for option, default value is a 3-tuple, containing
 short name for an option (can be empty), default value (on base of which
 processing is applied - `see description`_) and a help string.
 
-Underscores in long names are converted into dashes.
+Underscores in long names of options are converted into dashes.
 
 If you are calling a command with option using long name, you can supply it
-partially. In this case it could look like ``./echo.py --nonew``. This is also
+partially. In this case it could look like ``./echo.py --no-new``. This is also
 true for subcommands: read about them and everything else you'd like to know in
 `documentation`_.
 
 .. _documentation: http://hg.piranha.org.ua/opster/docs/
 .. _see description: http://hg.piranha.org.ua/opster/docs/overview.html#options-processing
-
-Plans
------
-
- - Better documentation
- - (under consideration) ability to have few command collectors in a single
-   application (more than one dispatching entry point)
-

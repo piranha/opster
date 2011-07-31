@@ -64,7 +64,7 @@ string.
 Underscores in long names of options are converted into dashes.
 
 If you are calling a command with option using long name, you can supply it
-partially. In this case it could look like ``./echo.py --nonew``. This is also
+partially. In this case it could look like ``./echo.py --no-new``. This is also
 true for subcommands: read about them and everything else you'd like to know
 further in documentation.
 
