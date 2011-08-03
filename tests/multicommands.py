@@ -17,26 +17,25 @@ def simple(ui,
     ui.write(str(locals().keys()))
     ui.write('\n')
 
-cplx_opts = [('p', 'pass', False, 'don\'t run the command'),
-             ('', 'exit', 0, 'exit with supplied code (default: 0)'),
-             ('n', 'name', '', 'optional name')]
-
-@command(cplx_opts, usage='[-p] [--exit value] ...', name='complex', hide=True)
-def complex_(ui, *args, **opts):
+@command(usage='[-p] [--exit value] ...', name='complex', hide=True)
+def complex_(ui,
+             pass_=('p', False, "don't run the command"),
+             exit=('', 0, 'exit with supplied code (default: 0)'),
+             name=('n', '', 'optional name'),
+             *args):
     u'''That's more complex command intended to do something
 
     И самое главное - мы тут немножечко текста не в ascii напишем
     и посмотрим, что будет. :)
     '''
-    if opts.get('pass'):
+    if pass_:
         return
     # test ui
     ui.write('write\n')
     ui.note('note\n')
     ui.info('info\n')
     ui.warn('warn\n')
-    if opts.get('exit'):
-        sys.exit(opts['exit'])
+    sys.exit(exit)
 
 @command(shortlist=True)
 def nodoc():

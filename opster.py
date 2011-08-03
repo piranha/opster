@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, copy
+import sys, traceback, getopt, types, textwrap, inspect, os, copy, keyword
 from itertools import imap
 from functools import wraps
 
@@ -117,7 +117,7 @@ class Dispatcher(object):
             except TypeError:
                 options_ = []
 
-            name_ = name or func.__name__.replace('_', '-')
+            name_ = name or name_from_python(func.__name__)
             if usage is None:
                 usage_ = guess_usage(func, options_)
             else:
@@ -378,7 +378,7 @@ def parse(args, options):
             raise OpsterError(
                 'Long name should be defined for every option')
         # change name to match Python styling
-        pyname = name.replace('-', '_')
+        pyname = name_to_python(name)
         argmap['-' + short] = argmap['--' + name] = pyname
         defmap[pyname] = default
 
@@ -520,7 +520,7 @@ def guess_options(func):
         try:
             sname, default, hlp = option[:3]
             completer = option[3] if len(option) > 3 else None
-            yield (sname, name.replace('_', '-'), default, hlp, completer)
+            yield (sname, name_from_python(name), default, hlp, completer)
         except TypeError:
             pass
 
@@ -620,6 +620,17 @@ def pretty_doc_string(item):
         return raw_doc
     indent = len(lines[1]) - len(lines[1].lstrip())
     return '\n'.join([lines[0]] + map(lambda l: l[indent:], lines[1:]))
+
+def name_from_python(name):
+    if name.endswith('_') and keyword.iskeyword(name[:-1]):
+        name = name[:-1]
+    return name.replace('_', '-')
+
+def name_to_python(name):
+    name = name.replace('-', '_')
+    if keyword.iskeyword(name):
+        return name + '_'
+    return name
 
 # --------
 # Autocomplete system
