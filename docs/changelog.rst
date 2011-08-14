@@ -5,12 +5,13 @@ Changelog
 ~~~~~~~~~~~~~~~~
 
  - **Backward incompatible** Single commands now don't attempt to parse
-   arguments if you call them. Use ``function.command()`` attribute (much like
+   arguments if you call them. `Use`_ ``function.command()`` attribute (much like
    earlier ``function.help()``) to parse arguments now.
  - Switch to Python 2.6
  - Ability to have few subcommand `dispatchers`_ in a single runtime (no single
    global ``CMDTABLE`` dictionary anymore)
 
+.. _Use: http://solovyov.net/opster/#quick-example
 .. _dispatchers: http://solovyov.net/opster/api.html#opster.Dispatcher
 
 2.2 (2011.03.23)
