@@ -12,6 +12,17 @@ concise. Additionally it contains possibility to handle subcommands (i.e.
 * Repository: http://hg.piranha.org.ua/opster/
 * Requires at least Python 2.6
 
+More documentation
+------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   changelog
+   overview
+   api
+   Opster tests (examples here!) <tests>
+
 Features
 --------
 
@@ -69,7 +80,7 @@ partially. In this case it could look like ``./echo.py --no-new``. This is also
 true for subcommands: read about them and everything else you'd like to know
 further in documentation.
 
-What's nice
+Nice points
 -----------
 
 - Opster is a `single file`_, which means that you can easily include it in
@@ -82,16 +93,5 @@ What's nice
   <partial-names>` unique start sequence.
 
 Read more in :doc:`overview`.
-
-More documentation
-------------------
-
-.. toctree::
-   :maxdepth: 1
-
-   changelog
-   overview
-   api
-   tests
 
 .. _single file: http://hg.piranha.org.ua/opster/file/tip/opster.py
