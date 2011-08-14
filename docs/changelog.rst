@@ -1,17 +1,19 @@
 Changelog
 ---------
 
-3.0 (TBA)
-~~~~~~~~~
+3.0 (2011.08.14)
+~~~~~~~~~~~~~~~~
 
  - **Backward incompatible** Single commands now don't attempt to parse
    arguments if you call them. Use ``function.command()`` attribute (much like
    earlier ``function.help()``) to parse arguments now.
  - Switch to Python 2.6
- - Ability to have few subcommand dispatchers in a single runtime (no dependency
-   on single global ``CMDTABLE`` dictionary)
+ - Ability to have few subcommand `dispatchers`_ in a single runtime (no single
+   global ``CMDTABLE`` dictionary anymore)
 
-2.2 (2010.03.23)
+.. _dispatchers: http://solovyov.net/opster/api.html#opster.Dispatcher
+
+2.2 (2011.03.23)
 ~~~~~~~~~~~~~~~~
 
  - adjust indentation level in multiline docstrings (compare `1`_ and `2`_)
@@ -21,12 +23,12 @@ Changelog
 .. _2: http://solovyov.net/opster/tests.html#multihelp2
 
 
-2.1 (2010.01.23)
+2.1 (2011.01.23)
 ~~~~~~~~~~~~~~~~
 
  - fix help display in case middleware returns original function
 
-2.0 (2010.01.23)
+2.0 (2011.01.23)
 ~~~~~~~~~~~~~~~~
 
  - fix help display when there is no __doc__ declared for function
