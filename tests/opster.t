@@ -61,7 +61,7 @@ check it out::
   options:
   
    -p --pass     don't run the command
-      --exit     exit with supplied code (default: 0)
+      --exit     exit with supplied code (default: 100)
    -n --name     optional name
    -v --verbose  enable additional output
    -q --quiet    suppress output

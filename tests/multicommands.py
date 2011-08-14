@@ -20,7 +20,7 @@ def simple(ui,
 @command(usage='[-p] [--exit value] ...', name='complex', hide=True)
 def complex_(ui,
              pass_=('p', False, "don't run the command"),
-             exit=('', 0, 'exit with supplied code (default: 0)'),
+             exit=('', 100, 'exit with supplied code'),
              name=('n', '', 'optional name'),
              *args):
     u'''That's more complex command intended to do something

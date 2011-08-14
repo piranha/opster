@@ -34,19 +34,19 @@ def err(text):
 
 
 class Dispatcher(object):
-    def __init__(self, cmdtable=None, globaloptions=None, middleware=None):
-        '''Central object for command dispatching system
+    '''Central object for command dispatching system
 
-        - ``cmdtable``: dict of commands. Will be populated with functions,
-          decorated with ``Dispatcher.command``.
-        - ``globaloptions``: list of options which are applied to all
-          commands, will contain ``--help`` option at least.
-        - ``middleware``: global decorator for all commands.
-        '''
+    - ``cmdtable``: dict of commands. Will be populated with functions,
+      decorated with ``Dispatcher.command``.
+    - ``globaloptions``: list of options which are applied to all
+      commands, will contain ``--help`` option at least.
+    - ``middleware``: global decorator for all commands.
+    '''
+
+    def __init__(self, cmdtable=None, globaloptions=None, middleware=None):
         self._cmdtable = cmdtable or {}
         self._globaloptions = globaloptions or []
         self.middleware = middleware
-
 
     @property
     def globaloptions(self):

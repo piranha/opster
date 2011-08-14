@@ -1,29 +1,45 @@
-==============
- Opster usage
-==============
+=================
+ Opster overview
+=================
 
 Options
 =======
 
-Configuration of option parser is a list of tuples::
+Options are defined as keyword arguments on a function::
 
-  opts = [('l', 'listen', 'localhost', 'ip to listen on'),
-          ('p', 'port', 8000, 'port to listen on'),
-          ('d', 'daemonize', False, 'daemonize process'),
-          ('', 'pid-file', '', 'name of file to write process ID to')]
+  from opster import command
+
+  @command(usage='[-l HOST] DIR')
+  def main(dirname,
+           listen=('l', 'localhost', 'ip to listen on'),
+           port=('p', 8000, 'port to listen on'),
+           daemonize=('d', False, 'daemonize process'),
+           pid_file=('', '', 'name of file to write process ID to')):
+      '''help message contained here'''
+      pass
+
+  if __name__ == '__main__':
+      main.command()
+
 
 Options contents
 ----------------
 
-Each tuple is a definition of some option, consisting of 4 elements:
+Each option is a keyword argument, whose name is a long name (read :ref:`note
+<renaming-note>`) and default value is a 3-tuple:
 
 1. short name
-2. long name (read :ref:`note <renaming-note>`)
-3. default value
-4. help string
+2. default value
+3. help string
 
 If a short name renders to False (for example, empty string), then it's not used
-at all. Long name is pretended to be available in any case.
+at all.
+
+.. _renaming-note:
+
+If you have a long name with underscores, they are converted to dashes, which is
+common standard for command line applications. If long name ends with
+underscore and is a python keyword, this underscore is stripped.
 
 .. _options-processing:
 
@@ -32,63 +48,50 @@ Options processing
 
 Default value also determines how supplied argument should be parsed:
 
-- function: return value of function called with a specified value is passed
-- integer: value is convert to integer
 - string: value is passed as is
+- integer: value is convert to integer
+- boolean/None: ``not default`` is passed and option takes no value
+- function: function is called with value and return value is used
 - list: value is appended to this list
 - dictionary: value is then assumed being in format ``key=value`` and is
   then assigned to this dictionary, :ref:`example <definitions-test>`
-- boolean/None: ``not default`` is passed and option takes no value
+
+Note that only boolean/None case generates option, which doesn't want any
+argument.
 
 Usage
 -----
 
-Usage is easy like that::
+Running this file with python will trigger command line parsing facility, using
+arguments from ``sys.argv``. ``sys.argv[0]`` will be prepended to usage string
+(you can put it in another place using macro ``%name`` in usage string).
 
-  from opster import command
+In our current case just calling this file with python will display help, since
+there is required argument::
 
-  @command(options=opts, usage='%name [-l HOST] DIR')
-  def main(dirname, **opts):
-      '''write some help here'''
-      pass
+  > python example.py
+  main: invalid arguments
 
-There is alternative declaration, easier for simple cases::
+  example.py [-l HOST] DIR
 
-  @command(usage='%name [-l HOST] DIR')
-  def main(dirname,
-           listen=('l', 'localhost', 'ip to listen on'),
-           pid_file=('', '', 'name of file to write process ID to')):
-      pass
+  help message contained here
 
-.. _renaming-note:
-.. note::
+  options:
 
-  I think it's easy to understand what's going on here, except that you need to
-  know that underscores in the long name will be replaced with dashes at the
-  command line. Of course, reverse process happens: if you have option with a
-  dash in long name in a definition, it will be replaced with underscore when
-  passed to function. This is done to comply with standarts of writing both
-  console interfaces and Python applications.
+   -l --listen     ip to listen on (default: localhost)
+   -p --port       port to listen on (default: 8000)
+   -d --daemonize  daemonize process
+      --pid-file   name of file to write process ID to
+   -h --help       display help
 
-After that you can simply call this function as an entry point to your program::
+You can parse command line strings programmatically, supplying list of
+arguments to ``.command()`` property::
 
-  if __name__ == '__main__':
-      main()
+  main.command('-l 0.0.0.0 /my/dir'.split())
 
-This will run command line parsing facility, using arguments from
-``sys.argv``. ``%name`` in usage string will be replaced with ``sys.argv[0]``
-(or prepended to usage string if there is no ``%name``), and rest of arguments
-will be passed to command line parser. In case if rest is empty, help will be
-displayed.
+Or you still can use your function in python::
 
-Of course, you can use your function programmatically, supplying list of
-arguments to function::
-
-  main(argv='-l 0.0.0.0 /my/dir'.split())
-
-Or, if you need this, you can call this function as usual::
-
-  main('/my/dir', listen='0.0.0.0')
+  main('/tmp', listen='0.0.0.0')
 
 In this case no type conversion (which is done upon arguments parsing) will be
 performed.
@@ -99,76 +102,105 @@ Subcommands
 ===========
 
 It's pretty usual for complex application to have some system of subcommands,
-and opster provides facility for handling them. Configuration is simple::
+and opster provides facility for handling them. It's easy to define them::
 
-  cmdtable = {
-      '^simple':
-          (simple,
-           [('t', 'test', False, 'just test execution')],
-           '[-t] ...'),
-      'complex|hard':
-          (complex_,
-           [('p', 'pass', False, 'don\'t run the command'),
-            ('', 'exit', 0, 'exit with supplied code (default: 0)')],
-           '[-p] [--exit value] ...')}
+  from opster import command, dispatch
 
-Keys in this dictionary are subcommand names. You can add aliases for
-subcommands, separating them with the ``|`` sign (of course, there can be few
-aliases). Marking command with preceding ``^`` means that this command should
-be included in short help, marking with preceding ``~`` means that this command
-should be removed from all command listings (more on that later).
+  @command(usage='[-t]', shortlist=True)
+  def simple(test=('t', False, 'just test execution')):
+      '''
+      Just simple command to print keys of received arguments.
+  
+      I assure you! Nothing to look here. ;-)
+      '''
+      pass
 
-Values here are tuples, consisting of 3 elements:
-
- 1. function, which will handle this subcommand
- 2. list of options
- 3. usage string (used by help generator)
-
-Your application will also always have ``help`` command, when it uses subcommand
-system.
-
-You can define your functions for subcommands like this::
-
-    def simple(*args, **opts):
-        '''some descriptive text here
-
-        more help, I'd said a lot of help here ;-)
-        '''
-        pass
-
-Naturally ``args`` is a list, containing all arguments to command, and ``opts``
-is a dictionary, containing every option.
-
-After definition of all elements you can call command dispatcher (``cmdtable``
-is defined earlier)::
-
-  from opster import dispatch
-
-  if __name__ == '__main__':
-      dispatch(cmdtable=cmdtable)
-
-.. _partial-names:
-
-Example usage, calling ``complex_`` with 5 as an argument for ``exit`` option,
-shows that command dispatcher will understand partial names of commands and
-options::
-
-  app comp --ex 5
-
-But if your program is something like program shown earlier, you can use
-shortened api::
-
-  @command(usage='[-t] ...', shortlist=True)
-  def simple(somearg,
-             test=('t', False, 'just test execution')):
+  @command(usage='[-p] [--exit value] ...', name='complex', hide=True)
+  def complex_(pass_=('p', False, "don't run the command"),
+               exit=('', 100, 'exit with supplied code'),
+               name=('n', '', 'optional name'),
+               *args):
+      '''That's more complex command intended to do something'''
       pass
 
   if __name__ == '__main__':
       dispatch()
 
-Every :ref:`@command <api-command>` stores information about decorated function in
-special global command table, which allows to call ``dispatch()`` without
-arguments.
+Your application will also always have ``help`` command when it uses subcommand
+system.
+
+Usage
+-----
+
+Usage is the same as with single command, except that running without arguments
+will display you shortlist of commands::
+
+  > python multicommands.py
+  usage: multicommands.py <command> [options]
+
+  commands:
+
+   simple  Just simple command to print keys of received arguments.
+
+In case you haven't marked any commands with ``shortlist=True``, all commands
+will be displayed (excluding those, which have ``hide=True``). Also, you can run
+``python multicommands.py help``, which will show list of all commands (still
+excluding hidden commands).
+
+Using ``help command`` or ``command --help`` will display a help on this
+command::
+
+  > python multicommands.py help simple
+  multicommands.py simple [-t]
+
+  Just simple command to print keys of received arguments.
+  
+      I assure you! Nothing to look here. ;-)
+
+  options:
+
+   -t --test     just test execution
+   -h --help     display help
+
+Global options
+--------------
+
+In case your application has options, which every command should receive, you
+can declare them in following format::
+
+  options = [('v', 'verbose', False, 'enable additional output'),
+             ('q', 'quiet', False, 'suppress output')]
+
+Which is, obviously ``(shortname, longname, default, help)``.
+             
+And pass them to ``dispatch``::
+
+  if __name__ == '__main__':
+      dispatch(globaloptions=options)
+
+
+Inner structure
+---------------
+
+:ref:`@command <api-command>` and :ref:`@dispatch <api-dispatch>` are actually
+aliases for internal :ref:`Dispatcher <api-dispatcher>` class. They assign and
+dispatch on a global object ``opster._dispatcher``.
+
+.. _partial-names:
+
+Partial names
+=============
+
+Nice property of opster is that there is no need to type any option or
+subcommand name completely. You are always free to use only first few letter of
+name so opster can identify what are you trying to run.
+
+For example, if we will use application created earlier, it's possible to call
+it like this::
+
+  app comp --ex 5
+
+This means we're calling ``complex_``, passing 5 as an argument for option ``exit``.
 
 .. _help-generation:
 
@@ -181,19 +213,20 @@ line option or by ``help`` subcommand (if you're using subcommand system).
 It is generated from usage, function docstring and a list of option help
 strings, wrapped to length of 70 characters and looks like that::
 
-  > ./test.py help complex
-  test.py complex: [-p] [--exit value] ...
+  > python multicommands.py help complex
+  multicommands.py complex: [-p] [--exit value] ...
 
   That's more complex command indented to do something
-
-      Let's try to do that (what?!)
 
   options:
 
    -p --pass  don't run the command
-      --exit  exit with supplied code (default: 0)
+      --exit  exit with supplied code (default: 100)
+   -n --name  optional name
    -h --help  show help
 
+Default value is displayed here only if it's not rendered to ``False``.
+   
 .. _innerhelp:
 
 If you need to display help from inside your application, you can always use the
@@ -207,17 +240,3 @@ fact that help-displaying function is attached to your function object, i.e.::
 See `example from tests`_.
 
 .. _example from tests: http://hg.piranha.org.ua/opster/file/default/tests/selfhelp.py
-
-
-Tips and tricks
-===============
-
-There is one thing which may be obvious: it's easy to have "semi-global"
-options. If your subcommands (or scripts) tend to have same options in some
-cases - for example, few commands (not every) can receive database credentials -
-you can define this options in separate list and then add them to command's own
-options, i.e.::
-
-  @command(cmd_opts + dbopts)
-  def select(**opts):
-      pass

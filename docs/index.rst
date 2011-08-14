@@ -10,6 +10,7 @@ concise. Additionally it contains possibility to handle subcommands (i.e.
 
 * Page on PyPI: http://pypi.python.org/pypi/opster/
 * Repository: http://hg.piranha.org.ua/opster/
+* Requires at least Python 2.6
 
 Features
 --------
@@ -77,6 +78,8 @@ What's nice
   usual Python function.
 - It's easy to switch between usual command line options parser and
   subcommands.
+- No need to type complete name of option or subcommand: :ref:`just type
+  <partial-names>` unique start sequence.
 
 Read more in :doc:`overview`.
 

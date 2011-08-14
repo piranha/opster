@@ -4,7 +4,7 @@ Changelog
 3.0 (TBA)
 ~~~~~~~~~
 
- - **Backward incompatiblity** Single commands now don't attempt to parse
+ - **Backward incompatible** Single commands now don't attempt to parse
    arguments if you call them. Use ``function.command()`` attribute (much like
    earlier ``function.help()``) to parse arguments now.
  - Switch to Python 2.6
