@@ -58,5 +58,5 @@ partially. In this case it could look like ``./echo.py --no-new``. This is also
 true for subcommands: read about them and everything else you'd like to know in
 `documentation`_.
 
-.. _documentation: http://hg.piranha.org.ua/opster/docs/
-.. _see description: http://hg.piranha.org.ua/opster/docs/overview.html#options-processing
+.. _documentation: http://opster.readthedocs.org/en/latest/
+.. _see description: http://opster.readthedocs.org/en/latest/overview.html#options-processing

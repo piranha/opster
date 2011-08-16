@@ -8,7 +8,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 def desc():
-    info = read('README')
+    info = read('README.rst')
     try:
         return info + '\n\n' + read('docs/changelog.rst')
     except IOError:
