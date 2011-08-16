@@ -1,6 +1,0 @@
-\.pyc$
-^docs/_build/
-^MANIFEST$
-^dist/
-^opster.egg-info/
-tests/.*\.t\.err$

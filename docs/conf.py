@@ -16,6 +16,6 @@ exclude_trees = ['_build']
 
 # -- Options for HTML output ---------------------------------------------------
 
-html_theme = 'cleanery'
-html_theme_path = ['.']
+# html_theme = 'cleanery'
+# html_theme_path = ['.']
 html_title = "%s v%s" % (project, version)
