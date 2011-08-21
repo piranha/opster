@@ -173,7 +173,7 @@ class Dispatcher(object):
 
         if options.pop('help', False):
             return 'help', self.cmdtable['help'][0], [cmd], {}
-        elif not cmd:
+        if not cmd:
             return 'help', self.cmdtable['help'][0], ['shortlist'], {}
 
         return cmd, func, args, options
@@ -239,7 +239,7 @@ dispatch.__doc__ = Dispatcher.dispatch.__doc__
 def help_(cmdtable, globalopts):
     '''Help generator for a command table
     '''
-    def help_inner(name=None):
+    def help_inner(name=None, **opts):
         '''Show help for a given help topic or a help overview
 
         With no arguments, print a list of commands with short help messages.
