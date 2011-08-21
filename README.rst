@@ -33,7 +33,7 @@ That's an example of an option definition::
   if __name__ == '__main__':
       main.command()
 
-Running this program will print the help::
+Running this program will print help message::
 
   > ./echo.py
   echo.py: invalid arguments

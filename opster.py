@@ -517,12 +517,11 @@ def guess_options(func):
     '''
     args, _, _, defaults = inspect.getargspec(func)
     for name, option in zip(args[-len(defaults):], defaults):
-        try:
-            sname, default, hlp = option[:3]
-            completer = option[3] if len(option) > 3 else None
-            yield (sname, name_from_python(name), default, hlp, completer)
-        except TypeError:
-            pass
+        if not isinstance(option, tuple):
+            continue
+        sname, default, hlp = option[:3]
+        completer = option[3] if len(option) > 3 else None
+        yield (sname, name_from_python(name), default, hlp, completer)
 
 def guess_usage(func, options):
     '''Get usage definition for a function

@@ -23,7 +23,7 @@ setup(
     version = opster.__version__,
     author = opster.__author__,
     author_email = opster.__email__,
-    url = 'http://piranha.org.ua/opster/',
+    url = 'http://github.com/piranha/opster/',
     classifiers = [
         'Environment :: Console',
         'Intended Audience :: Developers',
