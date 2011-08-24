@@ -417,8 +417,9 @@ def parse(args, options):
             try:
                 k, v = val.split('=')
             except ValueError:
-                raise ParseError(name, "wrong definition: '%s' "
-                                 "(should be in format KEY=VALUE)" % val)
+                raise getopt.GetoptError(
+                    "wrong definition: '%s' (should be in format KEY=VALUE)"
+                    % val)
             state[name][k] = v
         elif t in (types.NoneType, types.BooleanType):
             state[name] = not defmap[name]
