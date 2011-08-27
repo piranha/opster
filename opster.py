@@ -8,7 +8,7 @@ from functools import wraps
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '3.1'
+__version__ = '3.1.1'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
@@ -214,12 +214,13 @@ class Dispatcher(object):
 
 _dispatcher = None
 
-def command(options=None, usage=None, name=None, shortlist=False, hide=False):
+def command(options=None, usage=None, name=None, shortlist=False, hide=False,
+            aliases=()):
     global _dispatcher
     if not _dispatcher:
         _dispatcher = Dispatcher()
     return _dispatcher.command(options=options, usage=usage, name=name,
-                               shortlist=shortlist, hide=hide)
+                               shortlist=shortlist, hide=hide, aliases=aliases)
 command.__doc__ = Dispatcher.command.__doc__
 
 def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
