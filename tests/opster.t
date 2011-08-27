@@ -212,6 +212,8 @@ time::
   Good bye stranger
 
 
+.. _multivalues:
+
 There is no problems with ``TypeError: function() got multiple values for
 keyword argument 'option'``::
 

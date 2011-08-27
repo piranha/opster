@@ -1,7 +1,14 @@
 Changelog
 ---------
 
-3.1 (2001.08.27)
+3.2 (2011.08.27)
+~~~~~~~~~~~~~~~~
+
+ - `Fix`_ for ``TypeError: func() got multiple values for 'argument'``
+
+.. _Fix: http://opster.readthedocs.org/en/latest/tests.html#multivalues
+
+3.1 (2011.08.27)
 ~~~~~~~~~~~~~~~~
 
  - Better `aliases`_ support.
