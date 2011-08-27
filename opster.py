@@ -531,13 +531,13 @@ def guess_usage(func, options):
     if options:
         usage.append('[OPTIONS]')
     arginfo = inspect.getargspec(func)
+    optnames = [x[1] for x in options]
+    nonoptional = len(arginfo.args) - len(arginfo.defaults or ())
 
-    argnum = len(arginfo.args or ()) - len(options)
-    nonoptional = len(arginfo.args or ()) - len(arginfo.defaults or ())
-
-    for i in xrange(argnum):
-        usage.append((i > nonoptional - 1 and '[%s]' or '%s') %
-                     arginfo.args[i].upper())
+    for i, arg in enumerate(arginfo.args):
+        if arg not in optnames:
+            usage.append((i > nonoptional - 1 and '[%s]' or '%s')
+                         % arg.upper())
 
     if arginfo.varargs:
         usage.append('[%s ...]' % arginfo.varargs.upper())
