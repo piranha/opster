@@ -142,7 +142,7 @@ class Dispatcher(object):
 
                 argv = argv or sys.argv[1:]
                 try:
-                    opts, args = parse(argv, options_)
+                    args, opts = process(argv, options_)
                 except Exception, e:
                     if exchandle(e, func.help):
                         return -1
@@ -152,7 +152,7 @@ class Dispatcher(object):
                     return func.help()
 
                 try:
-                    return call_cmd(name_, func)(*args, **opts)
+                    return call_cmd(name_, func, options_)(*args, **opts)
                 except Exception, e:
                     if exchandle(e, func.help):
                         return -1
@@ -175,13 +175,14 @@ class Dispatcher(object):
     def _dispatch(self, args):
         cmd, func, args, options = cmdparse(args, self.cmdtable,
                                             self.globaloptions)
+        args, kwargs = process(args, options)
 
-        if options.pop('help', False):
-            return 'help', self.cmdtable['help'][0], [cmd], {}
+        if kwargs.pop('help', False):
+            return 'help', self.cmdtable['help'][0], [cmd], {}, options
         if not cmd:
-            return 'help', self.cmdtable['help'][0], ['shortlist'], {}
+            return 'help', self.cmdtable['help'][0], ['shortlist'], {}, options
 
-        return cmd, func, args, options
+        return cmd, func, args, kwargs, options
 
     def dispatch(self, args=None):
         '''Dispatch command line arguments using subcommands
@@ -194,18 +195,15 @@ class Dispatcher(object):
         autocomplete(self.cmdtable, args, self.middleware)
 
         try:
-            name, func, args, kwargs = self._dispatch(args)
+            name, func, args, kwargs, options = self._dispatch(args)
         except Exception, e:
             if exchandle(e, help_func):
                 return -1
             raise
 
         try:
-            if name == '_completion' or not self.middleware:
-                return call_cmd(name, func)(*args, **kwargs)
-            else:
-                return call_cmd(name, self.middleware(func), depth=2)(
-                    *args, **kwargs)
+            mw = name != '_completion' and self.middleware or None
+            return call_cmd(name, func, options, mw)(*args, **kwargs)
         except Exception, e:
             if exchandle(e, help_func):
                 return -1
@@ -357,10 +355,10 @@ def help_options(options):
 
 
 # --------
-# Options parsing
+# Options process
 # --------
 
-def parse(args, options):
+def process(args, options):
     '''
     >>> opts = [('l', 'listen', 'localhost',
     ...          'ip to listen on'),
@@ -370,8 +368,8 @@ def parse(args, options):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> print parse(['-l', '0.0.0.0', '--pi', 'test', 'all'], opts)
-    ({'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'}, ['all'])
+    >>> print process(['-l', '0.0.0.0', '--pi', 'test', 'all'], opts)
+    (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
 
     '''
     argmap, defmap, state = {}, {}, {}
@@ -438,7 +436,7 @@ def parse(args, options):
     for name in funlist:
         state[name] = defmap[name](None)
 
-    return state, args
+    return args, state
 
 
 # --------
@@ -465,9 +463,7 @@ def cmdparse(args, cmdtable, globalopts):
         possibleopts = []
 
     possibleopts.extend(globalopts)
-
-    options, args = parse(args, possibleopts)
-    return cmd, cmd and info[0] or None, args, options
+    return cmd, cmd and info[0] or None, args, possibleopts
 
 def aliases_(cmdtable_key):
     '''Get aliases from a command table key'''
@@ -574,14 +570,38 @@ def exchandle(e, help_func):
         return False
     return True
 
-def call_cmd(name, func, depth=1):
+def call_cmd(name, func, opts, middleware=None):
     '''Wrapper for command call, catching situation with insufficient arguments
 
     ``depth`` is necessary when there is a middleware in setup
     '''
+    arginfo = inspect.getargspec(func)
+    if middleware:
+        tocall = middleware(func)
+        depth = 2
+    else:
+        tocall = func
+        depth = 1
+
     def inner(*args, **kwargs):
+        # NOTE: this is not very nice, but it fixes problem with
+        # TypeError: func() got multiple values for 'argument'
+        # Would be nice to find better way
+        prepend = []
+        start = None
+        if arginfo.varargs and len(args) > (len(arginfo.args) - len(kwargs)):
+            for o in opts:
+                optname = o[1]
+                if optname in arginfo.args:
+                    if start is None:
+                        start = arginfo.args.index(optname)
+                    prepend.append(optname)
+            args = (args[:start] +
+                    tuple(kwargs.pop(x) for x in prepend) +
+                    args[start:])
+
         try:
-            return func(*args, **kwargs)
+            return tocall(*args, **kwargs)
         except TypeError:
             if len(traceback.extract_tb(sys.exc_info()[2])) == depth:
                 raise ParseError(name, "invalid arguments")

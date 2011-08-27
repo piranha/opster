@@ -211,4 +211,12 @@ time::
   Good bye stranger
   Good bye stranger
 
+
+There is no problems with ``TypeError: function() got multiple values for
+keyword argument 'option'``::
+
+  $ run multivalueserr.py some arguments hehe
+  I work! False bopt some arguments ('hehe',)
+
+
 That's all for today; see you next time!
