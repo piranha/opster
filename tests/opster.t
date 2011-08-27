@@ -128,7 +128,7 @@ Now let's test our definitions::
    'test': 'test'}
 
   $ run test_opts.py -D can-i-haz fail?
-  definitions: wrong definition: 'can-i-haz' (should be in format KEY=VALUE)
+  error: wrong definition: 'can-i-haz' (should be in format KEY=VALUE)
   
   test_opts.py [-l HOST] DIR
   
