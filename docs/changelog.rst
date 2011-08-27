@@ -1,18 +1,28 @@
 Changelog
 ---------
 
+3.1 (2001.08.27)
+~~~~~~~~~~~~~~~~
+
+ - Better `aliases`_ support.
+ - Fixes for options and usage discovery.
+ - Fix for error handling of dictionary options in multicommands.
+ - Fix for help not working when global options are defined.
+
+.. _aliases: http://readthedocs.org/docs/opster/en/latest/api.html#opster.command
+
 3.0 (2011.08.14)
 ~~~~~~~~~~~~~~~~
 
- - **Backward incompatible** Single commands now don't attempt to parse
+ - **Backward incompatible** Single commands now don't attempt to parse.
    arguments if you call them. `Use`_ ``function.command()`` attribute (much like
    earlier ``function.help()``) to parse arguments now.
- - Switch to Python 2.6
+ - Switch to Python 2.6.
  - Ability to have few subcommand `dispatchers`_ in a single runtime (no single
-   global ``CMDTABLE`` dictionary anymore)
+   global ``CMDTABLE`` dictionary anymore).
 
-.. _Use: http://solovyov.net/opster/#quick-example
-.. _dispatchers: http://solovyov.net/opster/api.html#opster.Dispatcher
+.. _Use: http://opster.readthedocs.org/en/latest/#quick-example
+.. _dispatchers: http://opster.readthedocs.org/en/latest/api.html#opster.Dispatcher
 
 2.2 (2011.03.23)
 ~~~~~~~~~~~~~~~~
@@ -20,8 +30,8 @@ Changelog
  - adjust indentation level in multiline docstrings (compare `1`_ and `2`_)
  - small fix for internal getopt exception handling
 
-.. _1: http://solovyov.net/opster/tests.html#multihelp1
-.. _2: http://solovyov.net/opster/tests.html#multihelp2
+.. _1: http://opster.readthedocs.org/en/latest/tests.html#multihelp1
+.. _2: http://opster.readthedocs.org/en/latest/tests.html#multihelp2
 
 
 2.1 (2011.01.23)
@@ -36,7 +46,7 @@ Changelog
  - ``dict`` type `handling`_
  - ``.help()`` attribute for every function, printing help on call
 
-.. _handling: http://hg.piranha.org.ua/opster/docs/overview.html#options-processing
+.. _handling: http://opster.readthedocs.org/en/latest/overview.html#options-processing
 
 1.2 (2010.12.29)
 ~~~~~~~~~~~~~~~~

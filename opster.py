@@ -8,7 +8,7 @@ from functools import wraps
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '3.0'
+__version__ = '3.1'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
@@ -95,6 +95,7 @@ class Dispatcher(object):
            only with multiple subcommands
          - ``hide``: if command should be hidden from help listing. Used only
            with multiple subcommands, overrides ``shortlist``
+         - ``aliases``: list of aliases for command
 
         If defined, options should be a list of 4-tuples in format::
 
