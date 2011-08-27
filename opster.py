@@ -62,7 +62,7 @@ class Dispatcher(object):
         return table
 
     def command(self, options=None, usage=None, name=None, shortlist=False,
-                hide=False):
+                hide=False, aliases=()):
         '''Decorator to mark function to be used as command for CLI.
 
         Usage::
@@ -123,10 +123,14 @@ class Dispatcher(object):
             else:
                 usage_ = usage
             prefix = hide and '~' or (shortlist and '^' or '')
-            self._cmdtable[prefix + name_] = (func, options_, usage_)
+            cmdname = prefix + name_
+            if aliases:
+                cmdname = cmdname + '|' + '|'.join(aliases)
+            self._cmdtable[cmdname] = (func, options_, usage_)
 
             def help_func(name=None):
-                return help_cmd(func, replace_name(usage_, sysname()), options_)
+                return help_cmd(func, replace_name(usage_, sysname()), options_,
+                                aliases)
 
             def command(argv=None):
                 for o in self.globaloptions:
@@ -279,10 +283,11 @@ def help_(cmdtable, globalopts):
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
         return help_cmd(cmd,
                         replace_name(usage, sysname() + ' ' + aliases[0]),
-                        options + globalopts)
+                        options + globalopts,
+                        aliases[1:])
     return help_inner
 
-def help_cmd(func, usage, options):
+def help_cmd(func, usage, options, aliases):
     '''show help for given command
 
     - ``func``: function to generate help for (``func.__doc__`` is taken)
@@ -302,7 +307,7 @@ def help_cmd(func, usage, options):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> help_cmd(test, 'test [-l HOST] [NAME]', opts)
+    >>> help_cmd(test, 'test [-l HOST] [NAME]', opts, ())
     test [-l HOST] [NAME]
     <BLANKLINE>
     that's a test command
@@ -317,6 +322,8 @@ def help_cmd(func, usage, options):
         --pid-file   name of file to write process ID to
     '''
     write(usage + '\n')
+    if aliases:
+        write('\naliases: ' + ', '.join(aliases) + '\n')
     doc = pretty_doc_string(func)
     write('\n' + doc.strip() + '\n\n')
     if options:
