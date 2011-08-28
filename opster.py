@@ -8,7 +8,7 @@ from functools import wraps
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '3.2'
+__version__ = '3.2.1'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
@@ -596,9 +596,10 @@ def call_cmd(name, func, opts, middleware=None):
                     if start is None:
                         start = arginfo.args.index(optname)
                     prepend.append(optname)
-            args = (args[:start] +
-                    tuple(kwargs.pop(x) for x in prepend) +
-                    args[start:])
+            if start is not None: # do we have to prepend anything
+                args = (args[:start] +
+                        tuple(kwargs.pop(x) for x in prepend) +
+                        args[start:])
 
         try:
             return tocall(*args, **kwargs)
