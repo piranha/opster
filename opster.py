@@ -8,7 +8,7 @@ from functools import wraps
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '3.2.1'
+__version__ = '3.2.2'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
@@ -227,7 +227,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
         _dispatcher = Dispatcher(cmdtable, globaloptions, middleware)
     else:
         if cmdtable:
-            _dispatcher.cmdtable = cmdtable
+            _dispatcher._cmdtable = cmdtable
         if globaloptions:
             _dispatcher._globaloptions = globaloptions
         if middleware:
