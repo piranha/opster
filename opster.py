@@ -446,12 +446,10 @@ def process(args, options):
 def cmdparse(args, cmdtable, globalopts):
     '''Parse arguments list to find a command, options and arguments
     '''
-    # command is the first non-option
-    cmd = None
-    for arg in args:
-        if not arg.startswith('-'):
-            cmd = arg
-            break
+    # pre-parse arguments here using global options to find command name,
+    # which is first non-option entry
+    cmd = next((arg for arg in process(args, globalopts)[0]
+                if not arg.startswith('-')), None)
 
     if cmd:
         args.pop(args.index(cmd))
