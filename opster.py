@@ -358,7 +358,7 @@ def help_options(options):
 # Options process
 # --------
 
-def process(args, options):
+def process(args, options, preparse=False):
     '''
     >>> opts = [('l', 'listen', 'localhost',
     ...          'ip to listen on'),
@@ -409,7 +409,16 @@ def process(args, options):
         if name:
             namelist.append(name)
 
-    opts, args = getopt.gnu_getopt(args, shortlist, namelist)
+    try:
+        opts, args = getopt.gnu_getopt(args, shortlist, namelist)
+    except getopt.GetoptError, e:
+        if preparse:
+            prefix = '-' if len(e.opt) == 1 else '--'
+            args = args[:]
+            args.insert(args.index(prefix + e.opt), '--')
+            opts, args = getopt.gnu_getopt(args, shortlist, namelist)
+            return args, None
+        raise
 
     # transfer result to state
     for opt, val in opts:
@@ -448,7 +457,7 @@ def cmdparse(args, cmdtable, globalopts):
     '''
     # pre-parse arguments here using global options to find command name,
     # which is first non-option entry
-    cmd = next((arg for arg in process(args, globalopts)[0]
+    cmd = next((arg for arg in process(args, globalopts, preparse=True)[0]
                 if not arg.startswith('-')), None)
 
     if cmd:
