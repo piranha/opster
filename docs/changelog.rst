@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.3 (2011.09.04)
+~~~~~~~~~~~~~~~~
+
+ - Multicommands: ability to specify `global options`_ before specifying name of
+   command
+
+.. _global options: http://opster.readthedocs.org/en/latest/overview.html#global-options
+
 3.2 (2011.08.27)
 ~~~~~~~~~~~~~~~~
 
