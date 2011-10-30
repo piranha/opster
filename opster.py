@@ -175,7 +175,13 @@ class Dispatcher(object):
     def _dispatch(self, args):
         cmd, func, args, options = cmdparse(args, self.cmdtable,
                                             self.globaloptions)
-        args, kwargs = process(args, options)
+        try:
+            args, kwargs = process(args, options)
+        except getopt.GetoptError, e:
+            # FIXME: this is ugly, we set command name here to retrieve it later
+            # in exchandle().
+            e.command = cmd
+            raise
 
         if kwargs.pop('help', False):
             return 'help', self.cmdtable['help'][0], [cmd], {}, options
@@ -392,7 +398,7 @@ def process(args, options, preparse=False):
         # copy defaults to state
         if isinstance(default, (list, dict)):
             state[pyname] = copy.copy(default)
-        elif hasattr(default, '__call__'):
+        elif isinstance(default, types.FunctionType):
             funlist.append(pyname)
             state[pyname] = None
         else:
@@ -434,11 +440,18 @@ def process(args, options, preparse=False):
                 k, v = val.split('=')
             except ValueError:
                 raise getopt.GetoptError(
-                    "wrong definition: '%s' (should be in format KEY=VALUE)"
+                    "wrong definition: %r (should be in format KEY=VALUE)"
                     % val)
             state[name][k] = v
         elif t in (types.NoneType, types.BooleanType):
             state[name] = not defmap[name]
+        elif t in (int, float):
+            try:
+                state[name] = t(val)
+            except ValueError:
+                raise getopt.GetoptError(
+                    'invalid option value %r for option %r'
+                    % (val, name))
         else:
             state[name] = t(val)
 
@@ -570,7 +583,8 @@ def exchandle(e, help_func):
         help_func(e.args[0])
     elif isinstance(e, getopt.GetoptError):
         err('error: %s\n\n' % e)
-        help_func()
+        # we may get command name here, if we're in multicommand context
+        help_func(getattr(e, 'command', None))
     elif isinstance(e, OpsterError):
         err('%s\n' % e)
     else:

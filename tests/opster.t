@@ -67,6 +67,26 @@ check it out::
    -q --quiet    suppress output
    -h --help     display help
 
+Check if integer errors correctly::
+
+  $ run multicommands.py complex --exit q
+  error: invalid option value 'q' for option 'exit'
+  
+  multicommands.py complex [-p] [--exit value] ...
+  
+  That's more complex command intended to do something
+  
+      \xd0\x98 \xd1\x81\xd0\xb0\xd0\xbc\xd0\xbe\xd0\xb5 \xd0\xb3\xd0\xbb\xd0\xb0\xd0\xb2\xd0\xbd\xd0\xbe\xd0\xb5 - \xd0\xbc\xd1\x8b \xd1\x82\xd1\x83\xd1\x82 \xd0\xbd\xd0\xb5\xd0\xbc\xd0\xbd\xd0\xbe\xd0\xb6\xd0\xb5\xd1\x87\xd0\xba\xd0\xbe \xd1\x82\xd0\xb5\xd0\xba\xd1\x81\xd1\x82\xd0\xb0 \xd0\xbd\xd0\xb5 \xd0\xb2 ascii \xd0\xbd\xd0\xb0\xd0\xbf\xd0\xb8\xd1\x88\xd0\xb5\xd0\xbc (esc)
+      \xd0\xb8 \xd0\xbf\xd0\xbe\xd1\x81\xd0\xbc\xd0\xbe\xd1\x82\xd1\x80\xd0\xb8\xd0\xbc, \xd1\x87\xd1\x82\xd0\xbe \xd0\xb1\xd1\x83\xd0\xb4\xd0\xb5\xd1\x82. :) (esc)
+  
+  options:
+  
+   -p --pass     don't run the command
+      --exit     exit with supplied code (default: 100)
+   -n --name     optional name
+   -v --verbose  enable additional output
+   -q --quiet    suppress output
+   -h --help     display help
 
 We also have completion::
 
@@ -208,6 +228,9 @@ time::
   $ run hello.py stranger
   Hello stranger
   $ run hello.py stranger 2 -g 'Good bye'
+  Good bye stranger
+  Good bye stranger
+  $ run hello.py stranger -g 'Good bye' 2
   Good bye stranger
   Good bye stranger
 
