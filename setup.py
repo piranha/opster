@@ -16,15 +16,15 @@ def desc():
         return info
 
 setup(
-    name = 'opster',
-    description = 'command line parsing speedster',
-    long_description = desc(),
-    license = 'BSD',
-    version = opster.__version__,
-    author = opster.__author__,
-    author_email = opster.__email__,
-    url = 'http://github.com/piranha/opster/',
-    classifiers = [
+    name='opster',
+    description='command line parsing speedster',
+    long_description=desc(),
+    license='BSD',
+    version=opster.__version__,
+    author=opster.__author__,
+    author_email=opster.__email__,
+    url='http://github.com/piranha/opster/',
+    classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -32,6 +32,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development',
         ],
-    py_modules = ['opster'],
+    py_modules=['opster'],
     platforms='any',
     )

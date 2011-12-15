@@ -21,12 +21,14 @@ try:
 except locale.Error:
     ENCODING = 'UTF-8'
 
+
 def write(text, out=None):
     '''Write output to a given stream (stdout by default)'''
     out = out or sys.stdout
     if isinstance(text, unicode):
         return out.write(text.encode(ENCODING))
     out.write(text)
+
 
 def err(text):
     '''Write output to stderr'''
@@ -218,6 +220,7 @@ class Dispatcher(object):
 
 _dispatcher = None
 
+
 def command(options=None, usage=None, name=None, shortlist=False, hide=False,
             aliases=()):
     global _dispatcher
@@ -226,6 +229,7 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False,
     return _dispatcher.command(options=options, usage=usage, name=name,
                                shortlist=shortlist, hide=hide, aliases=aliases)
 command.__doc__ = Dispatcher.command.__doc__
+
 
 def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
     global _dispatcher
@@ -293,6 +297,7 @@ def help_(cmdtable, globalopts):
                         aliases[1:])
     return help_inner
 
+
 def help_cmd(func, usage, options, aliases):
     '''show help for given command
 
@@ -334,6 +339,7 @@ def help_cmd(func, usage, options, aliases):
     write('\n' + doc.strip() + '\n\n')
     if options:
         write(''.join(help_options(options)))
+
 
 def help_options(options):
     '''Generator for help on options
@@ -485,9 +491,11 @@ def cmdparse(args, cmdtable, globalopts):
     possibleopts.extend(globalopts)
     return cmd, cmd and info[0] or None, args, possibleopts
 
+
 def aliases_(cmdtable_key):
     '''Get aliases from a command table key'''
     return cmdtable_key.lstrip("^~").split("|")
+
 
 def findpossible(cmd, table):
     """
@@ -510,6 +518,7 @@ def findpossible(cmd, table):
 
     return choice
 
+
 def findcmd(cmd, table):
     """Return (aliases, command table entry) for command string."""
     choice = findpossible(cmd, table)
@@ -526,6 +535,7 @@ def findcmd(cmd, table):
         return choice.values()[0]
 
     raise UnknownCommand(cmd)
+
 
 # --------
 # Helpers
@@ -549,6 +559,7 @@ def guess_options(func):
         completer = option[3] if len(option) > 3 else None
         yield (sname, name_from_python(name), default, hlp, completer)
 
+
 def guess_usage(func, options):
     '''Get usage definition for a function
     '''
@@ -567,6 +578,7 @@ def guess_usage(func, options):
     if arginfo.varargs:
         usage.append('[%s ...]' % arginfo.varargs.upper())
     return ' '.join(usage)
+
 
 def exchandle(e, help_func):
     '''Handle internal exceptions and print human-readable information on them
@@ -590,6 +602,7 @@ def exchandle(e, help_func):
     else:
         return False
     return True
+
 
 def call_cmd(name, func, opts, middleware=None):
     '''Wrapper for command call, catching situation with insufficient arguments
@@ -617,7 +630,7 @@ def call_cmd(name, func, opts, middleware=None):
                     if start is None:
                         start = arginfo.args.index(optname)
                     prepend.append(optname)
-            if start is not None: # do we have to prepend anything
+            if start is not None:  # do we have to prepend anything
                 args = (args[:start] +
                         tuple(kwargs.pop(x) for x in prepend) +
                         args[start:])
@@ -629,6 +642,7 @@ def call_cmd(name, func, opts, middleware=None):
                 raise ParseError(name, "invalid arguments")
             raise
     return inner
+
 
 def call_cmd_regular(func, opts):
     '''Wrapper for command for handling function calls from Python
@@ -648,11 +662,13 @@ def call_cmd_regular(func, opts):
         return func(*args, **funckwargs)
     return inner
 
+
 def replace_name(usage, name):
     '''Replace name placeholder with a command name'''
     if '%name' in usage:
         return usage.replace('%name', name, 1)
     return name + ' ' + usage
+
 
 def sysname():
     '''Returns name of executing file'''
@@ -663,6 +679,7 @@ def sysname():
         return name[2:]
     return name
 
+
 def pretty_doc_string(item):
     "Doc string with adjusted indentation level of the 2nd line and beyond."
     raw_doc = item.__doc__ or '(no help text available)'
@@ -672,16 +689,19 @@ def pretty_doc_string(item):
     indent = len(lines[1]) - len(lines[1].lstrip())
     return '\n'.join([lines[0]] + map(lambda l: l[indent:], lines[1:]))
 
+
 def name_from_python(name):
     if name.endswith('_') and keyword.iskeyword(name[:-1]):
         name = name[:-1]
     return name.replace('_', '-')
+
 
 def name_to_python(name):
     name = name.replace('-', '_')
     if keyword.iskeyword(name):
         return name + '_'
     return name
+
 
 # --------
 # Autocomplete system
@@ -735,6 +755,7 @@ def autocomplete(cmdtable, args, middleware):
 
     sys.exit(1)
 
+
 COMPLETIONS = {
     'bash':
         """
@@ -764,6 +785,7 @@ compctl -K _opster_completion %s
 """
     }
 
+
 @command(name='_completion', hide=True)
 def completion(type=('t', 'bash', 'Completion type (bash or zsh)'),
                # kwargs will catch every global option, which we get
@@ -774,22 +796,26 @@ def completion(type=('t', 'bash', 'Completion type (bash or zsh)'),
     prog_name = os.path.split(sys.argv[0])[1]
     print COMPLETIONS[type].strip() % prog_name
 
+
 # --------
 # Exceptions
 # --------
 
-# Command exceptions
 class OpsterError(Exception):
     'Base opster exception'
+
 
 class AmbiguousCommand(OpsterError):
     'Raised if command is ambiguous'
 
+
 class UnknownCommand(OpsterError):
     'Raised if command is unknown'
 
+
 class ParseError(OpsterError):
     'Raised on error in command line parsing'
+
 
 if __name__ == '__main__':
     import doctest
