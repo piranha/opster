@@ -25,8 +25,8 @@ except locale.Error:
 def write(text, out=None):
     '''Write output to a given stream (stdout by default)'''
     out = out or sys.stdout
-    if isinstance(text, unicode):
-        return out.write(text.encode(ENCODING))
+    if sys.version_info < (3, 0) and isinstance(text, unicode):
+        text = text.encode(ENCODING)
     out.write(text)
 
 
