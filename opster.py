@@ -120,13 +120,14 @@ class Dispatcher(object):
             except TypeError:
                 options_ = []
 
-            name_ = name or name_from_python(func.__name__)
+            cmdname = name or name_from_python(func.__name__)
+            scriptname = name or sysname()
             if usage is None:
                 usage_ = guess_usage(func, options_)
             else:
                 usage_ = usage
             prefix = hide and '~' or (shortlist and '^' or '')
-            cmdname = prefix + name_
+            cmdname = prefix + cmdname
             if aliases:
                 cmdname = cmdname + '|' + '|'.join(aliases)
             self._cmdtable[cmdname] = (func, options_, usage_)
@@ -154,7 +155,7 @@ class Dispatcher(object):
                     return func.help()
 
                 try:
-                    return call_cmd(name_, func, options_)(*args, **opts)
+                    return call_cmd(scriptname, func, options_)(*args, **opts)
                 except Exception, e:
                     if exchandle(e, func.help):
                         return -1
@@ -606,9 +607,8 @@ def exchandle(e, help_func):
 
 def call_cmd(name, func, opts, middleware=None):
     '''Wrapper for command call, catching situation with insufficient arguments
-
-    ``depth`` is necessary when there is a middleware in setup
     '''
+    # depth is necessary when there is a middleware in setup
     arginfo = inspect.getargspec(func)
     if middleware:
         tocall = middleware(func)

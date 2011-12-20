@@ -106,7 +106,7 @@ Now we're going to test if a script with a single command will work (not
 everyone needs subcommands, you know)::
 
   $ run test_opts.py
-  another: invalid arguments
+  test_opts.py: invalid arguments
   
   test_opts.py [-l HOST] DIR
   
