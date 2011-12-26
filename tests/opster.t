@@ -14,7 +14,7 @@ Actors cast
 
 Define function to make it simpler::
 
-  $ function run() {
+  $ run() {
   >   name=$1
   >   shift
   >   PYTHONPATH=$TESTDIR/../ python "$TESTDIR/$name" "$@"
