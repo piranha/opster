@@ -143,7 +143,8 @@ class Dispatcher(object):
                                 None):
                         options_.append(o)
 
-                argv = argv or sys.argv[1:]
+                if argv is None:
+                    argv = sys.argv[1:]
                 try:
                     args, opts = process(argv, options_)
                 except Exception, e:
