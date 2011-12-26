@@ -16,7 +16,8 @@ __email__ = 'alexander@solovyov.net'
 try:
     import locale
     ENCODING = locale.getpreferredencoding()
-    if not ENCODING or ENCODING == 'mac-roman' or 'ascii' in ENCODING.lower():
+    if not ENCODING or ENCODING == 'mac-roman' or 'ascii' in ENCODING.lower()\
+        or 'ansi' in ENCODING.lower():
         ENCODING = 'UTF-8'
 except locale.Error:
     ENCODING = 'UTF-8'
