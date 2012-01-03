@@ -17,7 +17,13 @@ Define function to make it simpler::
   $ run() {
   >   name=$1
   >   shift
-  >   PYTHONPATH=$TESTDIR/../ python "$TESTDIR/$name" "$@"
+  >   export PYTHONPATH=$TESTDIR/../
+  >   export COVERAGE_FILE=$TESTDIR/coverage.db
+  >   if [ -z "$COVERAGE" ]; then
+  >      python "$TESTDIR/$name" "$@"
+  >   else
+  >      coverage run -a --rcfile="$TESTDIR/.coveragerc" "$TESTDIR/$name" "$@"
+  >   fi
   > }
 
 Main characters:
