@@ -5,7 +5,7 @@
 Options
 =======
 
-Options are defined as keyword arguments on a function::
+Options are defined as keyword arguments to a script's main function::
 
   from opster import command
 
@@ -25,49 +25,54 @@ Options are defined as keyword arguments on a function::
 Options contents
 ----------------
 
-Each option is a keyword argument, whose name is a long name (read :ref:`note
-<renaming-note>`) and default value is a 3-tuple:
+Each option is defined by a keyword argument, whose name is the long option
+name (read :ref:`note <renaming-note>`) and whose default value is a 3-tuple
+containing the elements:
 
 1. short name
 2. default value
 3. help string
 
-If a short name renders to False (for example, empty string), then it's not used
-at all.
+If a short name renders to False (for example, an empty string), then it's not
+used at all.
 
 .. _renaming-note:
 
-If you have a long name with underscores, they are converted to dashes, which is
-common standard for command line applications. If long name ends with
-underscore and is a python keyword, this underscore is stripped.
+If the keyword argument name contains underscores, they are converted to
+dashes when generating the long option name since this is the typical
+convention for command line applications. If the keyword argument name ends
+with an underscore and is a python keyword, the trailing underscore will be
+removed.
 
 .. _options-processing:
 
 Options processing
 ------------------
 
-Default value also determines how supplied argument should be parsed:
+The default value for each option also determines how any values supplied for
+the option should be parsed:
 
-- string: value is passed as is
-- integer: value is convert to integer
+- string: the string is passed as is
+- integer: the value is convert to an integer
 - boolean/None: ``not default`` is passed and option takes no value
-- function: function is called with value and return value is used
-- list: value is appended to this list
-- dictionary: value is then assumed being in format ``key=value`` and is
-  then assigned to this dictionary, :ref:`example <definitions-test>`
+- function: function is called with value and the return value is used
+- list: the value is appended to this list
+- dictionary: the value is then assumed to be in the format ``key=value`` and
+  is then assigned to this dictionary, :ref:`example <definitions-test>`
 
-Note that only boolean/None case generates option, which doesn't want any
-argument.
+Note that only the boolean/None case results in an option that does not
+require an argument.
 
 Usage
 -----
 
-Running this file with python will trigger command line parsing facility, using
-arguments from ``sys.argv``. ``sys.argv[0]`` will be prepended to usage string
-(you can put it in another place using macro ``%name`` in usage string).
+Running the python script above will trigger Opster's command line parsing
+facility, using arguments from ``sys.argv``. ``sys.argv[0]`` will be prepended
+to the usage string (you can put it in another place using macro ``%name`` in
+the usage string).
 
-In our current case just calling this file with python will display help, since
-there is required argument::
+In the case above simply running the script with no arguments will display
+help, since the script has a required positional argument::
 
   > python example.py
   main: invalid arguments
@@ -84,8 +89,8 @@ there is required argument::
       --pid-file   name of file to write process ID to
    -h --help       display help
 
-You can parse command line strings programmatically, supplying list of
-arguments to ``.command()`` property::
+You can parse command line strings programmatically, supplying a list of
+arguments to ``.command()`` attribute of the decorated main function::
 
   main.command('-l 0.0.0.0 /my/dir'.split())
 
@@ -93,25 +98,25 @@ Or you still can use your function in python::
 
   main('/tmp', listen='0.0.0.0')
 
-In this case no type conversion (which is done upon arguments parsing) will be
-performed.
+In this case no type conversion (which is done during argument parsing) will
+be performed.
 
 .. _subcommands:
 
 Subcommands
 ===========
 
-It's pretty usual for complex application to have some system of subcommands,
-and opster provides facility for handling them. It's easy to define them::
+It's pretty common for a complex application to have a system of subcommands,
+and Opster provides a facility for handling them. It's easy to define them::
 
   from opster import command, dispatch
 
   @command(usage='[-t]', shortlist=True)
   def simple(test=('t', False, 'just test execution')):
       '''
-      Just simple command to print keys of received arguments.
+      Just a simple command to print keys of received arguments.
   
-      I assure you! Nothing to look here. ;-)
+      I assure you! Nothing to see here. ;-)
       '''
       pass
 
@@ -120,32 +125,32 @@ and opster provides facility for handling them. It's easy to define them::
                exit=('', 100, 'exit with supplied code'),
                name=('n', '', 'optional name'),
                *args):
-      '''That's more complex command intended to do something'''
+      '''This is a more complex command intended to do something'''
       pass
 
   if __name__ == '__main__':
       dispatch()
 
-Your application will also always have ``help`` command when it uses subcommand
-system.
+Your application will always also have the ``help`` command when it uses the
+subcommand system.
 
 Usage
 -----
 
-Usage is the same as with single command, except that running without arguments
-will display you shortlist of commands::
+Usage is the same as with a single command, except that running without arguments
+will display the shortlist of commands::
 
   > python multicommands.py
   usage: multicommands.py <command> [options]
 
   commands:
 
-   simple  Just simple command to print keys of received arguments.
+   simple  Just a simple command to print keys of received arguments.
 
-In case you haven't marked any commands with ``shortlist=True``, all commands
-will be displayed (excluding those, which have ``hide=True``). Also, you can run
-``python multicommands.py help``, which will show list of all commands (still
-excluding hidden commands).
+Provided no commands have been marked with ``shortlist=True``, all commands
+will be displayed (excluding those that have ``hide=True``). Also, you can run
+``python multicommands.py help``, which will show the list of all commands
+(still excluding hidden commands).
 
 Using ``help command`` or ``command --help`` will display a help on this
 command::
@@ -153,9 +158,9 @@ command::
   > python multicommands.py help simple
   multicommands.py simple [-t]
 
-  Just simple command to print keys of received arguments.
+  Just a simple command to print keys of received arguments.
   
-      I assure you! Nothing to look here. ;-)
+      I assure you! Nothing to see here. ;-)
 
   options:
 
@@ -165,15 +170,15 @@ command::
 Global options
 --------------
 
-In case your application has options, which every command should receive, you
-can declare them in following format::
+In case your application has options that every command should receive they
+can be declared in the following format::
 
   options = [('v', 'verbose', False, 'enable additional output'),
              ('q', 'quiet', False, 'suppress output')]
 
 Which is, obviously ``(shortname, longname, default, help)``.
              
-And pass them to ``dispatch``::
+They can then be passed to ``dispatch``::
 
   if __name__ == '__main__':
       dispatch(globaloptions=options)
@@ -210,13 +215,15 @@ Help generation
 Help is generated automatically and is available by the ``-h/--help`` command
 line option or by ``help`` subcommand (if you're using subcommand system).
 
-It is generated from usage, function docstring and a list of option help
-strings, wrapped to length of 70 characters and looks like that::
+It is generated from the usage string, the function docstring and the help
+strings provided for each option and wrapped to length of 70 characters so it
+looks
+like::
 
   > python multicommands.py help complex
   multicommands.py complex: [-p] [--exit value] ...
 
-  That's more complex command indented to do something
+  This is a more complex command intended to do something
 
   options:
 
@@ -225,18 +232,19 @@ strings, wrapped to length of 70 characters and looks like that::
    -n --name  optional name
    -h --help  show help
 
-Default value is displayed here only if it's not rendered to ``False``.
+The default value is displayed here only if it does not evaluate as ``False``.
    
 .. _innerhelp:
 
-If you need to display help from inside your application, you can always use the
-fact that help-displaying function is attached to your function object, i.e.::
+If you need to display help from inside your application, you can always use
+the fact that the help-displaying function is attached to your decorated
+function object, i.e.::
 
   @command()
   def something():
       if some_consequences:
           something.help()
 
-See `example from tests`_.
+See `an example from the tests`_.
 
 .. _example from tests: http://hg.piranha.org.ua/opster/file/default/tests/selfhelp.py

@@ -5,8 +5,8 @@
 Opster is a command line parser, intended to make writing command line
 applications easy and painless. It uses built-in Python types (lists,
 dictionaries, etc) to define options, which makes configuration clear and
-concise. Additionally it contains possibility to handle subcommands (i.e.
-``hg commit`` or ``svn update``).
+concise. Additionally, Opster supports parsing arguments for an application
+that uses subcommands (i.e. ``hg commit`` or ``svn update``).
 
 * Page on PyPI: http://pypi.python.org/pypi/opster/
 * Repository: http://hg.piranha.org.ua/opster/
@@ -26,19 +26,20 @@ More documentation
 Features
 --------
 
-- parsing arguments from ``sys.argv`` or custom strings
-- :ref:`converting <options-processing>` from string to appropriate Python
-  objects
+- parsing of arguments from ``sys.argv`` or custom strings
+- :ref:`conversion <options-processing>` from strings to the appropriate
+  Python objects
 - :ref:`help message <help-generation>` generation
 - positional and named arguments (i.e. arguments and options)
 - :ref:`subcommands <subcommands>` support
 - short, clean and concise definitions
-- :ref:`ability to shorten <partial-names>` names of subcommand and long options
+- :ref:`ability to shorten <partial-names>` names of both subcommands and long
+  options
 
 Quick example
 -------------
 
-That's an example of an option definition::
+Here's an example of a program that defines a single option::
 
   import sys
   from opster import command
@@ -54,7 +55,7 @@ That's an example of an option definition::
   if __name__ == '__main__':
       main.command()
 
-Running this program will print the help::
+Running the program above will print the help message:::
 
   > ./echo.py
   echo.py: invalid arguments
@@ -67,30 +68,32 @@ Running this program will print the help::
    -n --no-newline  don't print a newline
    -h --help        display help
 
-As you can see, here we have defined option to not print newline: keyword
-argument name is a long name for option, default value is a 3-tuple, containing
-short name for an option (can be empty), default value (on base of which
-processing is applied - :ref:`see description <options-processing>`) and a help
-string.
+As you can see, here we have defined an option to not print newlines: the
+keyword argument is used as the long name for the option and its default value
+is a 3-tuple, containing short name for an option (can be empty), default
+value (whose type determines what conversion is applied - 
+:ref:`see description <options-processing>`) and a help string for the option.
 
-Underscores in long names of options are converted into dashes.
+Any underscores in the keyword argument name are converted into dashes in the
+long option name.
 
-If you are calling a command with option using long name, you can supply it
-partially. In this case it could look like ``./echo.py --no-new``. This is also
-true for subcommands: read about them and everything else you'd like to know
-further in documentation.
+When a command is called using the long name for an option, the option need
+not be fully entered. In the case above this could look like ``./echo.py
+--no-new``. This is also true for subcommands: read about them and everything
+else you'd like to know further on in the documentation.
 
 Nice points
 -----------
 
 - Opster is a `single file`_, which means that you can easily include it in
   your application
-- When you've decorated function as command, you can continue to use it as
-  usual Python function.
-- It's easy to switch between usual command line options parser and
-  subcommands.
-- No need to type complete name of option or subcommand: :ref:`just type
-  <partial-names>` unique start sequence.
+- When you've decorated a function with ``command``, you can continue to use
+  it as an ordinary Python function.
+- It's easy to switch between a simple command line application and one that
+  uses subcommands.
+- There's no need to type the complete name of an option or subcommand:
+  :ref:`just type <partial-names>` as many letters as are needed to
+  distinguish it from the others.
 
 Read more in :doc:`overview`.
 
