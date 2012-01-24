@@ -1,6 +1,19 @@
 Changelog
 ---------
 
+3.4 (2012.01.24)
+~~~~~~~~~~~~~~~~
+
+ - Fix for installation issue (MANIFEST.in wasn't included).
+ - Fix for pep8.py complaints (most of them).
+ - Fix for script name when calling as a command (and not a dispatcher) (GH-4).
+ - Fix for some 2to3 issues (GH-5).
+ - Fixed bug with empty arguments for ``opster.command`` (GH-6).
+ - opster.t is now able to run under ``dash``.
+ - More output encodings supported (GH-7).
+ - Coverage support for cram tests (GH-8).
+ - Fixed combination of varargs and option name with underscore (GH-10).
+
 3.3 (2011.09.04)
 ~~~~~~~~~~~~~~~~
 
