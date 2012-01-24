@@ -19,3 +19,6 @@ arch:
 test:
 	python opster.py
 	cram tests/*.t
+
+upload:
+	python setup.py sdist upload
