@@ -247,4 +247,30 @@ function object, i.e.::
 
 See `an example from the tests`_.
 
+Error messages
+==============
+
+Opster provides a mechanism to quit out of script execution returning a
+message to the user: simply raise ``command.Error`` at any point. Opster will
+catch the error and display its message to the script user. For example::
+
+  from opster import command
+
+  @command()
+  def main(algorithm=('a', 'fast', 'algorithm: slow or fast')):
+      '''
+      script that uses two possible algorithms.
+      '''
+      if algorithm not in ('short', 'fast'):
+          raise command.Error('unrecognised algorithm "{0}"'.format(algorithm))
+      pass
+
+  if __name__ == "__main__":
+      main.command()
+
+Now we can do::
+
+  > python quit.py --algorithm=quick
+  unrecognised algorithm "quick"
+
 .. _example from tests: http://hg.piranha.org.ua/opster/file/default/tests/selfhelp.py
