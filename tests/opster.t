@@ -256,3 +256,12 @@ Scripts can exit with an error message at any time by raising
   unrecognised algorithm "quick"
 
 That's all for today; see you next time!
+
+.. _varargs:
+
+There is no problems with handling variable argumentrs and underscores::
+
+  $ run varargs.py --test-option test1 var1 var2
+  {'args': ('var1', 'var2'), 'test_option': 'test1'}
+  $ run varargs.py var1 var2
+  {'args': ('var1', 'var2'), 'test_option': 'test'}
