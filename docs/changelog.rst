@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.5 (2012.03.25)
+~~~~~~~~~~~~~~~~
+
+ - Added `command.Error`_ to facilitate easy exits from scripts (GH-12).
+ - Fixed opster.t output.
+
+.. _command.Error: http://opster.readthedocs.org/en/latest/overview.html#error-messages
+
 3.4 (2012.01.24)
 ~~~~~~~~~~~~~~~~
 
