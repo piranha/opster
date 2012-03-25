@@ -249,5 +249,10 @@ keyword argument 'option'``::
   $ run multivalueserr.py some arguments hehe
   I work! False bopt some arguments ('hehe',)
 
+Scripts can exit with an error message at any time by raising
+``command.Error``::
+
+  $ run quit.py --algorithm=quick
+  unrecognised algorithm "quick"
 
 That's all for today; see you next time!

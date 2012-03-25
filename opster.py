@@ -819,6 +819,13 @@ class ParseError(OpsterError):
     'Raised on error in command line parsing'
 
 
+class QuitError(OpsterError):
+    'Raised to exit script with a message to the user'
+
+# API to expose QuitError for opster users
+command.Error = QuitError
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
