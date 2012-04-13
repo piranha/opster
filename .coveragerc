@@ -1,7 +1,7 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-data_file = coverage.db
+data_file = tests/coverage.db
 
 [report]
 # Regexes for lines to exclude from consideration
