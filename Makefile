@@ -19,3 +19,7 @@ arch:
 test:
 	python opster.py
 	cram tests/*.t
+
+coverage:
+	coverage run -a opster.py
+	COVERAGE=1 cram tests/*.t

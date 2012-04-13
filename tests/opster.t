@@ -22,7 +22,7 @@ Define function to make it simpler::
   >   if [ -z "$COVERAGE" ]; then
   >      python "$TESTDIR/$name" "$@"
   >   else
-  >      coverage run -a --rcfile="$TESTDIR/.coveragerc" "$TESTDIR/$name" "$@"
+  >      coverage run -a --rcfile="$TESTDIR/../.coveragerc" "$TESTDIR/$name" "$@"
   >   fi
   > }
 
