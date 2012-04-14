@@ -139,10 +139,13 @@ class Dispatcher(object):
 
             def command(argv=None):
                 for o in self.globaloptions:
-                    if not next((x for x in options_ if
-                                 x[1] == o[1] or (x[0] and x[0] == o[0])),
-                                None):
-                        options_.append(o)
+                    # Don't include global option if long name matches
+                    if any((x[1] == o[1] for x in options_)):
+                        continue
+                    # Don't use global option short name if already used
+                    if any((x[0] and x[0] == o[0] for x in options_)):
+                        o = ('',) + o[1:]
+                    options_.append(o)
 
                 if argv is None:
                     argv = sys.argv[1:]
