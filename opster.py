@@ -5,6 +5,7 @@
 import sys, traceback, getopt, types, textwrap, inspect, os, copy, keyword
 from itertools import imap
 from functools import wraps
+from collections import namedtuple
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
@@ -36,6 +37,75 @@ def err(text):
     write(text, out=sys.stderr)
 
 
+_Option = namedtuple('Option',
+    ('pyname', 'longname', 'shortname', 'option_type', 'default',
+    'default_state', 'update_state', 'final_state', 'helpmsg', 'completer'))
+
+def Option(o):
+    '''Create Option instance from tuple of option data'''
+    if isinstance(o, _Option):
+        return o
+    # Extract and validate contents of tuple
+    shortname, longname, default, helpmsg = o[:4]
+    completer = o[4] if len(o) > 4 else None
+    if shortname and len(shortname) != 1:
+        raise OpsterError(
+            'Short option should be only a single character: %s' % short)
+    if not longname:
+        raise OpsterError(
+            'Long name should be defined for every option')
+    pyname = name_to_python(longname)
+
+    # Establish type of default argument
+    for name, type_ in (('bool', (bool, types.NoneType)), ('int', int),
+                       ('float', float), ('list', list), ('dict', dict)):
+        if isinstance(default, type_):
+            option_type = name
+            break
+    else:
+        if hasattr(default, '__call__'):
+            option_type = 'function'
+        else:
+            option_type = 'unknown'
+
+    # Function to initialise default state from default value
+    if option_type == 'list':
+        default_state = lambda : list(default)
+    elif option_type == 'dict':
+        default_state = lambda : dict(default)
+    elif option_type == 'function':
+        default_state = lambda : None
+    else:
+        default_state = lambda : default
+
+    # Function to update state with each option arg encountered
+    if option_type == 'list':
+        update_state = lambda state, new: old.append(new)
+    elif option_type == 'dict':
+        def update_state(state, new):
+            try:
+                k, v = new.split('=')
+            except ValueError:
+                raise getopt.GetoptError(
+                    "wrong definition: %r (should be in format KEY=VALUE)"
+                    % new)
+            state[k] = v
+    else:
+        update_state = None
+
+    # Funtion to create option value from string
+    if option_type == 'function':
+        final_state = lambda s: default(s)
+    elif option_type in ('int', 'float', 'unknown'):
+        final_state = lambda s: type(default)(s)
+    else:
+        final_state = None
+
+
+    return _Option(pyname, longname, shortname, option_type, default,
+                   default_state, update_state, final_state, helpmsg, completer)
+
+
 class Dispatcher(object):
     '''Central object for command dispatching system
 
@@ -48,14 +118,14 @@ class Dispatcher(object):
 
     def __init__(self, cmdtable=None, globaloptions=None, middleware=None):
         self._cmdtable = cmdtable or {}
-        self._globaloptions = globaloptions or []
+        self._globaloptions = [Option(o) for o in (globaloptions or [])]
         self.middleware = middleware
 
     @property
     def globaloptions(self):
         opts = self._globaloptions[:]
-        if not next((True for o in opts if o[1] == 'help'), None):
-            opts.append(('h', 'help', False, 'display help'))
+        if not any(o.longname == 'help' for o in opts):
+            opts.append(Option(('h', 'help', False, 'display help')))
         return opts
 
     @property
@@ -117,7 +187,7 @@ class Dispatcher(object):
         '''
         def wrapper(func):
             try:
-                options_ = list(options or guess_options(func))
+                options_ = [Option(o) for o in (options or guess_options(func))]
             except TypeError:
                 options_ = []
 
@@ -140,11 +210,12 @@ class Dispatcher(object):
             def command(argv=None):
                 for o in self.globaloptions:
                     # Don't include global option if long name matches
-                    if any((x[1] == o[1] for x in options_)):
+                    if any((x.longname == o.longname for x in options_)):
                         continue
                     # Don't use global option short name if already used
-                    if any((x[0] and x[0] == o[0] for x in options_)):
-                        o = ('',) + o[1:]
+                    if any((x.shortname and x.shortname == o.shortname
+                            for x in options_)):
+                        o = o._replace(shortname='')
                     options_.append(o)
 
                 if argv is None:
@@ -245,7 +316,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
         if cmdtable:
             _dispatcher._cmdtable = cmdtable
         if globaloptions:
-            _dispatcher._globaloptions = globaloptions
+            _dispatcher._globaloptions = [Option(o) for o in globaloptions]
         if middleware:
             _dispatcher.middleware = middleware
     return _dispatcher.dispatch(args)
@@ -338,6 +409,7 @@ def help_cmd(func, usage, options, aliases):
      -d --daemonize  daemonize process
         --pid-file   name of file to write process ID to
     '''
+    options = [Option(o) for o in options] # only for doctest
     write(usage + '\n')
     if aliases:
         write('\naliases: ' + ', '.join(aliases) + '\n')
@@ -353,13 +425,13 @@ def help_options(options):
     yield 'options:\n\n'
     output = []
     for o in options:
-        short, name, default, desc = o[:4]
-        if hasattr(default, '__call__'):
+        default = o.default
+        if o.option_type == 'function':
             default = default(None)
         default = default and ' (default: %s)' % default or ''
-        output.append(('%2s%s' % (short and '-%s' % short,
-                                  name and ' --%s' % name),
-                       '%s%s' % (desc, default)))
+        output.append(('%2s%s' % (o.shortname and '-%s' % o.shortname,
+                                  o.longname and ' --%s' % o.longname),
+                       '%s%s' % (o.helpmsg, default)))
 
     opts_len = max([len(first) for first, second in output if second] or [0])
     for first, second in output:
@@ -390,34 +462,19 @@ def process(args, options, preparse=False):
     (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
 
     '''
-    argmap, defmap, state = {}, {}, {}
-    shortlist, namelist, funlist = '', [], []
+    argmap, funmap = {}, {}
+    shortlist, namelist = '', []
+    options = [Option(o) for o in options] # only for doctest
+
+    # copy defaults to state
+    state = dict((o.pyname, o.default_state()) for o in options)
 
     for o in options:
-        # might have the fifth completer element
-        short, name, default, comment = o[:4]
-        if short and len(short) != 1:
-            raise OpsterError(
-                'Short option should be only a single character: %s' % short)
-        if not name:
-            raise OpsterError(
-                'Long name should be defined for every option')
-        # change name to match Python styling
-        pyname = name_to_python(name)
-        argmap['-' + short] = argmap['--' + name] = pyname
-        defmap[pyname] = default
-
-        # copy defaults to state
-        if isinstance(default, (list, dict)):
-            state[pyname] = copy.copy(default)
-        elif isinstance(default, types.FunctionType):
-            funlist.append(pyname)
-            state[pyname] = None
-        else:
-            state[pyname] = default
+        argmap['-' + o.shortname] = argmap['--' + o.longname] = o
 
         # getopt wants indication that it takes a parameter
-        if not (default is None or default is True or default is False):
+        short, name = o.shortname, o.longname
+        if o.option_type != 'bool':
             if short:
                 short += ':'
             if name:
@@ -440,35 +497,24 @@ def process(args, options, preparse=False):
 
     # transfer result to state
     for opt, val in opts:
-        name = argmap[opt]
-        t = type(defmap[name])
-        if t is types.FunctionType:
-            del funlist[funlist.index(name)]
-            state[name] = defmap[name](val)
-        elif t is list:
-            state[name].append(val)
-        elif t is dict:
+        o = argmap[opt]
+        name = o.pyname
+        if o.update_state:
+            o.update_state(state[name], val)
+        elif o.option_type == 'bool':
+            state[name] = not o.default
+        else:
+            state[name] = val
+
+    # Call functions to convert values
+    for o in options:
+        if o.final_state:
             try:
-                k, v = val.split('=')
-            except ValueError:
-                raise getopt.GetoptError(
-                    "wrong definition: %r (should be in format KEY=VALUE)"
-                    % val)
-            state[name][k] = v
-        elif t in (types.NoneType, types.BooleanType):
-            state[name] = not defmap[name]
-        elif t in (int, float):
-            try:
-                state[name] = t(val)
+                state[o.pyname] = o.final_state(state[o.pyname])
             except ValueError:
                 raise getopt.GetoptError(
                     'invalid option value %r for option %r'
-                    % (val, name))
-        else:
-            state[name] = t(val)
-
-    for name in funlist:
-        state[name] = defmap[name](None)
+                    % (state[o.pyname], o.longname))
 
     return args, state
 
@@ -561,9 +607,7 @@ def guess_options(func):
     for name, option in zip(args[-len(defaults):], defaults):
         if not isinstance(option, tuple):
             continue
-        sname, default, hlp = option[:3]
-        completer = option[3] if len(option) > 3 else None
-        yield (sname, name_from_python(name), default, hlp, completer)
+        yield (option[0], name_from_python(name)) + option[1:]
 
 
 def guess_usage(func, options):
@@ -573,7 +617,7 @@ def guess_usage(func, options):
     if options:
         usage.append('[OPTIONS]')
     arginfo = inspect.getargspec(func)
-    optnames = [x[1] for x in options]
+    optnames = [o.longname for o in options]
     nonoptional = len(arginfo.args) - len(arginfo.defaults or ())
 
     for i, arg in enumerate(arginfo.args):
@@ -630,11 +674,10 @@ def call_cmd(name, func, opts, middleware=None):
         start = None
         if arginfo.varargs and len(args) > (len(arginfo.args) - len(kwargs)):
             for o in opts:
-                optname = o[1].replace('-', '_')
-                if optname in arginfo.args:
+                if o.pyname in arginfo.args:
                     if start is None:
-                        start = arginfo.args.index(optname)
-                    prepend.append(optname)
+                        start = arginfo.args.index(o.pyname)
+                    prepend.append(o.pyname)
             if start is not None:  # do we have to prepend anything
                 args = (args[:start] +
                         tuple(kwargs.pop(x) for x in prepend) +
@@ -659,8 +702,7 @@ def call_cmd_regular(func, opts):
                             ' than applicable')
 
         # short name, long name, default, help, (maybe) completer
-        funckwargs = dict((o[1].replace('-', '_'), o[2])
-                          for o in opts)
+        funckwargs = dict((o.pyname, o.default) for o in opts)
         if 'help' not in (arginfo.defaults or ()) and not arginfo.keywords:
             funckwargs.pop('help', None)
         funckwargs.update(kwargs)
@@ -745,11 +787,10 @@ def autocomplete(cmdtable, args, middleware):
         aliases, (cmd, opts, usage) = findcmd(cwords[0], cmdtable)
 
         for o in opts:
-            short, long, default, help = o[:4]
-            completer = o[4] if len(o) > 4 else None
-            short, long = '-%s' % short, '--%s' % long
+            short, long = '-%s' % o.shortname, '--%s' % o.longname
             options += [short, long]
 
+            completer = o.completer
             if cwords[idx] in (short, long) and completer:
                 if middleware:
                     completer = middleware(completer)
