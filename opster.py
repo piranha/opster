@@ -37,75 +37,6 @@ def err(text):
     write(text, out=sys.stderr)
 
 
-_Option = namedtuple('Option',
-    ('pyname', 'longname', 'shortname', 'option_type', 'default',
-    'default_state', 'update_state', 'final_state', 'helpmsg', 'completer'))
-
-def Option(o):
-    '''Create Option instance from tuple of option data'''
-    if isinstance(o, _Option):
-        return o
-    # Extract and validate contents of tuple
-    shortname, longname, default, helpmsg = o[:4]
-    completer = o[4] if len(o) > 4 else None
-    if shortname and len(shortname) != 1:
-        raise OpsterError(
-            'Short option should be only a single character: %s' % short)
-    if not longname:
-        raise OpsterError(
-            'Long name should be defined for every option')
-    pyname = name_to_python(longname)
-
-    # Establish type of default argument
-    for name, type_ in (('bool', (bool, types.NoneType)), ('int', int),
-                       ('float', float), ('list', list), ('dict', dict)):
-        if isinstance(default, type_):
-            option_type = name
-            break
-    else:
-        if hasattr(default, '__call__'):
-            option_type = 'function'
-        else:
-            option_type = 'unknown'
-
-    # Function to initialise default state from default value
-    if option_type == 'list':
-        default_state = lambda : list(default)
-    elif option_type == 'dict':
-        default_state = lambda : dict(default)
-    elif option_type == 'function':
-        default_state = lambda : None
-    else:
-        default_state = lambda : default
-
-    # Function to update state with each option arg encountered
-    if option_type == 'list':
-        update_state = lambda state, new: old.append(new)
-    elif option_type == 'dict':
-        def update_state(state, new):
-            try:
-                k, v = new.split('=')
-            except ValueError:
-                raise getopt.GetoptError(
-                    "wrong definition: %r (should be in format KEY=VALUE)"
-                    % new)
-            state[k] = v
-    else:
-        update_state = None
-
-    # Funtion to create option value from string
-    if option_type == 'function':
-        final_state = lambda s: default(s)
-    elif option_type in ('int', 'float', 'unknown'):
-        final_state = lambda s: type(default)(s)
-    else:
-        final_state = None
-
-
-    return _Option(pyname, longname, shortname, option_type, default,
-                   default_state, update_state, final_state, helpmsg, completer)
-
-
 class Dispatcher(object):
     '''Central object for command dispatching system
 
@@ -425,9 +356,7 @@ def help_options(options):
     yield 'options:\n\n'
     output = []
     for o in options:
-        default = o.default
-        if o.option_type == 'function':
-            default = default(None)
+        default = o.default_value()
         default = default and ' (default: %s)' % default or ''
         output.append(('%2s%s' % (o.shortname and '-%s' % o.shortname,
                                   o.longname and ' --%s' % o.longname),
@@ -447,6 +376,94 @@ def help_options(options):
 # --------
 # Options process
 # --------
+
+
+# Factory for creating _Option instances. Intended to be the entry point to
+# the *Option classes here.
+def Option(opt_tuple):
+    '''Create Option instance from tuple of option data'''
+    if isinstance(opt_tuple, _Option):
+        return opt_tuple
+
+    # Extract and validate contents of tuple
+    shortname, longname, default, helpmsg = opt_tuple[:4]
+    completer = opt_tuple[4] if len(opt_tuple) > 4 else None
+    if shortname and len(shortname) != 1:
+        raise OpsterError(
+            'Short option should be only a single character: %s' % short)
+    if not longname:
+        raise OpsterError(
+            'Long name should be defined for every option')
+    pyname = name_to_python(longname)
+
+    args = pyname, longname, shortname, default, helpmsg, completer
+
+    # Establish type of default argument
+    for opttype, deftype in [(BoolOption, (bool, types.NoneType)), (IntOption,
+        int), (FloatOption, float), (ListOption, list), (DictOption, dict)]:
+        if isinstance(default, deftype):
+            return opttype(*args)
+    else:
+        if hasattr(default, '__call__'):
+            return FuncOption(*args)
+        else:
+            return GenericOption(*args)
+
+# Superclass for all option classes
+_Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
+                                'helpmsg', 'completer'))
+
+class GenericOption(_Option):
+    def default_state(self):          # Generate initial (default) state value
+        return self.default
+    def update_state(self, state, new): # Update state after seeing option arg
+        return new
+    def final_value(self, final):     # Create value from final state
+        return type(self.default)(final)
+    def default_value(self):          # Value when option arg is not seen
+        return self.final_value(self.default_state())
+
+class BoolOption(GenericOption):
+    def update_state(self, state, new):
+        return not self.default
+
+class FuncOption(GenericOption):
+    def default_state(self):
+        return None
+    def final_value(self, final):
+        return self.default(final)
+
+class IntOption(GenericOption):
+    def final_value(self, final):
+        return int(final)
+
+class FloatOption(GenericOption):
+    def final_value(self, final):
+        return float(final)
+
+class ListOption(GenericOption):
+    def default_state(self):
+        return list(self.default)
+    def update_state(self, state, new):
+        state.append(new)
+        return state
+    def final_value(self, final):
+        return final
+
+class DictOption(GenericOption):
+    def default_state(self):
+        return dict(self.default)
+    def update_state(self, state, new):
+        try:
+            k, v = new.split('=')
+        except ValueError:
+            msg = "wrong definition: %r (should be in format KEY=VALUE)"
+            raise getopt.GetoptError(msg % new)
+        state[k] = v
+        return state
+    def final_value(self, final):
+        return final
+
 
 def process(args, options, preparse=False):
     '''
@@ -474,7 +491,7 @@ def process(args, options, preparse=False):
 
         # getopt wants indication that it takes a parameter
         short, name = o.shortname, o.longname
-        if o.option_type != 'bool':
+        if not isinstance(o, BoolOption):
             if short:
                 short += ':'
             if name:
@@ -499,22 +516,15 @@ def process(args, options, preparse=False):
     for opt, val in opts:
         o = argmap[opt]
         name = o.pyname
-        if o.update_state:
-            o.update_state(state[name], val)
-        elif o.option_type == 'bool':
-            state[name] = not o.default
-        else:
-            state[name] = val
+        state[name] = o.update_state(state[name], val)
 
     # Call functions to convert values
     for o in options:
-        if o.final_state:
-            try:
-                state[o.pyname] = o.final_state(state[o.pyname])
-            except ValueError:
-                raise getopt.GetoptError(
-                    'invalid option value %r for option %r'
-                    % (state[o.pyname], o.longname))
+        try:
+            state[o.pyname] = o.final_value(state[o.pyname])
+        except ValueError:
+            raise getopt.GetoptError('invalid option value %r for option %r'
+                % (state[o.pyname], o.longname))
 
     return args, state
 
