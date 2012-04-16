@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, copy, keyword
+import sys, traceback, getopt, types, textwrap, inspect, os, keyword
 from itertools import imap
 from functools import wraps
 from collections import namedtuple
@@ -340,7 +340,7 @@ def help_cmd(func, usage, options, aliases):
      -d --daemonize  daemonize process
         --pid-file   name of file to write process ID to
     '''
-    options = [Option(o) for o in options] # only for doctest
+    options = [Option(o) for o in options]  # only for doctest
     write(usage + '\n')
     if aliases:
         write('\naliases: ' + ', '.join(aliases) + '\n')
@@ -413,46 +413,67 @@ def Option(opt_tuple):
 _Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
                                 'helpmsg', 'completer'))
 
+
 class GenericOption(_Option):
+    '''Generic option type (including string options)'''
     def default_state(self):          # Generate initial (default) state value
         return self.default
-    def update_state(self, state, new): # Update state after seeing option arg
+
+    def update_state(self, state, new):  # Update state with option arg
         return new
+
     def final_value(self, final):     # Create value from final state
         return type(self.default)(final)
+
     def default_value(self):          # Value when option arg is not seen
         return self.final_value(self.default_state())
 
+
 class BoolOption(GenericOption):
+    '''Boolean option type'''
     def update_state(self, state, new):
         return not self.default
 
+
 class FuncOption(GenericOption):
+    '''Function option type'''
     def default_state(self):
         return None
+
     def final_value(self, final):
         return self.default(final)
 
+
 class IntOption(GenericOption):
+    '''Integer number option type'''
     def final_value(self, final):
         return int(final)
 
+
 class FloatOption(GenericOption):
+    '''Floating point number option type'''
     def final_value(self, final):
         return float(final)
 
+
 class ListOption(GenericOption):
+    '''List option type'''
     def default_state(self):
         return list(self.default)
+
     def update_state(self, state, new):
         state.append(new)
         return state
+
     def final_value(self, final):
         return final
 
+
 class DictOption(GenericOption):
+    '''Dict option type'''
     def default_state(self):
         return dict(self.default)
+
     def update_state(self, state, new):
         try:
             k, v = new.split('=')
@@ -461,6 +482,7 @@ class DictOption(GenericOption):
             raise getopt.GetoptError(msg % new)
         state[k] = v
         return state
+
     def final_value(self, final):
         return final
 
@@ -479,9 +501,9 @@ def process(args, options, preparse=False):
     (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
 
     '''
-    argmap, funmap = {}, {}
+    argmap = {}
     shortlist, namelist = '', []
-    options = [Option(o) for o in options] # only for doctest
+    options = [Option(o) for o in options]  # only for doctest
 
     # copy defaults to state
     state = dict((o.pyname, o.default_state()) for o in options)
@@ -515,8 +537,7 @@ def process(args, options, preparse=False):
     # transfer result to state
     for opt, val in opts:
         o = argmap[opt]
-        name = o.pyname
-        state[name] = o.update_state(state[name], val)
+        state[o.pyname] = o.update_state(state[o.pyname], val)
 
     # Call functions to convert values
     for o in options:
