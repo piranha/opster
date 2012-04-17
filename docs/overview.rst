@@ -89,6 +89,10 @@ help, since the script has a required positional argument::
       --pid-file   name of file to write process ID to
    -h --help       display help
 
+In general, to obtain help you can run the script with ``python example.py
+--help`` or ``python example.py -h`` (unless ``-h`` is used as the short name
+for another option).
+
 You can parse command line strings programmatically, supplying a list of
 arguments to ``.command()`` attribute of the decorated main function::
 
@@ -183,6 +187,10 @@ They can then be passed to ``dispatch``::
   if __name__ == '__main__':
       dispatch(globaloptions=options)
 
+Global options must have a different ``longname`` from any options used in a
+subcommand. If a subcommand has an option with the same ``shortname`` as a
+global option, then the ``shortname`` will be used for the subcommand option
+(overriding the option in ``globaloptions``).
 
 Inner structure
 ---------------
