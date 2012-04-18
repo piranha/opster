@@ -398,16 +398,14 @@ def Option(opt_tuple):
 
     args = pyname, longname, shortname, default, helpmsg, completer
 
-    # Establish type of default argument
-    for opttype, deftype in [(BoolOption, (bool, types.NoneType)), (IntOption,
-        int), (FloatOption, float), (ListOption, list), (DictOption, dict)]:
-        if isinstance(default, deftype):
-            return opttype(*args)
-    else:
-        if hasattr(default, '__call__'):
-            return FuncOption(*args)
-        else:
-            return GenericOption(*args)
+    # Find matching _Option subclass and return instance
+    # nb. the order of testing matters
+    for option_type in (BoolOption, IntOption, FloatOption, ListOption,
+                        DictOption, FuncOption, GenericOption):
+        if option_type.matches_default(default):
+            break
+    return option_type(*args)
+
 
 # Superclass for all option classes
 _Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
@@ -417,6 +415,12 @@ _Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
 class GenericOption(_Option):
     '''Generic option type (including string options)'''
     has_parameter = True
+    types_match = object
+
+    # Query if this the appropriate Option subclass for the default value
+    @classmethod
+    def matches_default(cls, default):
+        return isinstance(default, cls.types_match)
 
     def default_state(self):          # Generate initial (default) state value
         return self.default
@@ -434,34 +438,33 @@ class GenericOption(_Option):
 class BoolOption(GenericOption):
     '''Boolean option type'''
     has_parameter = False
+    types_match = (bool, types.NoneType)
 
     def update_state(self, state, new):
         return not self.default
 
 
-class FuncOption(GenericOption):
-    '''Function option type'''
-    def default_state(self):
-        return None
-
-    def final_value(self, final):
-        return self.default(final)
-
-
 class IntOption(GenericOption):
     '''Integer number option type'''
+    types_match = int
+    types_nomatch = bool
+
     def final_value(self, final):
         return int(final)
 
 
 class FloatOption(GenericOption):
     '''Floating point number option type'''
+    types_match = float
+
     def final_value(self, final):
         return float(final)
 
 
 class ListOption(GenericOption):
     '''List option type'''
+    types_match = list
+
     def default_state(self):
         return list(self.default)
 
@@ -475,6 +478,8 @@ class ListOption(GenericOption):
 
 class DictOption(GenericOption):
     '''Dict option type'''
+    types_match = dict
+
     def default_state(self):
         return dict(self.default)
 
@@ -489,6 +494,19 @@ class DictOption(GenericOption):
 
     def final_value(self, final):
         return final
+
+
+class FuncOption(GenericOption):
+    '''Function option type'''
+    @classmethod
+    def matches_default(cls, default):
+        return hasattr(default, '__call__')
+
+    def default_state(self):
+        return None
+
+    def final_value(self, final):
+        return self.default(final)
 
 
 def process(args, options, preparse=False):
