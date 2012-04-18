@@ -678,7 +678,7 @@ def replace_name(usage, name):
 def sysname():
     '''Returns name of executing file'''
     name = sys.argv[0]
-    if name.startswith('/'):
+    if os.path.isabs(name):
         return name.rsplit('/', 1)[1]
     elif name.startswith('./'):
         return name[2:]
