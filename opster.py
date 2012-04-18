@@ -422,16 +422,20 @@ class GenericOption(_Option):
     def matches_default(cls, default):
         return isinstance(default, cls.types_match)
 
-    def default_state(self):          # Generate initial (default) state value
+    # Generate initial state value from provided default value
+    def default_state(self):
         return self.default
 
-    def update_state(self, state, new):  # Update state with option arg
+    # Update state after encountering an option on hte command line
+    def update_state(self, state, new):
         return new
 
-    def final_value(self, final):     # Create value from final state
+    # Generate the resulting python value from the final state
+    def final_value(self, final):
         return type(self.default)(final)
 
-    def default_value(self):          # Value when option arg is not seen
+    # Shortcut to obtain the default value when option arg not provided
+    def default_value(self):
         return self.final_value(self.default_state())
 
 
@@ -447,7 +451,6 @@ class BoolOption(GenericOption):
 class IntOption(GenericOption):
     '''Integer number option type'''
     types_match = int
-    types_nomatch = bool
 
     def final_value(self, final):
         return int(final)
