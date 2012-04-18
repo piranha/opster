@@ -390,7 +390,7 @@ def Option(opt_tuple):
     completer = opt_tuple[4] if len(opt_tuple) > 4 else None
     if shortname and len(shortname) != 1:
         raise OpsterError(
-            'Short option should be only a single character: %s' % short)
+            'Short option should be only a single character: %s' % shortname)
     if not longname:
         raise OpsterError(
             'Long name should be defined for every option')
