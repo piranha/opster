@@ -416,6 +416,8 @@ _Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
 
 class GenericOption(_Option):
     '''Generic option type (including string options)'''
+    has_parameter = True
+
     def default_state(self):          # Generate initial (default) state value
         return self.default
 
@@ -431,6 +433,8 @@ class GenericOption(_Option):
 
 class BoolOption(GenericOption):
     '''Boolean option type'''
+    has_parameter = False
+
     def update_state(self, state, new):
         return not self.default
 
@@ -513,7 +517,7 @@ def process(args, options, preparse=False):
 
         # getopt wants indication that it takes a parameter
         short, name = o.shortname, o.longname
-        if not isinstance(o, BoolOption):
+        if o.has_parameter:
             if short:
                 short += ':'
             if name:
