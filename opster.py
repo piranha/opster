@@ -2,9 +2,10 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, copy, keyword
+import sys, traceback, getopt, types, textwrap, inspect, os, keyword
 from itertools import imap
 from functools import wraps
+from collections import namedtuple
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
@@ -49,14 +50,14 @@ class Dispatcher(object):
 
     def __init__(self, cmdtable=None, globaloptions=None, middleware=None):
         self._cmdtable = cmdtable or {}
-        self._globaloptions = globaloptions or []
+        self._globaloptions = [Option(o) for o in (globaloptions or [])]
         self.middleware = middleware
 
     @property
     def globaloptions(self):
         opts = self._globaloptions[:]
-        if not next((True for o in opts if o[1] == 'help'), None):
-            opts.append(('h', 'help', False, 'display help'))
+        if not any(o.longname == 'help' for o in opts):
+            opts.append(Option(('h', 'help', False, 'display help')))
         return opts
 
     @property
@@ -118,7 +119,7 @@ class Dispatcher(object):
         '''
         def wrapper(func):
             try:
-                options_ = list(options or guess_options(func))
+                options_ = [Option(o) for o in (options or guess_options(func))]
             except TypeError:
                 options_ = []
 
@@ -141,11 +142,12 @@ class Dispatcher(object):
             def command(argv=None):
                 for o in self.globaloptions:
                     # Don't include global option if long name matches
-                    if any((x[1] == o[1] for x in options_)):
+                    if any((x.longname == o.longname for x in options_)):
                         continue
                     # Don't use global option short name if already used
-                    if any((x[0] and x[0] == o[0] for x in options_)):
-                        o = ('',) + o[1:]
+                    if any((x.shortname and x.shortname == o.shortname
+                            for x in options_)):
+                        o = o._replace(shortname='')
                     options_.append(o)
 
                 if argv is None:
@@ -246,7 +248,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
         if cmdtable:
             _dispatcher._cmdtable = cmdtable
         if globaloptions:
-            _dispatcher._globaloptions = globaloptions
+            _dispatcher._globaloptions = [Option(o) for o in globaloptions]
         if middleware:
             _dispatcher.middleware = middleware
     return _dispatcher.dispatch(args)
@@ -339,6 +341,7 @@ def help_cmd(func, usage, options, aliases):
      -d --daemonize  daemonize process
         --pid-file   name of file to write process ID to
     '''
+    options = [Option(o) for o in options]  # only for doctest
     write(usage + '\n')
     if aliases:
         write('\naliases: ' + ', '.join(aliases) + '\n')
@@ -354,13 +357,11 @@ def help_options(options):
     yield 'options:\n\n'
     output = []
     for o in options:
-        short, name, default, desc = o[:4]
-        if hasattr(default, '__call__'):
-            default = default(None)
+        default = o.default_value()
         default = default and ' (default: %s)' % default or ''
-        output.append(('%2s%s' % (short and '-%s' % short,
-                                  name and ' --%s' % name),
-                       '%s%s' % (desc, default)))
+        output.append(('%2s%s' % (o.shortname and '-%s' % o.shortname,
+                                  o.longname and ' --%s' % o.longname),
+                       '%s%s' % (o.helpmsg, default)))
 
     opts_len = max([len(first) for first, second in output if second] or [0])
     for first, second in output:
@@ -377,6 +378,141 @@ def help_options(options):
 # Options process
 # --------
 
+
+# Factory for creating _Option instances. Intended to be the entry point to
+# the *Option classes here.
+def Option(opt_tuple):
+    '''Create Option instance from tuple of option data'''
+    if isinstance(opt_tuple, _Option):
+        return opt_tuple
+
+    # Extract and validate contents of tuple
+    shortname, longname, default, helpmsg = opt_tuple[:4]
+    completer = opt_tuple[4] if len(opt_tuple) > 4 else None
+    if shortname and len(shortname) != 1:
+        raise OpsterError(
+            'Short option should be only a single character: %s' % shortname)
+    if not longname:
+        raise OpsterError(
+            'Long name should be defined for every option')
+    pyname = name_to_python(longname)
+
+    args = pyname, longname, shortname, default, helpmsg, completer
+
+    # Find matching _Option subclass and return instance
+    # nb. the order of testing matters
+    for option_type in (BoolOption, IntOption, FloatOption, ListOption,
+                        DictOption, FuncOption, GenericOption):
+        if option_type.matches_default(default):
+            break
+    return option_type(*args)
+
+
+# Superclass for all option classes
+_Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
+                                'helpmsg', 'completer'))
+
+
+class GenericOption(_Option):
+    '''Generic option type (including string options)'''
+    has_parameter = True
+    types_match = object
+
+    # Query if this the appropriate Option subclass for the default value
+    @classmethod
+    def matches_default(cls, default):
+        return isinstance(default, cls.types_match)
+
+    # Generate initial state value from provided default value
+    def default_state(self):
+        return self.default
+
+    # Update state after encountering an option on hte command line
+    def update_state(self, state, new):
+        return new
+
+    # Generate the resulting python value from the final state
+    def final_value(self, final):
+        return type(self.default)(final)
+
+    # Shortcut to obtain the default value when option arg not provided
+    def default_value(self):
+        return self.final_value(self.default_state())
+
+
+class BoolOption(GenericOption):
+    '''Boolean option type'''
+    has_parameter = False
+    types_match = (bool, types.NoneType)
+
+    def update_state(self, state, new):
+        return not self.default
+
+
+class IntOption(GenericOption):
+    '''Integer number option type'''
+    types_match = int
+
+    def final_value(self, final):
+        return int(final)
+
+
+class FloatOption(GenericOption):
+    '''Floating point number option type'''
+    types_match = float
+
+    def final_value(self, final):
+        return float(final)
+
+
+class ListOption(GenericOption):
+    '''List option type'''
+    types_match = list
+
+    def default_state(self):
+        return list(self.default)
+
+    def update_state(self, state, new):
+        state.append(new)
+        return state
+
+    def final_value(self, final):
+        return final
+
+
+class DictOption(GenericOption):
+    '''Dict option type'''
+    types_match = dict
+
+    def default_state(self):
+        return dict(self.default)
+
+    def update_state(self, state, new):
+        try:
+            k, v = new.split('=')
+        except ValueError:
+            msg = "wrong definition: %r (should be in format KEY=VALUE)"
+            raise getopt.GetoptError(msg % new)
+        state[k] = v
+        return state
+
+    def final_value(self, final):
+        return final
+
+
+class FuncOption(GenericOption):
+    '''Function option type'''
+    @classmethod
+    def matches_default(cls, default):
+        return hasattr(default, '__call__')
+
+    def default_state(self):
+        return None
+
+    def final_value(self, final):
+        return self.default(final)
+
+
 def process(args, options, preparse=False):
     '''
     >>> opts = [('l', 'listen', 'localhost',
@@ -391,34 +527,19 @@ def process(args, options, preparse=False):
     (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
 
     '''
-    argmap, defmap, state = {}, {}, {}
-    shortlist, namelist, funlist = '', [], []
+    argmap = {}
+    shortlist, namelist = '', []
+    options = [Option(o) for o in options]  # only for doctest
+
+    # copy defaults to state
+    state = dict((o.pyname, o.default_state()) for o in options)
 
     for o in options:
-        # might have the fifth completer element
-        short, name, default, comment = o[:4]
-        if short and len(short) != 1:
-            raise OpsterError(
-                'Short option should be only a single character: %s' % short)
-        if not name:
-            raise OpsterError(
-                'Long name should be defined for every option')
-        # change name to match Python styling
-        pyname = name_to_python(name)
-        argmap['-' + short] = argmap['--' + name] = pyname
-        defmap[pyname] = default
-
-        # copy defaults to state
-        if isinstance(default, (list, dict)):
-            state[pyname] = copy.copy(default)
-        elif isinstance(default, types.FunctionType):
-            funlist.append(pyname)
-            state[pyname] = None
-        else:
-            state[pyname] = default
+        argmap['-' + o.shortname] = argmap['--' + o.longname] = o
 
         # getopt wants indication that it takes a parameter
-        if not (default is None or default is True or default is False):
+        short, name = o.shortname, o.longname
+        if o.has_parameter:
             if short:
                 short += ':'
             if name:
@@ -441,35 +562,16 @@ def process(args, options, preparse=False):
 
     # transfer result to state
     for opt, val in opts:
-        name = argmap[opt]
-        t = type(defmap[name])
-        if t is types.FunctionType:
-            del funlist[funlist.index(name)]
-            state[name] = defmap[name](val)
-        elif t is list:
-            state[name].append(val)
-        elif t is dict:
-            try:
-                k, v = val.split('=')
-            except ValueError:
-                raise getopt.GetoptError(
-                    "wrong definition: %r (should be in format KEY=VALUE)"
-                    % val)
-            state[name][k] = v
-        elif t in (types.NoneType, types.BooleanType):
-            state[name] = not defmap[name]
-        elif t in (int, float):
-            try:
-                state[name] = t(val)
-            except ValueError:
-                raise getopt.GetoptError(
-                    'invalid option value %r for option %r'
-                    % (val, name))
-        else:
-            state[name] = t(val)
+        o = argmap[opt]
+        state[o.pyname] = o.update_state(state[o.pyname], val)
 
-    for name in funlist:
-        state[name] = defmap[name](None)
+    # Call functions to convert values
+    for o in options:
+        try:
+            state[o.pyname] = o.final_value(state[o.pyname])
+        except ValueError:
+            raise getopt.GetoptError('invalid option value %r for option %r'
+                % (state[o.pyname], o.longname))
 
     return args, state
 
@@ -562,9 +664,7 @@ def guess_options(func):
     for name, option in zip(args[-len(defaults):], defaults):
         if not isinstance(option, tuple):
             continue
-        sname, default, hlp = option[:3]
-        completer = option[3] if len(option) > 3 else None
-        yield (sname, name_from_python(name), default, hlp, completer)
+        yield (option[0], name_from_python(name)) + option[1:]
 
 
 def guess_usage(func, options):
@@ -574,7 +674,7 @@ def guess_usage(func, options):
     if options:
         usage.append('[OPTIONS]')
     arginfo = inspect.getargspec(func)
-    optnames = [x[1] for x in options]
+    optnames = [o.longname for o in options]
     nonoptional = len(arginfo.args) - len(arginfo.defaults or ())
 
     for i, arg in enumerate(arginfo.args):
@@ -631,11 +731,10 @@ def call_cmd(name, func, opts, middleware=None):
         start = None
         if arginfo.varargs and len(args) > (len(arginfo.args) - len(kwargs)):
             for o in opts:
-                optname = o[1].replace('-', '_')
-                if optname in arginfo.args:
+                if o.pyname in arginfo.args:
                     if start is None:
-                        start = arginfo.args.index(optname)
-                    prepend.append(optname)
+                        start = arginfo.args.index(o.pyname)
+                    prepend.append(o.pyname)
             if start is not None:  # do we have to prepend anything
                 args = (args[:start] +
                         tuple(kwargs.pop(x) for x in prepend) +
@@ -660,8 +759,7 @@ def call_cmd_regular(func, opts):
                             ' than applicable')
 
         # short name, long name, default, help, (maybe) completer
-        funckwargs = dict((o[1].replace('-', '_'), o[2])
-                          for o in opts)
+        funckwargs = dict((o.pyname, o.default) for o in opts)
         if 'help' not in (arginfo.defaults or ()) and not arginfo.keywords:
             funckwargs.pop('help', None)
         funckwargs.update(kwargs)
@@ -746,11 +844,10 @@ def autocomplete(cmdtable, args, middleware):
         aliases, (cmd, opts, usage) = findcmd(cwords[0], cmdtable)
 
         for o in opts:
-            short, long, default, help = o[:4]
-            completer = o[4] if len(o) > 4 else None
-            short, long = '-%s' % short, '--%s' % long
+            short, long = '-%s' % o.shortname, '--%s' % o.longname
             options += [short, long]
 
+            completer = o.completer
             if cwords[idx] in (short, long) and completer:
                 if middleware:
                     completer = middleware(completer)
