@@ -34,6 +34,7 @@ def write(text, out=None):
 def err(text):
     '''Write output to stderr'''
     write(text, out=sys.stderr)
+    sys.stderr.flush()
 
 
 class Dispatcher(object):
