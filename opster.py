@@ -17,7 +17,7 @@ try:
     import locale
     ENCODING = locale.getpreferredencoding()
     if (not ENCODING or ENCODING == 'mac-roman' or 'ascii' in ENCODING.lower()
-        or 'ansi' in ENCODING.lower()):
+        or 'ansi' in ENCODING.lower() or ENCODING.lower() == 'cp1252'):
         ENCODING = 'UTF-8'
 except locale.Error:
     ENCODING = 'UTF-8'
@@ -34,6 +34,7 @@ def write(text, out=None):
 def err(text):
     '''Write output to stderr'''
     write(text, out=sys.stderr)
+    sys.stderr.flush()
 
 
 class Dispatcher(object):
