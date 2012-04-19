@@ -1,5 +1,8 @@
 .PHONY: help docs arch test
 
+SHELL ?= /bin/sh
+CRAM = cram --shell="$(SHELL)"
+
 help:
 	@echo "Use \`make <target>\` with one of targets:"
 	@echo "  docs  build docs"
@@ -18,11 +21,11 @@ arch:
 
 test:
 	python opster.py
-	cram tests/*.t
+	$(CRAM) tests/*.t
 
 coverage:
 	coverage run -a opster.py
-	COVERAGE=1 cram tests/*.t
+	COVERAGE=1 $(CRAM) tests/*.t
 
 upload:
 	python setup.py sdist upload
