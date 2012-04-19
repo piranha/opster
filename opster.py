@@ -5,7 +5,7 @@
 import sys, traceback, getopt, types, textwrap, inspect, os, keyword
 from itertools import imap
 from functools import wraps
-from collections import namedtuple
+from collections import namedtuple, Callable
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
@@ -56,7 +56,7 @@ class Dispatcher(object):
     @property
     def globaloptions(self):
         opts = self._globaloptions[:]
-        if not any(o.longname == 'help' for o in opts):
+        if not any(o.name == 'help' for o in opts):
             opts.append(Option(('h', 'help', False, 'display help')))
         return opts
 
@@ -142,12 +142,12 @@ class Dispatcher(object):
             def command(argv=None):
                 for o in self.globaloptions:
                     # Don't include global option if long name matches
-                    if any((x.longname == o.longname for x in options_)):
+                    if any((x.name == o.name for x in options_)):
                         continue
                     # Don't use global option short name if already used
-                    if any((x.shortname and x.shortname == o.shortname
+                    if any((x.short and x.short == o.short
                             for x in options_)):
-                        o = o._replace(shortname='')
+                        o = o._replace(short='')
                     options_.append(o)
 
                 if argv is None:
@@ -359,8 +359,8 @@ def help_options(options):
     for o in options:
         default = o.default_value()
         default = default and ' (default: %s)' % default or ''
-        output.append(('%2s%s' % (o.shortname and '-%s' % o.shortname,
-                                  o.longname and ' --%s' % o.longname),
+        output.append(('%2s%s' % (o.short and '-%s' % o.short,
+                                  o.name and ' --%s' % o.name),
                        '%s%s' % (o.helpmsg, default)))
 
     opts_len = max([len(first) for first, second in output if second] or [0])
@@ -381,93 +381,93 @@ def help_options(options):
 
 # Factory for creating _Option instances. Intended to be the entry point to
 # the *Option classes here.
-def Option(opt_tuple):
+def Option(opt):
     '''Create Option instance from tuple of option data'''
-    if isinstance(opt_tuple, _Option):
-        return opt_tuple
+    if isinstance(opt, BaseOption):
+        return opt
 
     # Extract and validate contents of tuple
-    shortname, longname, default, helpmsg = opt_tuple[:4]
-    completer = opt_tuple[4] if len(opt_tuple) > 4 else None
-    if shortname and len(shortname) != 1:
+    short, name, default, helpmsg = opt[:4]
+    completer = opt[4] if len(opt) > 4 else None
+    if short and len(short) != 1:
         raise OpsterError(
-            'Short option should be only a single character: %s' % shortname)
-    if not longname:
+            'Short option should be only a single character: %s' % short)
+    if not name:
         raise OpsterError(
             'Long name should be defined for every option')
-    pyname = name_to_python(longname)
+    pyname = name_to_python(name)
 
-    args = pyname, longname, shortname, default, helpmsg, completer
+    args = pyname, name, short, default, helpmsg, completer
 
     # Find matching _Option subclass and return instance
     # nb. the order of testing matters
-    for option_type in (BoolOption, IntOption, FloatOption, ListOption,
-                        DictOption, FuncOption, GenericOption):
-        if option_type.matches_default(default):
-            break
-    return option_type(*args)
-
+    for Type in (BoolOption, IntOption, FloatOption, ListOption,
+                 DictOption, FuncOption, GenericOption):
+        if Type.matches(default):
+            return Type(*args)
+    raise OpsterError('Cannot figure out type for option %s' % name)
 
 # Superclass for all option classes
-_Option = namedtuple('Option', ('pyname', 'longname', 'shortname', 'default',
-                                'helpmsg', 'completer'))
-
-
-class GenericOption(_Option):
-    '''Generic option type (including string options)'''
+class BaseOption(namedtuple('Option', (
+            'pyname', 'name', 'short', 'default', 'helpmsg', 'completer'))):
     has_parameter = True
-    types_match = object
+    type = None
 
-    # Query if this the appropriate Option subclass for the default value
     @classmethod
-    def matches_default(cls, default):
-        return isinstance(default, cls.types_match)
+    def matches(cls, default):
+        '''Returns True if this is appropriate Option for the default value'''
+        return isinstance(default, cls.type)
 
-    # Generate initial state value from provided default value
     def default_state(self):
+        '''Generate initial state value from provided default value'''
         return self.default
 
-    # Update state after encountering an option on hte command line
     def update_state(self, state, new):
+        '''Update state after encountering an option on the command line'''
         return new
 
-    # Generate the resulting python value from the final state
-    def final_value(self, final):
-        return type(self.default)(final)
+    def convert(self, final):
+        '''Generate the resulting python value from the final state'''
+        return self.type(final)
 
-    # Shortcut to obtain the default value when option arg not provided
     def default_value(self):
-        return self.final_value(self.default_state())
+        '''Shortcut to obtain the default value when option arg not provided'''
+        return self.convert(self.default_state())
 
 
-class BoolOption(GenericOption):
+class GenericOption(BaseOption):
+    '''Generic option type (including string options)'''
+    type = object
+
+    def convert(self, final):
+        return final
+
+
+class BoolOption(BaseOption):
     '''Boolean option type'''
     has_parameter = False
-    types_match = (bool, types.NoneType)
+    type = (bool, types.NoneType)
+
+    def convert(self, final):
+        return bool(final)
 
     def update_state(self, state, new):
         return not self.default
 
 
-class IntOption(GenericOption):
+class IntOption(BaseOption):
     '''Integer number option type'''
-    types_match = int
-
-    def final_value(self, final):
-        return int(final)
+    type = int
 
 
-class FloatOption(GenericOption):
+class FloatOption(BaseOption):
     '''Floating point number option type'''
-    types_match = float
-
-    def final_value(self, final):
-        return float(final)
+    type = float
 
 
-class ListOption(GenericOption):
+class ListOption(BaseOption):
     '''List option type'''
-    types_match = list
+    type = list
 
     def default_state(self):
         return list(self.default)
@@ -476,13 +476,10 @@ class ListOption(GenericOption):
         state.append(new)
         return state
 
-    def final_value(self, final):
-        return final
 
-
-class DictOption(GenericOption):
+class DictOption(BaseOption):
     '''Dict option type'''
-    types_match = dict
+    type = dict
 
     def default_state(self):
         return dict(self.default)
@@ -496,20 +493,15 @@ class DictOption(GenericOption):
         state[k] = v
         return state
 
-    def final_value(self, final):
-        return final
 
-
-class FuncOption(GenericOption):
+class FuncOption(BaseOption):
     '''Function option type'''
-    @classmethod
-    def matches_default(cls, default):
-        return hasattr(default, '__call__')
+    type = Callable
 
     def default_state(self):
         return None
 
-    def final_value(self, final):
+    def convert(self, final):
         return self.default(final)
 
 
@@ -535,19 +527,17 @@ def process(args, options, preparse=False):
     state = dict((o.pyname, o.default_state()) for o in options)
 
     for o in options:
-        argmap['-' + o.shortname] = argmap['--' + o.longname] = o
+        argmap['-' + o.short] = argmap['--' + o.name] = o
 
         # getopt wants indication that it takes a parameter
-        short, name = o.shortname, o.longname
+        short, name = o.short, o.name
         if o.has_parameter:
             if short:
                 short += ':'
-            if name:
-                name += '='
+            name += '='
         if short:
             shortlist += short
-        if name:
-            namelist.append(name)
+        namelist.append(name)
 
     try:
         opts, args = getopt.gnu_getopt(args, shortlist, namelist)
@@ -568,10 +558,10 @@ def process(args, options, preparse=False):
     # Call functions to convert values
     for o in options:
         try:
-            state[o.pyname] = o.final_value(state[o.pyname])
+            state[o.pyname] = o.convert(state[o.pyname])
         except ValueError:
             raise getopt.GetoptError('invalid option value %r for option %r'
-                % (state[o.pyname], o.longname))
+                % (state[o.pyname], o.name))
 
     return args, state
 
@@ -674,7 +664,7 @@ def guess_usage(func, options):
     if options:
         usage.append('[OPTIONS]')
     arginfo = inspect.getargspec(func)
-    optnames = [o.longname for o in options]
+    optnames = [o.name for o in options]
     nonoptional = len(arginfo.args) - len(arginfo.defaults or ())
 
     for i, arg in enumerate(arginfo.args):
@@ -844,11 +834,12 @@ def autocomplete(cmdtable, args, middleware):
         aliases, (cmd, opts, usage) = findcmd(cwords[0], cmdtable)
 
         for o in opts:
-            short, long = '-%s' % o.shortname, '--%s' % o.longname
-            options += [short, long]
+            short = '-%s' % o.short
+            name = '--%s' % o.name
+            options += [short, name]
 
             completer = o.completer
-            if cwords[idx] in (short, long) and completer:
+            if cwords[idx] in (short, name) and completer:
                 if middleware:
                     completer = middleware(completer)
                 args = completer(current)
