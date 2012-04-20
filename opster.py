@@ -6,6 +6,7 @@ import sys, traceback, getopt, types, textwrap, inspect, os, keyword
 from itertools import imap
 from functools import wraps
 from collections import namedtuple, Callable
+from contextlib import contextmanager
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
@@ -154,11 +155,15 @@ class Dispatcher(object):
                     argv = sys.argv[1:]
 
                 try:
-                    args, opts = exchandle(process, func.help, argv, options_)
+                    with exchandle(func.help):
+                        args, opts = process(argv, options_)
+
                     if opts.pop('help', False):
                         return func.help()
-                    wrapped = call_cmd(scriptname, func, options_)
-                    return exchandle(wrapped, func.help, *args, **opts)
+
+                    with exchandle(func.help) as call:
+                        return call_cmd(scriptname, func, options_)(*args, **opts)
+
                 except AbortError:
                     return -1
 
@@ -176,16 +181,6 @@ class Dispatcher(object):
 
         return wrapper
 
-    def _dispatch(self, cmd, func, args, options):
-        args, kwargs = process(args, options)
-
-        if kwargs.pop('help', False):
-            return 'help', self.cmdtable['help'][0], [cmd], {}
-        if not cmd:
-            return 'help', self.cmdtable['help'][0], ['shortlist'], {}
-
-        return cmd, func, args, kwargs
-
     def dispatch(self, args=None):
         '''Dispatch command line arguments using subcommands
 
@@ -197,14 +192,22 @@ class Dispatcher(object):
         autocomplete(self.cmdtable, args, self.middleware)
 
         try:
-            cmd, func, args, options = cmdparse(args, self.cmdtable,
-                                                self.globaloptions)
-            help_cmd = lambda: help_func(cmd)
-            cmd, func, args, kwargs = exchandle(self._dispatch, help_cmd,
-                    cmd, func, args, options)
+            with exchandle(help_func):
+                cmd, func, args, options = cmdparse(args, self.cmdtable,
+                                                    self.globaloptions)
+
+            with exchandle(help_func, cmd):
+                args, opts = process(args, options)
+
+            if not cmd:
+                cmd, func, args, opts = ('help', help_func, ['shortlist'], {})
+            if opts.pop('help', False):
+                cmd, func, args, opts = ('help', help_func, [cmd], {})
+
             mw = cmd != '_completion' and self.middleware or None
-            wrapped = call_cmd(cmd, func, options, mw)
-            return exchandle(wrapped, help_cmd, *args, **kwargs)
+            with exchandle(help_func, cmd):
+                return call_cmd(cmd, func, options, mw)(*args, **opts)
+
         except AbortError:
             return -1
 
@@ -663,13 +666,15 @@ def guess_usage(func, options):
     return ' '.join(usage)
 
 
-def exchandle(func, help_func, *args, **kwargs):
-    '''Handle internal exceptions and print human-readable information on them
+@contextmanager
+def exchandle(help_func, cmd=None):
+    '''Context manager to turn internal exceptions into printed help messages.
 
-    Returns False is exception is not suitable
+    Raises AbortError if an exception is handled.
     '''
     try:
-        return func(*args, **kwargs)
+        yield None
+        return
     except UnknownCommand as e:
         err("unknown command: '%s'\n" % e)
     except AmbiguousCommand as e:
@@ -677,10 +682,10 @@ def exchandle(func, help_func, *args, **kwargs):
             (e.args[0], ' '.join(e.args[1])))
     except ParseError as e:
         err('%s: %s\n\n' % (e.args[0], e.args[1].strip()))
-        help_func()
+        help_func(cmd)
     except getopt.GetoptError as e:
         err('error: %s\n\n' % e)
-        help_func()
+        help_func(cmd)
     except OpsterError as e:
         err('%s\n' % e)
     # abort if a handled exception was raised
