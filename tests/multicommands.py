@@ -14,7 +14,7 @@ def simple(ui,
 
     I assure you! Nothing to look here. ;-)
     '''
-    ui.write(str(locals().keys()))
+    ui.write(str(list(locals().keys())))
     ui.write('\n')
 
 @command(usage='[-p] [--exit value] ...', name='complex', hide=True)
@@ -23,7 +23,7 @@ def complex_(ui,
              exit=('', 100, 'exit with supplied code'),
              name=('n', '', 'optional name'),
              *args):
-    u'''That's more complex command intended to do something
+    '''That's more complex command intended to do something
 
     И самое главное - мы тут немножечко текста не в ascii напишем
     и посмотрим, что будет. :)
