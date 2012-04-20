@@ -6,7 +6,7 @@ def selfhelp(assist=('', False, 'show help')):
     if assist:
         selfhelp.help()
     else:
-        print 'no help for you!'
+        print('no help for you!')
 
 if __name__ == '__main__':
     selfhelp.command()

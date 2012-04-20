@@ -13,8 +13,8 @@ def hello(name,
     subject and body).
     """
     # no parsing for optional arguments yet :\
-    for i in xrange(int(times)):
-        print "%s %s" % (greeting, name)
+    for i in range(int(times)):
+        print("%s %s" % (greeting, name))
 
 if __name__ == "__main__":
     hello.command()
