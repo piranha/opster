@@ -402,7 +402,7 @@ def Option(opt):
     # Find matching _Option subclass and return instance
     # nb. the order of testing matters
     for Type in (BoolOption, IntOption, FloatOption, ListOption,
-                 DictOption, FuncOption, GenericOption):
+                 DictOption, FuncOption, LiteralOption):
         if Type.matches(default):
             return Type(*args)
     raise OpsterError('Cannot figure out type for option %s' % name)
@@ -412,6 +412,10 @@ class BaseOption(namedtuple('Option', (
             'pyname', 'name', 'short', 'default', 'helpmsg', 'completer'))):
     has_parameter = True
     type = None
+
+    def __repr__(self):
+        return (super(BaseOption, self).__repr__()
+                .replace('Option', self.__class__.__name__, 1))
 
     @classmethod
     def matches(cls, default):
@@ -435,8 +439,8 @@ class BaseOption(namedtuple('Option', (
         return self.convert(self.default_state())
 
 
-class GenericOption(BaseOption):
-    '''Generic option type (including string options)'''
+class LiteralOption(BaseOption):
+    '''Literal option type (including string options, no processing)'''
     type = object
 
     def convert(self, final):
