@@ -161,7 +161,7 @@ class Dispatcher(object):
                     if opts.pop('help', False):
                         return func.help()
 
-                    with exchandle(func.help) as call:
+                    with exchandle(func.help):
                         return call_cmd(scriptname, func, options_)(*args, **opts)
 
                 except AbortError:
@@ -670,7 +670,8 @@ def guess_usage(func, options):
 def exchandle(help_func, cmd=None):
     '''Context manager to turn internal exceptions into printed help messages.
 
-    Raises AbortError if an exception is handled.
+    Handles opster errors by printing help and raising AbortError.
+    Any other errors are allowed to be propagate.
     '''
     try:
         yield None
