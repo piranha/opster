@@ -674,7 +674,7 @@ def exchandle(help_func, cmd=None):
     Any other errors are allowed to be propagate.
     '''
     try:
-        yield None
+        yield  # execute the block in the 'with' statement
         return
     except UnknownCommand as e:
         err("unknown command: '%s'\n" % e)
