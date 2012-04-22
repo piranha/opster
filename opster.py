@@ -164,7 +164,7 @@ class Dispatcher(object):
                     with exchandle(func.help):
                         return call_cmd(scriptname, func, options_)(*args, **opts)
 
-                except AbortError:
+                except ErrorHandled:
                     return -1
 
             func.usage = usage_
@@ -208,7 +208,7 @@ class Dispatcher(object):
             with exchandle(help_func, cmd):
                 return call_cmd(cmd, func, options, mw)(*args, **opts)
 
-        except AbortError:
+        except ErrorHandled:
             return -1
 
 
@@ -670,7 +670,7 @@ def guess_usage(func, options):
 def exchandle(help_func, cmd=None):
     '''Context manager to turn internal exceptions into printed help messages.
 
-    Handles opster errors by printing help and raising AbortError.
+    Handles opster errors by printing help and raising ErrorHandled.
     Any other errors are allowed to be propagate.
     '''
     try:
@@ -690,7 +690,7 @@ def exchandle(help_func, cmd=None):
     except OpsterError as e:
         err('%s\n' % e)
     # abort if a handled exception was raised
-    raise AbortError()
+    raise ErrorHandled()
 
 
 def call_cmd(name, func, opts, middleware=None):
@@ -907,7 +907,7 @@ class QuitError(OpsterError):
     'Raised to exit script with a message to the user'
 
 
-class AbortError(OpsterError):
+class ErrorHandled(OpsterError):
     'Raised to signal that opster is aborting the command'
 
 
