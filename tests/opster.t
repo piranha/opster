@@ -289,4 +289,6 @@ short name for '--help'::
   options:
   
    -h --human  Pretty print filesizes
+      --nohelp1
+   -n --nohelp2
       --help   display help

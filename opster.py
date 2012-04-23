@@ -360,7 +360,7 @@ def help_options(options):
             pad = '\n' + ' ' * (opts_len + 3)
             yield ' %-*s  %s\n' % (opts_len, first, pad.join(second))
         else:
-            yield '%s\n' % first
+            yield ' %s\n' % first
 
 
 # --------
