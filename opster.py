@@ -26,7 +26,7 @@ except locale.Error:
 
 
 def write(text, out=None):
-    '''Write output to a given stream (stdout by default)'''
+    '''Write output to a given stream (stdout by default).'''
     out = out or sys.stdout
     if sys.version_info < (3, 0) and isinstance(text, unicode):
         text = text.encode(ENCODING)
@@ -34,13 +34,13 @@ def write(text, out=None):
 
 
 def err(text):
-    '''Write output to stderr'''
+    '''Write output to stderr.'''
     write(text, out=sys.stderr)
     sys.stderr.flush()
 
 
 class Dispatcher(object):
-    '''Central object for command dispatching system
+    '''Central object for command dispatching system.
 
     - ``cmdtable``: dict of commands. Will be populated with functions,
       decorated with ``Dispatcher.command``.
@@ -182,7 +182,7 @@ class Dispatcher(object):
         return wrapper
 
     def dispatch(self, args=None):
-        '''Dispatch command line arguments using subcommands
+        '''Dispatch command line arguments using subcommands.
 
         - ``args``: list of arguments, default: ``sys.argv[1:]``
         '''
@@ -245,10 +245,10 @@ dispatch.__doc__ = Dispatcher.dispatch.__doc__
 # --------
 
 def help_(cmdtable, globalopts):
-    '''Help generator for a command table
+    '''Help generator for a command table.
     '''
     def help_inner(name=None, **opts):
-        '''Show help for a given help topic or a help overview
+        '''Show help for a given help topic or a help overview.
 
         With no arguments, print a list of commands with short help messages.
 
@@ -293,7 +293,7 @@ def help_(cmdtable, globalopts):
 
 
 def help_cmd(func, usage, options, aliases):
-    '''show help for given command
+    '''Show help for given command.
 
     - ``func``: function to generate help for (``func.__doc__`` is taken)
     - ``usage``: usage string
@@ -337,7 +337,7 @@ def help_cmd(func, usage, options, aliases):
 
 
 def help_options(options):
-    '''Generator for help on options
+    '''Generator for help on options.
     '''
     yield 'options:\n\n'
     output = []
@@ -363,11 +363,10 @@ def help_options(options):
 # Options process
 # --------
 
-
 # Factory for creating _Option instances. Intended to be the entry point to
 # the *Option classes here.
 def Option(opt):
-    '''Create Option instance from tuple of option data'''
+    '''Create Option instance from tuple of option data.'''
     if isinstance(opt, BaseOption):
         return opt
 
@@ -392,6 +391,7 @@ def Option(opt):
             return Type(*args)
     raise OpsterError('Cannot figure out type for option %s' % name)
 
+
 # Superclass for all option classes
 class BaseOption(namedtuple('Option', (
             'pyname', 'name', 'short', 'default', 'helpmsg', 'completer'))):
@@ -404,28 +404,28 @@ class BaseOption(namedtuple('Option', (
 
     @classmethod
     def matches(cls, default):
-        '''Returns True if this is appropriate Option for the default value'''
+        '''Returns True if this is appropriate Option for the default value.'''
         return isinstance(default, cls.type)
 
     def default_state(self):
-        '''Generate initial state value from provided default value'''
+        '''Generate initial state value from provided default value.'''
         return self.default
 
     def update_state(self, state, new):
-        '''Update state after encountering an option on the command line'''
+        '''Update state after encountering an option on the command line.'''
         return new
 
     def convert(self, final):
-        '''Generate the resulting python value from the final state'''
+        '''Generate the resulting python value from the final state.'''
         return self.type(final)
 
     def default_value(self):
-        '''Shortcut to obtain the default value when option arg not provided'''
+        '''Shortcut to obtain the default value when option arg not provided.'''
         return self.convert(self.default_state())
 
 
 class LiteralOption(BaseOption):
-    '''Literal option type (including string options, no processing)'''
+    '''Literal option type (including string options, no processing).'''
     type = object
 
     def convert(self, final):
@@ -433,7 +433,7 @@ class LiteralOption(BaseOption):
 
 
 class BoolOption(BaseOption):
-    '''Boolean option type'''
+    '''Boolean option type.'''
     has_parameter = False
     type = (bool, types.NoneType)
 
@@ -445,17 +445,17 @@ class BoolOption(BaseOption):
 
 
 class IntOption(BaseOption):
-    '''Integer number option type'''
+    '''Integer number option type.'''
     type = int
 
 
 class FloatOption(BaseOption):
-    '''Floating point number option type'''
+    '''Floating point number option type.'''
     type = float
 
 
 class ListOption(BaseOption):
-    '''List option type'''
+    '''List option type.'''
     type = list
 
     def default_state(self):
@@ -467,7 +467,7 @@ class ListOption(BaseOption):
 
 
 class DictOption(BaseOption):
-    '''Dict option type'''
+    '''Dict option type.'''
     type = dict
 
     def default_state(self):
@@ -484,7 +484,7 @@ class DictOption(BaseOption):
 
 
 class FuncOption(BaseOption):
-    '''Function option type'''
+    '''Function option type.'''
     type = Callable
 
     def default_state(self):
@@ -560,7 +560,7 @@ def process(args, options, preparse=False):
 # --------
 
 def cmdparse(args, cmdtable, globalopts):
-    '''Parse arguments list to find a command, options and arguments
+    '''Parse arguments list to find a command, options and arguments.
     '''
     # pre-parse arguments here using global options to find command name,
     # which is first non-option entry
@@ -581,15 +581,13 @@ def cmdparse(args, cmdtable, globalopts):
 
 
 def aliases_(cmdtable_key):
-    '''Get aliases from a command table key'''
+    '''Get aliases from a command table key.'''
     return cmdtable_key.lstrip("^~").split("|")
 
 
 def findpossible(cmd, table):
-    """
-    Return cmd -> (aliases, command table entry)
-    for each matching command.
-    """
+    '''Return cmd -> (aliases, command table entry) for each matching command.
+    '''
     choice = {}
     for e in table.keys():
         aliases = aliases_(e)
@@ -670,8 +668,8 @@ def guess_usage(func, options):
 def exchandle(help_func, cmd=None):
     '''Context manager to turn internal exceptions into printed help messages.
 
-    Handles opster errors by printing help and raising ErrorHandled.
-    Any other errors are allowed to be propagate.
+    Handles internal opster exceptions by printing help and raising
+    ErrorHandled. Other exceptions are propagated.
     '''
     try:
         yield  # execute the block in the 'with' statement
@@ -694,7 +692,7 @@ def exchandle(help_func, cmd=None):
 
 
 def call_cmd(name, func, opts, middleware=None):
-    '''Wrapper for command call, catching situation with insufficient arguments
+    '''Wrapper for command call, catching situation with insufficient arguments.
     '''
     # depth is necessary when there is a middleware in setup
     arginfo = inspect.getargspec(func)
@@ -732,7 +730,7 @@ def call_cmd(name, func, opts, middleware=None):
 
 
 def call_cmd_regular(func, opts):
-    '''Wrapper for command for handling function calls from Python
+    '''Wrapper for command for handling function calls from Python.
     '''
     def inner(*args, **kwargs):
         arginfo = inspect.getargspec(func)
@@ -750,14 +748,14 @@ def call_cmd_regular(func, opts):
 
 
 def replace_name(usage, name):
-    '''Replace name placeholder with a command name'''
+    '''Replace name placeholder with a command name.'''
     if '%name' in usage:
         return usage.replace('%name', name, 1)
     return name + ' ' + usage
 
 
 def sysname():
-    '''Returns name of executing file'''
+    '''Returns name of executing file.'''
     name = sys.argv[0]
     if os.path.isabs(name):
         return name.rsplit('/', 1)[1]
@@ -767,7 +765,7 @@ def sysname():
 
 
 def pretty_doc_string(item):
-    "Doc string with adjusted indentation level of the 2nd line and beyond."
+    '''Doc string with adjusted indentation level of the 2nd line and beyond.'''
     raw_doc = item.__doc__ or '(no help text available)'
     lines = raw_doc.strip().splitlines()
     if len(lines) <= 1:
@@ -795,10 +793,10 @@ def name_to_python(name):
 
 # Borrowed from PIP
 def autocomplete(cmdtable, args, middleware):
-    """Command and option completion.
+    '''Command and option completion.
 
     Enable by sourcing one of the completion shell scripts (bash or zsh).
-    """
+    '''
 
     # Don't complete if user hasn't sourced bash_completion file.
     if 'OPSTER_AUTO_COMPLETE' not in os.environ:
@@ -844,7 +842,7 @@ def autocomplete(cmdtable, args, middleware):
 
 COMPLETIONS = {
     'bash':
-        """
+        '''
 # opster bash completion start
 _opster_completion()
 {
@@ -854,9 +852,9 @@ _opster_completion()
 }
 complete -o default -F _opster_completion %s
 # opster bash completion end
-""",
+''',
     'zsh':
-            """
+            '''
 # opster zsh completion start
 function _opster_completion {
   local words cword
@@ -868,7 +866,7 @@ function _opster_completion {
 }
 compctl -K _opster_completion %s
 # opster zsh completion end
-"""
+'''
     }
 
 
@@ -877,7 +875,7 @@ def completion(type=('t', 'bash', 'Completion type (bash or zsh)'),
                # kwargs will catch every global option, which we get
                # anyway, because middleware is skipped
                **kwargs):
-    """Outputs completion script for bash or zsh."""
+    '''Outputs completion script for bash or zsh.'''
 
     prog_name = os.path.split(sys.argv[0])[1]
     print COMPLETIONS[type].strip() % prog_name
