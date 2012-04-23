@@ -10,7 +10,7 @@ from contextlib import contextmanager
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '3.5'
+__version__ = '3.6'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 

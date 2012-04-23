@@ -1,6 +1,21 @@
 Changelog
 ---------
 
+3.6 (2012.04.23)
+~~~~~~~~~~~~~~~~
+
+ - Now commands can have ``-h`` option (GH-2).
+ - Better Windows compatibility (GH-18, GH-20).
+ - Refactored internal options representation with easier introspectability
+   (GH-19).
+ - Tests support Python 3 (GH-21).
+
+Thanks for this release are going to `Oscar Benjamin`_, every point in this
+release is his work.
+
+.. _Oscar Benjamin: https://github.com/oscarbenjamin
+ 
+
 3.5 (2012.03.25)
 ~~~~~~~~~~~~~~~~
 
