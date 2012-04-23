@@ -1,3 +1,4 @@
+from __future__ import print_function
 from opster import command
 
 @command()
@@ -8,7 +9,7 @@ def test(arg1,
          *args):
     '''Simple command to test that it won't get multiple values for opt
     '''
-    print 'I work!', opt, bopt, arg1, b, args
+    print('I work!', opt, bopt, arg1, b, args)
     assert opt == False
     assert bopt == 'bopt'
 

@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, keyword
+import sys, traceback, getopt, types, textwrap, inspect, os, keyword, codecs
 from itertools import imap
 from functools import wraps
 from collections import namedtuple, Callable
@@ -24,11 +24,15 @@ try:
 except locale.Error:
     ENCODING = 'UTF-8'
 
+_writer = codecs.getwriter(ENCODING)
+
 
 def write(text, out=None):
     '''Write output to a given stream (stdout by default).'''
     out = out or sys.stdout
-    if sys.version_info < (3, 0) and isinstance(text, unicode):
+    if hasattr(out, 'buffer'):
+        out = _writer(out.buffer)
+    elif sys.version_info < (3, 0) and isinstance(text, unicode):
         text = text.encode(ENCODING)
     out.write(text)
 

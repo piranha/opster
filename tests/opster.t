@@ -12,15 +12,27 @@ works.
 Actors cast
 -----------
 
+Choose python version::
+
+  $   if [ -z "$PYTHON" ]; then
+  >      PYTHON="python"
+  >   fi
+
+Add opster to the PYTHONPATH::
+
+  $   if [ -z "$OPSTER_DIR" ]; then
+  >      OPSTER_DIR="$TESTDIR/.."
+  >   fi
+  >   export PYTHONPATH="$OPSTER_DIR"
+
 Define function to make it simpler::
 
   $ run() {
   >   name=$1
   >   shift
-  >   export PYTHONPATH=$TESTDIR/../
   >   export COVERAGE_FILE=$TESTDIR/coverage.db
   >   if [ -z "$COVERAGE" ]; then
-  >      python "$TESTDIR/$name" "$@"
+  >      "$PYTHON" "$TESTDIR/$name" "$@"
   >   else
   >      coverage run -a --rcfile="$TESTDIR/../.coveragerc" "$TESTDIR/$name" "$@"
   >   fi
