@@ -192,6 +192,31 @@ subcommand. If a subcommand has an option with the same ``shortname`` as a
 global option, then the ``shortname`` will be used for the subcommand option
 (overriding the option in ``globaloptions``).
 
+Global options can be used before the argument that names the subcommand::
+
+  > python multicommands.py --quiet complex
+  write
+  warn
+  [100]
+
+This is useful since it enables a user to alias a script with something like::
+
+  alias multi='python multicommands.py --quiet'
+
+so that a global option is always enabled.
+However, non-global options may not appear before the subcommand argument::
+
+  > python multicommands.py --name=dave complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
 Inner structure
 ---------------
 
