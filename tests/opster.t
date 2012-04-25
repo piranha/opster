@@ -122,12 +122,14 @@ We also get the right command when using --opt=value syntax::
   warn
   [100]
 
+Global options can appear before the command argument.
+
   $ run multicommands.py --quiet complex
   write
   warn
   [100]
 
-Non-global options before the command argument are not allowed::
+However, non-global options before the command argument are not allowed::
 
   $ run multicommands.py --name=dave complex
   error: option --name not recognized
@@ -140,7 +142,7 @@ Non-global options before the command argument are not allowed::
    nodoc   (no help text available)
    simple  Just simple command to print keys of received arguments.
 
-which ever syntax you use::
+regardless of which syntax you use::
 
   $ run multicommands.py --name dave complex
   error: option --name not recognized
