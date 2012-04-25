@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, keyword, codecs
+import sys, traceback, types, textwrap, inspect, os, keyword, codecs
 from itertools import imap
 from functools import wraps
 from collections import namedtuple, Callable
@@ -478,11 +478,10 @@ class DictOption(BaseOption):
         return dict(self.default)
 
     def update_state(self, state, new):
-        try:
-            k, v = new.split('=')
-        except ValueError:
+        if '=' not in new:
             msg = "wrong definition: %r (should be in format KEY=VALUE)"
-            raise getopt.GetoptError(msg % new)
+            raise ParameterError(msg % new)
+        k, v = new.split('=', 1)
         state[k] = v
         return state
 
@@ -498,7 +497,7 @@ class FuncOption(BaseOption):
         return self.default(final)
 
 
-def process(args, options, preparse=False):
+def process(args, options):
     '''
     >>> opts = [('l', 'listen', 'localhost',
     ...          'ip to listen on'),
@@ -512,51 +511,88 @@ def process(args, options, preparse=False):
     (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
 
     '''
-    argmap = {}
-    shortlist, namelist = '', []
     options = [Option(o) for o in options]  # only for doctest
 
-    # copy defaults to state
+    # Parse arguments and options
+    args, opts = getopts(args, options)
+
+    # Default values
     state = dict((o.pyname, o.default_state()) for o in options)
 
-    for o in options:
-        argmap['-' + o.short] = argmap['--' + o.name] = o
-
-        # getopt wants indication that it takes a parameter
-        short, name = o.short, o.name
-        if o.has_parameter:
-            if short:
-                short += ':'
-            name += '='
-        if short:
-            shortlist += short
-        namelist.append(name)
-
-    try:
-        opts, args = getopt.gnu_getopt(args, shortlist, namelist)
-    except getopt.GetoptError, e:
-        if preparse:
-            prefix = '-' if len(e.opt) == 1 else '--'
-            args = args[:]
-            args.insert(args.index(prefix + e.opt), '--')
-            opts, args = getopt.gnu_getopt(args, shortlist, namelist)
-            return args, None
-        raise
-
-    # transfer result to state
-    for opt, val in opts:
-        o = argmap[opt]
+    # Update for each option on the command line
+    for o, val in opts:
         state[o.pyname] = o.update_state(state[o.pyname], val)
 
-    # Call functions to convert values
+    # Convert to required type
     for o in options:
         try:
             state[o.pyname] = o.convert(state[o.pyname])
         except ValueError:
-            raise getopt.GetoptError('invalid option value %r for option %r'
+            raise ParameterError('invalid option value %r for option %r'
                 % (state[o.pyname], o.name))
 
     return args, state
+
+
+def getopts(args, options, firstarg=False):
+    '''Parse args and options from raw args.
+
+    If firstarg is True, returns the first non-option argument.
+    '''
+    onames = dict((o.name, o) for o in options)
+    oshorts = dict((o.short, o) for o in options)
+
+    args_new, opts = [], []
+    args = list(args)
+    while args:
+        arg = args.pop(0)
+        if arg == '--':
+            break
+        elif arg.startswith('-') and arg != '-':
+            opts.extend(pop_option(arg, args, onames, oshorts))
+        elif firstarg:
+            return arg
+        else:
+            args_new.append(arg)
+    if firstarg:
+        return None
+    return args_new + args, opts
+
+
+def pop_option(arg, args, onames, oshorts):
+    '''Process one option from args, popping parameter if necessary'''
+    # identify the option
+    if arg.startswith('--'):
+        name, par = arg[2:], None
+        if '=' in arg:
+            name, par = name.split('=', 1)
+        names = find_match(name, onames)
+        if len(names) != 1:
+            raise UnknownOption('--' + name)
+        name, = names
+        o = onames[name]
+    else:
+        short, par = arg[1], arg[2:] or None
+        while short in oshorts:
+            o = oshorts[short]
+            if o.has_parameter or par is None:
+                break
+            yield o, None
+            short, par = par[0], par[1:] or None
+        else:
+            raise UnknownOption('-' + short)
+
+    # pop the next arg if needed
+    if o.has_parameter and par is None:
+        if args and not args[0].startswith('-'):
+            par = args.pop(0)
+        else:
+            raise ParameterError('options: %r requires an argument' % o.name)
+    elif not o.has_parameter and par is not None:
+        raise ParameterError('options: %r has no argument' % o.name)
+
+    # Return Option instance and parameter value
+    yield o, par
 
 
 # --------
@@ -568,20 +604,16 @@ def cmdparse(args, cmdtable, globalopts):
     '''
     # pre-parse arguments here using global options to find command name,
     # which is first non-option entry
-    cmd = next((arg for arg in process(args, globalopts, preparse=True)[0]
-                if not arg.startswith('-')), None)
+    cmdarg = getopts(args, globalopts, firstarg=True)
 
-    if cmd:
-        args.pop(args.index(cmd))
-
-        aliases, info = findcmd(cmd, cmdtable)
+    if cmdarg:
+        args.remove(cmdarg)
+        aliases, info = findcmd(cmdarg, cmdtable)
         cmd = aliases[0]
-        possibleopts = list(info[1])
+        possibleopts = list(info[1]) + globalopts
+        return cmd, info[0] or None, args, possibleopts
     else:
-        possibleopts = []
-
-    possibleopts.extend(globalopts)
-    return cmd, cmd and info[0] or None, args, possibleopts
+        return None, None, args, globalopts
 
 
 def aliases_(cmdtable_key):
@@ -589,43 +621,30 @@ def aliases_(cmdtable_key):
     return cmdtable_key.lstrip("^~").split("|")
 
 
-def findpossible(cmd, table):
-    '''Return cmd -> (aliases, command table entry) for each matching command.
-    '''
-    choice = {}
-    for e in table.keys():
-        aliases = aliases_(e)
-        found = None
-        if cmd in aliases:
-            found = cmd
-        else:
-            for a in aliases:
-                if a.startswith(cmd):
-                    found = a
-                    break
-        if found is not None:
-            choice[found] = (aliases, table[e])
-
-    return choice
-
-
 def findcmd(cmd, table):
     """Return (aliases, command table entry) for command string."""
-    choice = findpossible(cmd, table)
+    aliases = {}
+    for name, info in table.items():
+        aliases.update((a, name) for a in aliases_(name))
+    matches = find_match(cmd, aliases)
+    if not matches:
+        raise UnknownCommand(cmd)
+    name = aliases[matches[0]]
+    if all(aliases[m] == name for m in matches):
+        return aliases_(name), table[name]
+    else:
+        raise AmbiguousCommand(cmd, matches)
 
-    if cmd in choice:
-        return choice[cmd]
 
-    if len(choice) > 1:
-        clist = choice.keys()
-        clist.sort()
-        raise AmbiguousCommand(cmd, clist)
-
-    if choice:
-        return choice.values()[0]
-
-    raise UnknownCommand(cmd)
-
+def find_match(abbr, possibles):
+    '''Find exact match or partial matches for abbr in possibles'''
+    if abbr in possibles:
+        return [abbr]
+    found = []
+    for p in possibles:
+        if p.startswith(abbr):
+            found.append(p)
+    return found
 
 # --------
 # Helpers
@@ -686,8 +705,11 @@ def exchandle(help_func, cmd=None):
     except ParseError as e:
         err('%s: %s\n\n' % (e.args[0], e.args[1].strip()))
         help_func(cmd)
-    except getopt.GetoptError as e:
+    except ParameterError as e:
         err('error: %s\n\n' % e)
+        help_func(cmd)
+    except UnknownOption as e:
+        err('error: option %s not recognized\n\n' % e)
         help_func(cmd)
     except OpsterError as e:
         err('%s\n' % e)
@@ -899,6 +921,14 @@ class AmbiguousCommand(OpsterError):
 
 class UnknownCommand(OpsterError):
     'Raised if command is unknown'
+
+
+class UnknownOption(OpsterError):
+    'Raised if options is unrecognised'
+
+
+class ParameterError(OpsterError):
+    'Raised if there is a problem with an option parameter'
 
 
 class ParseError(OpsterError):

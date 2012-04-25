@@ -106,6 +106,69 @@ Check if integer errors correctly::
    -q --quiet    suppress output
    -h --help     display help
 
+Opster can parse non-global options after the command argument::
+
+  $ run multicommands.py complex --name dave
+  write
+  info
+  warn
+  [100]
+
+We also get the right command when using --opt=value syntax::
+
+  $ run multicommands.py complex --name=dave
+  write
+  info
+  warn
+  [100]
+
+Global options can appear before the command argument.
+
+  $ run multicommands.py --quiet complex
+  write
+  warn
+  [100]
+
+However, non-global options before the command argument are not allowed::
+
+  $ run multicommands.py --name=dave complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
+regardless of which syntax you use::
+
+  $ run multicommands.py --name dave complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
+Opster won't accidentally run the simple command because you tried to pass
+simple as an argument to the --name option::
+
+  $ run multicommands.py --name simple complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
 We also have completion::
 
   $ run multicommands.py _completion
@@ -158,6 +221,29 @@ Now let's test our definitions::
 
   $ run test_opts.py -D a=b so-what?
   {'daemonize': False,
+   'definitions': {'a': 'b'},
+   'dirname': 'so-what?',
+   'listen': 'localhost',
+   'pid_file': '',
+   'port': 8000,
+   'test': 'test'}
+
+As long as only the last option has a parameter We can combine short options
+into one argument::
+
+  $ run test_opts.py -dDa=b so-what?
+  {'daemonize': True,
+   'definitions': {'a': 'b'},
+   'dirname': 'so-what?',
+   'listen': 'localhost',
+   'pid_file': '',
+   'port': 8000,
+   'test': 'test'}
+
+The parameter can be in a separate argument::
+
+  $ run test_opts.py -dD a=b so-what?
+  {'daemonize': True,
    'definitions': {'a': 'b'},
    'dirname': 'so-what?',
    'listen': 'localhost',
