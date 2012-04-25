@@ -548,8 +548,8 @@ def getopts(args, options, firstarg=False):
         arg = args.pop(0)
         if arg == '--':
             break
-        elif arg.startswith('-'):
-            opts.append(pop_option(arg, args, onames, oshorts))
+        elif arg.startswith('-') and arg != '-':
+            opts.extend(pop_option(arg, args, onames, oshorts))
         elif firstarg:
             return arg
         else:
@@ -573,9 +573,14 @@ def pop_option(arg, args, onames, oshorts):
         o = onames[name]
     else:
         short, par = arg[1], arg[2:] or None
-        if short not in oshorts:
+        while short in oshorts:
+            o = oshorts[short]
+            if o.has_parameter or par is None:
+                break
+            yield o, None
+            short, par = par[0], par[1:] or None
+        else:
             raise UnknownOption('-' + short)
-        o = oshorts[short]
 
     # pop the next arg if needed
     if o.has_parameter and par is None:
@@ -587,7 +592,7 @@ def pop_option(arg, args, onames, oshorts):
         raise ParameterError('options: %r has no argument' % o.name)
 
     # Return Option instance and parameter value
-    return o, par
+    yield o, par
 
 
 # --------

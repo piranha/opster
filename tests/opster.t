@@ -228,6 +228,29 @@ Now let's test our definitions::
    'port': 8000,
    'test': 'test'}
 
+As long as only the last option has a parameter We can combine short options
+into one argument::
+
+  $ run test_opts.py -dDa=b so-what?
+  {'daemonize': True,
+   'definitions': {'a': 'b'},
+   'dirname': 'so-what?',
+   'listen': 'localhost',
+   'pid_file': '',
+   'port': 8000,
+   'test': 'test'}
+
+The parameter can be in a separate argument::
+
+  $ run test_opts.py -dD a=b so-what?
+  {'daemonize': True,
+   'definitions': {'a': 'b'},
+   'dirname': 'so-what?',
+   'listen': 'localhost',
+   'pid_file': '',
+   'port': 8000,
+   'test': 'test'}
+
   $ run test_opts.py -D can-i-haz fail?
   error: wrong definition: 'can-i-haz' (should be in format KEY=VALUE)
   
