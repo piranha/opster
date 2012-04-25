@@ -497,7 +497,7 @@ class FuncOption(BaseOption):
         return self.default(final)
 
 
-def process(args, options, preparse=False):
+def process(args, options):
     '''
     >>> opts = [('l', 'listen', 'localhost',
     ...          'ip to listen on'),
@@ -514,7 +514,7 @@ def process(args, options, preparse=False):
     options = [Option(o) for o in options]  # only for doctest
 
     # Parse arguments and options
-    args, opts = getopts(args, options, preparse)
+    args, opts = getopts(args, options)
 
     # Default values
     state = dict((o.pyname, o.default_state()) for o in options)
@@ -534,12 +534,13 @@ def process(args, options, preparse=False):
     return args, state
 
 
-def getopts(args, options, preparse):
-    '''Parse args and options from raw args'''
-    oshorts, onames = {}, {}
-    for o in options:
-        oshorts[o.short] = o
-        onames[o.name] = o
+def getopts(args, options, firstarg=False):
+    '''Parse args and options from raw args.
+
+    If firstarg is True, returns the first non-option argument.
+    '''
+    onames = dict((o.name, o) for o in options)
+    oshorts = dict((o.short, o) for o in options)
 
     args_new, opts = [], []
     args = list(args)
@@ -548,13 +549,13 @@ def getopts(args, options, preparse):
         if arg == '--':
             break
         elif arg.startswith('-'):
-            try:
-                opts.append(pop_option(arg, args, onames, oshorts))
-            except UnknownOption:
-                if not preparse:
-                    raise
+            opts.append(pop_option(arg, args, onames, oshorts))
+        elif firstarg:
+            return arg
         else:
             args_new.append(arg)
+    if firstarg:
+        return None
     return args_new + args, opts
 
 
@@ -598,10 +599,9 @@ def cmdparse(args, cmdtable, globalopts):
     '''
     # pre-parse arguments here using global options to find command name,
     # which is first non-option entry
-    args_pre, opts = process(args, globalopts, preparse=True)
+    cmdarg = getopts(args, globalopts, firstarg=True)
 
-    if args_pre:
-        cmdarg = args_pre[0]
+    if cmdarg:
         args.remove(cmdarg)
         aliases, info = findcmd(cmdarg, cmdtable)
         cmd = aliases[0]
