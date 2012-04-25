@@ -554,15 +554,16 @@ def getopts(args, options, firstarg=False):
             shortlist += short
         namelist.append(name)
 
+    # getopt.getopt stops parsing at the first non-option argument
     if firstarg:
         opts, args = getopt.getopt(args, shortlist, namelist)
         return args[0] if args else None
-    else:
-        opts, args = getopt.gnu_getopt(args, shortlist, namelist)
 
-    opts_name = []
-    for opt, val in opts:
-        opts_name.append((argmap[opt], val))
+    # getopt.gnu_getopt allows options after the first non-option
+    opts, args = getopt.gnu_getopt(args, shortlist, namelist)
+
+    # map the argument names back to their Option instances
+    opts_name = [(argmap[opt], val) for opt, val in opts]
 
     return args, opts_name
 
