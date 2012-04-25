@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, types, textwrap, inspect, os, keyword, codecs
+import sys, traceback, getopt, types, textwrap, inspect, os, keyword, codecs
 from itertools import imap
 from functools import wraps
 from collections import namedtuple, Callable
@@ -480,7 +480,7 @@ class DictOption(BaseOption):
     def update_state(self, state, new):
         if '=' not in new:
             msg = "wrong definition: %r (should be in format KEY=VALUE)"
-            raise ParameterError(msg % new)
+            raise getopt.GetoptError(msg % new)
         k, v = new.split('=', 1)
         state[k] = v
         return state
@@ -528,7 +528,7 @@ def process(args, options):
         try:
             state[o.pyname] = o.convert(state[o.pyname])
         except ValueError:
-            raise ParameterError('invalid option value %r for option %r'
+            raise getopt.GetoptError('invalid option value %r for option %r'
                 % (state[o.pyname], o.name))
 
     return args, state
@@ -539,61 +539,32 @@ def getopts(args, options, firstarg=False):
 
     If firstarg is True, returns the first non-option argument.
     '''
-    onames = dict((o.name, o) for o in options)
-    oshorts = dict((o.short, o) for o in options)
+    argmap = {}
+    shortlist, namelist = '', []
+    for o in options:
+        argmap['-' + o.short] = argmap['--' + o.name] = o
 
-    args_new, opts = [], []
-    args = list(args)
-    while args:
-        arg = args.pop(0)
-        if arg == '--':
-            break
-        elif arg.startswith('-') and arg != '-':
-            opts.extend(pop_option(arg, args, onames, oshorts))
-        elif firstarg:
-            return arg
-        else:
-            args_new.append(arg)
+        # getopt wants indication that it takes a parameter
+        short, name = o.short, o.name
+        if o.has_parameter:
+            if short:
+                short += ':'
+            name += '='
+        if short:
+            shortlist += short
+        namelist.append(name)
+
     if firstarg:
-        return None
-    return args_new + args, opts
-
-
-def pop_option(arg, args, onames, oshorts):
-    '''Process one option from args, popping parameter if necessary'''
-    # identify the option
-    if arg.startswith('--'):
-        name, par = arg[2:], None
-        if '=' in arg:
-            name, par = name.split('=', 1)
-        names = find_match(name, onames)
-        if len(names) != 1:
-            raise UnknownOption('--' + name)
-        name, = names
-        o = onames[name]
+        opts, args = getopt.getopt(args, shortlist, namelist)
+        return args[0] if args else None
     else:
-        short, par = arg[1], arg[2:] or None
-        while short in oshorts:
-            o = oshorts[short]
-            if o.has_parameter or par is None:
-                break
-            yield o, None
-            short, par = par[0], par[1:] or None
-        else:
-            raise UnknownOption('-' + short)
+        opts, args = getopt.gnu_getopt(args, shortlist, namelist)
 
-    # pop the next arg if needed
-    if o.has_parameter and par is None:
-        if args and not args[0].startswith('-'):
-            par = args.pop(0)
-        else:
-            raise ParameterError('options: %r requires an argument' % o.name)
-    elif not o.has_parameter and par is not None:
-        raise ParameterError('options: %r has no argument' % o.name)
+    opts_name = []
+    for opt, val in opts:
+        opts_name.append((argmap[opt], val))
 
-    # Return Option instance and parameter value
-    yield o, par
-
+    return args, opts_name
 
 # --------
 # Subcommand system
@@ -705,11 +676,8 @@ def exchandle(help_func, cmd=None):
     except ParseError as e:
         err('%s: %s\n\n' % (e.args[0], e.args[1].strip()))
         help_func(cmd)
-    except ParameterError as e:
+    except getopt.GetoptError as e:
         err('error: %s\n\n' % e)
-        help_func(cmd)
-    except UnknownOption as e:
-        err('error: option %s not recognized\n\n' % e)
         help_func(cmd)
     except OpsterError as e:
         err('%s\n' % e)
