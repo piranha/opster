@@ -106,6 +106,67 @@ Check if integer errors correctly::
    -q --quiet    suppress output
    -h --help     display help
 
+Opster can parse non-global options after the command argument::
+
+  $ run multicommands.py complex --name dave
+  write
+  info
+  warn
+  [100]
+
+We also get the right command when using --opt=value syntax::
+
+  $ run multicommands.py complex --name=dave
+  write
+  info
+  warn
+  [100]
+
+  $ run multicommands.py --quiet complex
+  write
+  warn
+  [100]
+
+Non-global options before the command argument are not allowed::
+
+  $ run multicommands.py --name=dave complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
+which ever syntax you use::
+
+  $ run multicommands.py --name dave complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
+Opster won't accidentally run the simple command because you tried to pass
+simple as an argument to the --name option::
+
+  $ run multicommands.py --name simple complex
+  error: option --name not recognized
+  
+  usage: multicommands.py <command> [options]
+  
+  commands:
+  
+   help    Show help for a given help topic or a help overview.
+   nodoc   (no help text available)
+   simple  Just simple command to print keys of received arguments.
+
 We also have completion::
 
   $ run multicommands.py _completion
