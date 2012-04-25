@@ -891,14 +891,6 @@ class UnknownCommand(OpsterError):
     'Raised if command is unknown'
 
 
-class UnknownOption(OpsterError):
-    'Raised if options is unrecognised'
-
-
-class ParameterError(OpsterError):
-    'Raised if there is a problem with an option parameter'
-
-
 class ParseError(OpsterError):
     'Raised on error in command line parsing'
 
