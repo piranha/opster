@@ -81,10 +81,12 @@ class UI(object):
     def write(self, *messages):
         for m in messages:
             sys.stdout.write(m)
+        sys.stdout.flush()
 
     def warn(self, *messages):
         for m in messages:
             sys.stderr.write(m)
+        sys.stderr.flush()
 
     info = lambda self, *m: not self.quiet and self.write(*m)
     note = lambda self, *m: self.verbose and self.write(*m)
