@@ -498,7 +498,7 @@ class FuncOption(BaseOption):
         return self.default(final)
 
 
-def process(args, options, preparse=False):
+def process(args, options):
     '''
     >>> opts = [('l', 'listen', 'localhost',
     ...          'ip to listen on'),
@@ -512,13 +512,36 @@ def process(args, options, preparse=False):
     (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
 
     '''
-    argmap = {}
-    shortlist, namelist = '', []
     options = [Option(o) for o in options]  # only for doctest
 
-    # copy defaults to state
+    # Parse arguments and options
+    args, opts = getopts(args, options)
+
+    # Default values
     state = dict((o.pyname, o.default_state()) for o in options)
 
+    # Update for each option on the command line
+    for o, val in opts:
+        state[o.pyname] = o.update_state(state[o.pyname], val)
+
+    # Convert to required type
+    for o in options:
+        try:
+            state[o.pyname] = o.convert(state[o.pyname])
+        except ValueError:
+            raise getopt.GetoptError('invalid option value %r for option %r'
+                % (state[o.pyname], o.name))
+
+    return args, state
+
+
+def getopts(args, options, preparse=False):
+    '''Parse args and options from raw args.
+
+    If preparse is True, option processing stops at first non-option.
+    '''
+    argmap = {}
+    shortlist, namelist = '', []
     for o in options:
         argmap['-' + o.short] = argmap['--' + o.name] = o
 
@@ -532,32 +555,17 @@ def process(args, options, preparse=False):
             shortlist += short
         namelist.append(name)
 
-    try:
-        opts, args = getopt.gnu_getopt(args, shortlist, namelist)
-    except getopt.GetoptError, e:
-        if preparse:
-            prefix = '-' if len(e.opt) == 1 else '--'
-            args = args[:]
-            args.insert(args.index(prefix + e.opt), '--')
-            opts, args = getopt.gnu_getopt(args, shortlist, namelist)
-            return args, None
-        raise
+    # gnu_getopt will stop at first non-option argument
+    if preparse:
+        shortlist = '+' + shortlist
 
-    # transfer result to state
-    for opt, val in opts:
-        o = argmap[opt]
-        state[o.pyname] = o.update_state(state[o.pyname], val)
+    # getopt.gnu_getopt allows options after the first non-option
+    opts, args = getopt.gnu_getopt(args, shortlist, namelist)
 
-    # Call functions to convert values
-    for o in options:
-        try:
-            state[o.pyname] = o.convert(state[o.pyname])
-        except ValueError:
-            raise getopt.GetoptError('invalid option value %r for option %r'
-                % (state[o.pyname], o.name))
+    # map the option argument names back to their Option instances
+    opts = [(argmap[opt], val) for opt, val in opts]
 
-    return args, state
-
+    return args, opts
 
 # --------
 # Subcommand system
@@ -568,20 +576,18 @@ def cmdparse(args, cmdtable, globalopts):
     '''
     # pre-parse arguments here using global options to find command name,
     # which is first non-option entry
-    cmd = next((arg for arg in process(args, globalopts, preparse=True)[0]
-                if not arg.startswith('-')), None)
+    args_new, opts = getopts(args, globalopts, preparse=True)
 
-    if cmd:
-        args.pop(args.index(cmd))
-
-        aliases, info = findcmd(cmd, cmdtable)
+    args = list(args)
+    if args_new:
+        cmdarg = args_new[0]
+        args.remove(cmdarg)
+        aliases, info = findcmd(cmdarg, cmdtable)
         cmd = aliases[0]
-        possibleopts = list(info[1])
+        possibleopts = list(info[1]) + globalopts
+        return cmd, info[0] or None, args, possibleopts
     else:
-        possibleopts = []
-
-    possibleopts.extend(globalopts)
-    return cmd, cmd and info[0] or None, args, possibleopts
+        return None, None, args, globalopts
 
 
 def aliases_(cmdtable_key):
