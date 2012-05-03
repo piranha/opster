@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+3.7 (2012.05.03)
+~~~~~~~~~~~~~~~~
+
+ - Fixed name in usage on Windows.
+ - Improved and documented preparsing of global options when using subcommands (GH-25).
+
 3.6 (2012.04.23)
 ~~~~~~~~~~~~~~~~
 
