@@ -768,7 +768,7 @@ def sysname():
     '''Returns name of executing file.'''
     name = sys.argv[0]
     if os.path.isabs(name):
-        return name.rsplit('/', 1)[1]
+        return name.rsplit(os.sep, 1)[1]
     elif name.startswith('./'):
         return name[2:]
     return name
