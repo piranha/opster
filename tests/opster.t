@@ -364,6 +364,24 @@ There is no problems with handling variable argumentrs and underscores::
   $ run varargs.py var1 var2
   {'args': ('var1', 'var2'), 'test_option': 'test'}
 
+We should check that we can still run opster scripts written using the old
+API::
+
+  $ run oldapi.py help
+  usage: oldapi.py <command> [options]
+  
+  commands:
+  
+   cmd1  (no help text available)
+   cmd2  (no help text available)
+   help  Show help for a given help topic or a help overview.
+  $ run oldapi.py cmd1
+  Not being quiet!
+  $ run oldapi.py cmd2 --verbose 1 2 3
+  1
+  2
+  3
+
 We can have an option that uses the '-h' short name (although we use it as a
 short name for '--help'::
 

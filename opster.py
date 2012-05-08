@@ -235,6 +235,10 @@ def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
         _dispatcher = Dispatcher(cmdtable, globaloptions, middleware)
     else:
         if cmdtable:
+            for key in cmdtable:
+                func, opts, usage = cmdtable[key]
+                opts = [Option(o) for o in opts]
+                cmdtable[key] = func, opts, usage
             _dispatcher._cmdtable = cmdtable
         if globaloptions:
             _dispatcher._globaloptions = [Option(o) for o in globaloptions]
