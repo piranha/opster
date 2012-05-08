@@ -368,7 +368,7 @@ We can have an option that uses the '-h' short name (although we use it as a
 short name for '--help'::
 
   $ run ls.py --help
-  ls.py [-h]
+  ls [-h]
   
   (no help text available)
   
@@ -376,3 +376,89 @@ short name for '--help'::
   
    -h --human  Pretty print filesizes
       --help   display help
+
+Let's just check that the scriptname argument ``scriptname='ls'`` works as
+expected for the error messages::
+
+  $ run ls.py invalid
+  ls: invalid arguments
+  
+  ls [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --human  Pretty print filesizes
+      --help   display help
+
+  $ run ls.py --invalid
+  error: option --invalid not recognized
+  
+  ls [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --human  Pretty print filesizes
+      --help   display help
+
+
+We can also supply the ``scriptname`` argument to ``dispatch``::
+
+  $ run scriptname.py
+  usage: newname <command> [options]
+  
+  commands:
+  
+   cmd   (no help text available)
+   help  Show help for a given help topic or a help overview.
+
+  $ run scriptname.py help
+  usage: newname <command> [options]
+  
+  commands:
+  
+   cmd   (no help text available)
+   help  Show help for a given help topic or a help overview.
+
+  $ run scriptname.py help cmd
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+  $ run scriptname.py cmd --help
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+  $ run scriptname.py cmd invalid
+  cmd: invalid arguments
+  
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+  $ run scriptname.py cmd --invalid
+  error: option --invalid not recognized
+  
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
