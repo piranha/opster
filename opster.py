@@ -54,7 +54,7 @@ class Dispatcher(object):
     '''
 
     def __init__(self, cmdtable=None, globaloptions=None, middleware=None):
-        self._cmdtable = cmdtable or {}
+        self._cmdtable = CmdTable(cmdtable or {})
         self._globaloptions = [Option(o) for o in (globaloptions or [])]
         self.middleware = middleware
 
@@ -235,11 +235,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
         _dispatcher = Dispatcher(cmdtable, globaloptions, middleware)
     else:
         if cmdtable:
-            for key in cmdtable:
-                func, opts, usage = cmdtable[key]
-                opts = [Option(o) for o in opts]
-                cmdtable[key] = func, opts, usage
-            _dispatcher._cmdtable = cmdtable
+            _dispatcher._cmdtable = CmdTable(cmdtable)
         if globaloptions:
             _dispatcher._globaloptions = [Option(o) for o in globaloptions]
         if middleware:
@@ -399,6 +395,12 @@ def Option(opt):
             return Type(*args)
     raise OpsterError('Cannot figure out type for option %s' % name)
 
+def CmdTable(cmdtable):
+    '''Factory to convert option tuples in a cmdtable'''
+    newtable = {}
+    for name, (func, opts, usage) in cmdtable.items():
+        newtable[name] = (func, [Option(o) for o in opts], usage)
+    return newtable
 
 # Superclass for all option classes
 class BaseOption(namedtuple('Option', (
