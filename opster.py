@@ -246,7 +246,7 @@ command.__doc__ = Dispatcher.command.__doc__
 
 
 def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None,
-        scriptname=None):
+             scriptname=None):
     global _dispatcher
     if not _dispatcher:
         _dispatcher = Dispatcher(cmdtable, globaloptions, middleware)
@@ -312,7 +312,7 @@ def help_(cmdtable, globalopts, scriptname):
             return recurse(*args, **opts)
 
         return help_cmd(cmd, usage, options + globalopts, aliases[1:],
-                                        scriptname + ' ' + aliases[0])
+                        scriptname + ' ' + aliases[0])
     return help_inner
 
 
