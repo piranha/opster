@@ -165,6 +165,7 @@ class Dispatcher(object):
                         return func.help(scriptname)
 
                     with exchandle(func.help, scriptname):
+                        func.help = lambda: func.help(scriptname)
                         return call_cmd(scriptname, func, options_)(*args, **opts)
 
                 except ErrorHandled:
