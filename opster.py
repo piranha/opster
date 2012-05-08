@@ -185,6 +185,13 @@ class Dispatcher(object):
 
         return wrapper
 
+    def add_dispatcher(self, name, dispatcher, help,
+                             hide=False, shortlist=False):
+        '''Add another dispatcher as a subcommand'''
+        dispatcher.__doc__ = help
+        prefix = hide and '~' or (shortlist and '^' or '')
+        self._cmdtable[prefix + name] = dispatcher, [], None
+
     def dispatch(self, args=None, scriptname=None):
         '''Dispatch command line arguments using subcommands.
 
@@ -205,6 +212,9 @@ class Dispatcher(object):
             with exchandle(help_func):
                 cmd, func, args, options = cmdparse(args, cmdtable,
                                                     self.globaloptions)
+
+            if isinstance(func, Dispatcher):
+                return func.dispatch(args, scriptname=scriptname + ' ' + cmd)
 
             with exchandle(help_func, cmd):
                 args, opts = process(args, options)
@@ -258,7 +268,7 @@ dispatch.__doc__ = Dispatcher.dispatch.__doc__
 def help_(cmdtable, globalopts, scriptname):
     '''Help generator for a command table.
     '''
-    def help_inner(name=None, **opts):
+    def help_inner(name=None, *args, **opts):
         '''Show help for a given help topic or a help overview.
 
         With no arguments, print a list of commands with short help messages.
@@ -296,6 +306,11 @@ def help_(cmdtable, globalopts, scriptname):
             return helplist()
 
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
+
+        if isinstance(cmd, Dispatcher):
+            recurse = help_(cmd.cmdtable, globalopts, scriptname + ' ' + name)
+            return recurse(*args, **opts)
+
         return help_cmd(cmd, usage, options + globalopts, aliases[1:],
                                         scriptname + ' ' + aliases[0])
     return help_inner

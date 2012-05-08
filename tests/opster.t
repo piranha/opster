@@ -462,3 +462,118 @@ We can also supply the ``scriptname`` argument to ``dispatch``::
   options:
   
    -h --help  display help
+
+It is possible to nest a dispatcher as a command within another dispatcher so
+that we can have subsubcommands.
+
+  $ run subcmds.py
+  usage: subcmds.py <command> [options]
+  
+  commands:
+  
+   cmd   Help for cmd
+   help  Show help for a given help topic or a help overview.
+
+  $ run subcmds.py help cmd
+  usage: subcmds.py cmd <command> [options]
+  
+  commands:
+  
+   subcmd1  Help for subcmd1
+   subcmd2  Help for subcmd2
+   subcmd3  Help for subcmd3
+
+  $ run subcmds.py cmd --help
+  usage: subcmds.py cmd <command> [options]
+  
+  commands:
+  
+   help     Show help for a given help topic or a help overview.
+   subcmd1  Help for subcmd1
+   subcmd2  Help for subcmd2
+   subcmd3  Help for subcmd3
+
+  $ run subcmds.py cmd subcmd1 --help
+  subcmds.py cmd subcmd1 [OPTIONS]
+  
+  Help for subcmd1
+  
+  options:
+  
+   -q --quiet  quietly
+   -h --help   display help
+
+  $ run subcmds.py help cmd subcmd1
+  subcmds.py cmd subcmd1 [OPTIONS]
+  
+  Help for subcmd1
+  
+  options:
+  
+   -q --quiet  quietly
+   -h --help   display help
+
+  $ run subcmds.py cmd subcmd1
+  running subcmd1
+
+  $ run subcmds.py cmd subcmd1 --quiet
+
+  $ run subcmds.py cmd subcmd2
+  subcmd2: invalid arguments
+  
+  subcmds.py cmd subcmd2 NUMBER
+  
+  Help for subcmd2
+  
+  options:
+  
+   -h --help  display help
+
+  $ run subcmds.py cmd subcmd2 5
+  running subcmd2 5
+
+  $ run subcmds.py help cmd subcmd3
+  usage: subcmds.py cmd subcmd3 <command> [options]
+  
+  commands:
+  
+   subsubcmd  Help for subsubcmd
+
+  $ run subcmds.py help cmd subcmd3 --help
+  subcmds.py help [TOPIC]
+  
+  Show help for a given help topic or a help overview.
+  
+          With no arguments, print a list of commands with short help messages.
+  
+          Given a command name, print help for that command.
+  
+  options:
+  
+   -h --help  display help
+
+  $ run subcmds.py help cmd subcmd3 subsubcmd
+  subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
+  
+  Help for subsubcmd
+  
+  options:
+  
+   -l --loud  loudly
+   -h --help  display help
+
+  $ run subcmds.py cmd subcmd3 subsubcmd --help
+  subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
+  
+  Help for subsubcmd
+  
+  options:
+  
+   -l --loud  loudly
+   -h --help  display help
+
+  $ run subcmds.py cmd subcmd3 subsubcmd
+
+  $ run subcmds.py cmd subcmd3 subsubcmd -l
+  running subsubcmd
+
