@@ -293,7 +293,7 @@ Another things should be checked: calling help display from the function
 itself::
 
   $ run selfhelp.py --assist
-  selfhelp.py [OPTIONS]
+  selfhelp [OPTIONS]
   
   Displays ability to show help
   

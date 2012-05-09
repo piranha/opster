@@ -165,8 +165,8 @@ class Dispatcher(object):
                         return func.help(scriptname)
 
                     with exchandle(func.help, scriptname):
-                        func.help = lambda: func.help(scriptname)
-                        return call_cmd(scriptname, func, options_)(*args, **opts)
+                        with help_workaround(inner, scriptname):
+                            return call_cmd(scriptname, func, options_)(*args, **opts)
 
                 except ErrorHandled:
                     return -1
@@ -227,7 +227,8 @@ class Dispatcher(object):
 
             mw = cmd != '_completion' and self.middleware or None
             with exchandle(help_func, cmd):
-                return call_cmd(cmd, func, options, mw)(*args, **opts)
+                with help_workaround(func, scriptname):
+                    return call_cmd(cmd, func, options, mw)(*args, **opts)
 
         except ErrorHandled:
             return -1
@@ -694,6 +695,20 @@ def guess_usage(func, options):
     if arginfo.varargs:
         usage.append('[%s ...]' % arginfo.varargs.upper())
     return ' '.join(usage)
+
+
+@contextmanager
+def help_workaround(func, scriptname):
+    '''Context manager to temporarily replace func.help'''
+    if not hasattr(func, 'help'):
+        yield
+        return
+    help = func.help
+    try:
+        func.help = lambda: help(scriptname)
+        yield
+    finally:
+        func.help = help
 
 
 @contextmanager
