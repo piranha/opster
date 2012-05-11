@@ -512,6 +512,7 @@ that we can have subsubcommands.
   options:
   
    -s --showhelp  Print the help message
+   -h --help      display help
 
   $ run subcmds.py cmd subcmd1 --help
   subcmds.py cmd subcmd1 [OPTIONS]
@@ -551,6 +552,7 @@ that we can have subsubcommands.
   
    -q --quiet     quietly
    -s --showhelp  Print the help message
+   -h --help      display help
 
   $ run subcmds.py cmd subcmd2
   subcmd2: invalid arguments
@@ -618,6 +620,7 @@ that we can have subsubcommands.
   
    -l --loud      loudly
    -s --showhelp  Print the help message
+   -h --help      display help
 
   $ run subcmds.py cmd subcmd3 subsubcmd
 
