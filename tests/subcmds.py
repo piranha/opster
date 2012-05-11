@@ -7,7 +7,7 @@ from opster import Dispatcher
 d = Dispatcher()
 
 @d.command()
-def cmd2(showhelp=('s', False, 'Print the help message')):
+def cmd2(showhelp=('h', False, 'Print the help message')):
     if showhelp:
         print('Showing the help:')
         cmd2.help()
@@ -15,7 +15,7 @@ def cmd2(showhelp=('s', False, 'Print the help message')):
 d2 = Dispatcher()
 @d2.command()
 def subcmd1(quiet=('q', False, 'quietly'),
-            showhelp=('s', False, 'Print the help message')):
+            showhelp=('h', False, 'Print the help message')):
     '''Help for subcmd1'''
     if not quiet:
         print('running subcmd1')
@@ -31,7 +31,7 @@ def subcmd2(number):
 d3 = Dispatcher()
 @d3.command()
 def subsubcmd(loud=('l', False, 'loudly'),
-              showhelp=('s', False, 'Print the help message')):
+              showhelp=('h', False, 'Print the help message')):
     '''Help for subsubcmd'''
     if loud:
         print('running subsubcmd')

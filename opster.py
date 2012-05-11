@@ -30,11 +30,13 @@ _writer = codecs.getwriter(ENCODING)
 def write(text, out=None):
     '''Write output to a given stream (stdout by default).'''
     out = out or sys.stdout
+    out.flush()
     if hasattr(out, 'buffer'):
         out = _writer(out.buffer)
     elif sys.version_info < (3, 0) and isinstance(text, unicode):
         text = text.encode(ENCODING)
     out.write(text)
+    out.flush()
 
 
 def err(text):
@@ -144,15 +146,7 @@ class Dispatcher(object):
 
             def command(argv=None, scriptname=None):
                 scriptname = scriptname or sysname()
-                for o in self.globaloptions:
-                    # Don't include global option if long name matches
-                    if any((x.name == o.name for x in options_)):
-                        continue
-                    # Don't use global option short name if already used
-                    if any((x.short and x.short == o.short
-                            for x in options_)):
-                        o = o._replace(short='')
-                    options_.append(o)
+                merge_globalopts(self.globaloptions, options_)
 
                 if argv is None:
                     argv = sys.argv[1:]
@@ -316,8 +310,12 @@ def help_(cmdtable, globalopts, scriptname):
             recurse = help_(cmd.cmdtable, globalopts, scriptname + ' ' + name)
             return recurse(*args, **opts)
 
-        return help_cmd(cmd, usage, options + globalopts, aliases[1:],
+        options = list(options)
+        merge_globalopts(globalopts, options)
+
+        return help_cmd(cmd, usage, options, aliases[1:],
                         scriptname + ' ' + aliases[0])
+
     return help_inner
 
 
@@ -392,6 +390,17 @@ def help_options(options):
 # --------
 # Options process
 # --------
+
+def merge_globalopts(globalopts, opts):
+    '''Merge the global options with the subcommand options'''
+    for o in globalopts:
+        # Don't include global option if long name matches
+        if any((x.name == o.name for x in opts)):
+            continue
+        # Don't use global option short name if already used
+        if any((x.short and x.short == o.short for x in opts)):
+            o = o._replace(short='')
+        opts.append(o)
 
 # Factory for creating _Option instances. Intended to be the entry point to
 # the *Option classes here.
@@ -610,7 +619,8 @@ def cmdparse(args, cmdtable, globalopts):
         args.remove(cmdarg)
         aliases, info = findcmd(cmdarg, cmdtable)
         cmd = aliases[0]
-        possibleopts = list(info[1]) + globalopts
+        possibleopts = list(info[1])
+        merge_globalopts(globalopts, possibleopts)
         return cmd, info[0] or None, args, possibleopts
     else:
         return None, None, args, globalopts

@@ -501,8 +501,8 @@ that we can have subsubcommands.
   
   options:
   
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
   $ run subcmds.py cmd2 --showhelp
   Showing the help:
   subcmds.py cmd2 [OPTIONS]
@@ -511,8 +511,8 @@ that we can have subsubcommands.
   
   options:
   
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py cmd subcmd1 --help
   subcmds.py cmd subcmd1 [OPTIONS]
@@ -522,8 +522,8 @@ that we can have subsubcommands.
   options:
   
    -q --quiet     quietly
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py help cmd subcmd1
   subcmds.py cmd subcmd1 [OPTIONS]
@@ -533,8 +533,8 @@ that we can have subsubcommands.
   options:
   
    -q --quiet     quietly
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py cmd subcmd1
   running subcmd1
@@ -551,8 +551,8 @@ that we can have subsubcommands.
   options:
   
    -q --quiet     quietly
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py cmd subcmd2
   subcmd2: invalid arguments
@@ -596,8 +596,8 @@ that we can have subsubcommands.
   options:
   
    -l --loud      loudly
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py cmd subcmd3 subsubcmd --help
   subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
@@ -607,8 +607,8 @@ that we can have subsubcommands.
   options:
   
    -l --loud      loudly
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py cmd subcmd3 subsubcmd --showhelp
   Showing the help:
@@ -619,8 +619,8 @@ that we can have subsubcommands.
   options:
   
    -l --loud      loudly
-   -s --showhelp  Print the help message
-   -h --help      display help
+   -h --showhelp  Print the help message
+      --help      display help
 
   $ run subcmds.py cmd subcmd3 subsubcmd
 
