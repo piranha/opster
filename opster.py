@@ -182,6 +182,9 @@ class Dispatcher(object):
             def inner(*args, **opts):
                 return call_cmd_regular(func, options_)(*args, **opts)
 
+            # Store this for help_workaround
+            func._inner = inner
+
             return inner
 
         return wrapper
@@ -227,7 +230,7 @@ class Dispatcher(object):
 
             mw = cmd != '_completion' and self.middleware or None
             with exchandle(help_func, cmd):
-                with help_workaround(func, scriptname):
+                with help_workaround(func, scriptname + ' ' + cmd):
                     return call_cmd(cmd, func, options, mw)(*args, **opts)
 
         except ErrorHandled:
@@ -700,9 +703,15 @@ def guess_usage(func, options):
 @contextmanager
 def help_workaround(func, scriptname):
     '''Context manager to temporarily replace func.help'''
+    # Retrieve inner if function is command wrapped
+    func = getattr(func, '_inner', func)
+
+    # Ignore function that was not command wrapped
     if not hasattr(func, 'help'):
         yield
         return
+
+    # Wrap the with block with a replaced help function
     help = func.help
     try:
         func.help = lambda: help(scriptname)

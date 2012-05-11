@@ -472,6 +472,7 @@ that we can have subsubcommands.
   commands:
   
    cmd   Help for cmd
+   cmd2  (no help text available)
    help  Show help for a given help topic or a help overview.
 
   $ run subcmds.py help cmd
@@ -493,6 +494,25 @@ that we can have subsubcommands.
    subcmd2  Help for subcmd2
    subcmd3  Help for subcmd3
 
+  $ run subcmds.py cmd2 --help
+  subcmds.py cmd2 [OPTIONS]
+  
+  (no help text available)
+  
+  options:
+  
+   -s --showhelp  Print the help message
+   -h --help      display help
+  $ run subcmds.py cmd2 --showhelp
+  Showing the help:
+  subcmds.py cmd2 [OPTIONS]
+  
+  (no help text available)
+  
+  options:
+  
+   -s --showhelp  Print the help message
+
   $ run subcmds.py cmd subcmd1 --help
   subcmds.py cmd subcmd1 [OPTIONS]
   
@@ -500,8 +520,9 @@ that we can have subsubcommands.
   
   options:
   
-   -q --quiet  quietly
-   -h --help   display help
+   -q --quiet     quietly
+   -s --showhelp  Print the help message
+   -h --help      display help
 
   $ run subcmds.py help cmd subcmd1
   subcmds.py cmd subcmd1 [OPTIONS]
@@ -510,13 +531,26 @@ that we can have subsubcommands.
   
   options:
   
-   -q --quiet  quietly
-   -h --help   display help
+   -q --quiet     quietly
+   -s --showhelp  Print the help message
+   -h --help      display help
 
   $ run subcmds.py cmd subcmd1
   running subcmd1
 
   $ run subcmds.py cmd subcmd1 --quiet
+
+  $ run subcmds.py cmd subcmd1 --showhelp
+  running subcmd1
+  Showing the help:
+  subcmds.py cmd subcmd1 [OPTIONS]
+  
+  Help for subcmd1
+  
+  options:
+  
+   -q --quiet     quietly
+   -s --showhelp  Print the help message
 
   $ run subcmds.py cmd subcmd2
   subcmd2: invalid arguments
@@ -559,8 +593,9 @@ that we can have subsubcommands.
   
   options:
   
-   -l --loud  loudly
-   -h --help  display help
+   -l --loud      loudly
+   -s --showhelp  Print the help message
+   -h --help      display help
 
   $ run subcmds.py cmd subcmd3 subsubcmd --help
   subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
@@ -569,8 +604,20 @@ that we can have subsubcommands.
   
   options:
   
-   -l --loud  loudly
-   -h --help  display help
+   -l --loud      loudly
+   -s --showhelp  Print the help message
+   -h --help      display help
+
+  $ run subcmds.py cmd subcmd3 subsubcmd --showhelp
+  Showing the help:
+  subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
+  
+  Help for subsubcmd
+  
+  options:
+  
+   -l --loud      loudly
+   -s --showhelp  Print the help message
 
   $ run subcmds.py cmd subcmd3 subsubcmd
 
