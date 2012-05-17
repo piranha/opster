@@ -9,4 +9,4 @@ def selfhelp(assist=('', False, 'show help')):
         print('no help for you!')
 
 if __name__ == '__main__':
-    selfhelp.command()
+    selfhelp.command(scriptname='selfhelp')

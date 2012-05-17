@@ -30,11 +30,13 @@ _writer = codecs.getwriter(ENCODING)
 def write(text, out=None):
     '''Write output to a given stream (stdout by default).'''
     out = out or sys.stdout
+    out.flush()
     if hasattr(out, 'buffer'):
         out = _writer(out.buffer)
     elif sys.version_info < (3, 0) and isinstance(text, unicode):
         text = text.encode(ENCODING)
     out.write(text)
+    out.flush()
 
 
 def err(text):
@@ -67,9 +69,7 @@ class Dispatcher(object):
 
     @property
     def cmdtable(self):
-        table = self._cmdtable.copy()
-        table['help'] = help_(table, self.globaloptions), [], '[TOPIC]'
-        return table
+        return self._cmdtable.copy()
 
     def command(self, options=None, usage=None, name=None, shortlist=False,
                 hide=False, aliases=()):
@@ -129,7 +129,7 @@ class Dispatcher(object):
                 options_ = []
 
             cmdname = name or name_from_python(func.__name__)
-            scriptname = name or sysname()
+            scriptname_ = name or sysname()
             if usage is None:
                 usage_ = guess_usage(func, options_)
             else:
@@ -140,33 +140,27 @@ class Dispatcher(object):
                 cmdname = cmdname + '|' + '|'.join(aliases)
             self._cmdtable[cmdname] = (func, options_, usage_)
 
-            def help_func(name=None):
-                return help_cmd(func, replace_name(usage_, sysname()), options_,
-                                aliases)
+            def help_func(scriptname=None):
+                scriptname = scriptname or sysname()
+                return help_cmd(func, usage_, options_, aliases, scriptname)
 
-            def command(argv=None):
-                for o in self.globaloptions:
-                    # Don't include global option if long name matches
-                    if any((x.name == o.name for x in options_)):
-                        continue
-                    # Don't use global option short name if already used
-                    if any((x.short and x.short == o.short
-                            for x in options_)):
-                        o = o._replace(short='')
-                    options_.append(o)
+            def command(argv=None, scriptname=None):
+                scriptname = scriptname or sysname()
+                merge_globalopts(self.globaloptions, options_)
 
                 if argv is None:
                     argv = sys.argv[1:]
 
                 try:
-                    with exchandle(func.help):
+                    with exchandle(func.help, scriptname):
                         args, opts = process(argv, options_)
 
                     if opts.pop('help', False):
-                        return func.help()
+                        return func.help(scriptname)
 
-                    with exchandle(func.help):
-                        return call_cmd(scriptname, func, options_)(*args, **opts)
+                    with exchandle(func.help, scriptname):
+                        with help_workaround(func, scriptname):
+                            return call_cmd(scriptname, func, options_)(*args, **opts)
 
                 except ErrorHandled:
                     return -1
@@ -176,29 +170,49 @@ class Dispatcher(object):
             func.command = command
             func.opts = options_
             func.orig = func
+            func.scriptname = scriptname_
 
             @wraps(func)
             def inner(*args, **opts):
                 return call_cmd_regular(func, options_)(*args, **opts)
 
+            # Store this for help_workaround
+            func._inner = inner
+
             return inner
 
         return wrapper
 
-    def dispatch(self, args=None):
+    def add_dispatcher(self, name, dispatcher, help,
+                             hide=False, shortlist=False):
+        '''Add another dispatcher as a subcommand'''
+        dispatcher.__doc__ = help
+        prefix = hide and '~' or (shortlist and '^' or '')
+        self._cmdtable[prefix + name] = dispatcher, [], None
+
+    def dispatch(self, args=None, scriptname=None):
         '''Dispatch command line arguments using subcommands.
 
         - ``args``: list of arguments, default: ``sys.argv[1:]``
         '''
-        args = args or sys.argv[1:]
+        if args is None:
+            args = sys.argv[1:]
+        scriptname = scriptname or sysname()
 
-        help_func = self.cmdtable['help'][0]
-        autocomplete(self.cmdtable, args, self.middleware)
+        # Add help function to the table
+        cmdtable = self.cmdtable
+        help_func = help_(cmdtable, self.globaloptions, scriptname)
+        cmdtable['help'] = help_func, [], '[TOPIC]'
+
+        autocomplete(cmdtable, args, self.middleware)
 
         try:
             with exchandle(help_func):
-                cmd, func, args, options = cmdparse(args, self.cmdtable,
+                cmd, func, args, options = cmdparse(args, cmdtable,
                                                     self.globaloptions)
+
+            if isinstance(func, Dispatcher):
+                return func.dispatch(args, scriptname=scriptname + ' ' + cmd)
 
             with exchandle(help_func, cmd):
                 args, opts = process(args, options)
@@ -210,7 +224,8 @@ class Dispatcher(object):
 
             mw = cmd != '_completion' and self.middleware or None
             with exchandle(help_func, cmd):
-                return call_cmd(cmd, func, options, mw)(*args, **opts)
+                with help_workaround(func, cmd, help_func):
+                    return call_cmd(cmd, func, options, mw)(*args, **opts)
 
         except ErrorHandled:
             return -1
@@ -229,7 +244,8 @@ def command(options=None, usage=None, name=None, shortlist=False, hide=False,
 command.__doc__ = Dispatcher.command.__doc__
 
 
-def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
+def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None,
+             scriptname=None):
     global _dispatcher
     if not _dispatcher:
         _dispatcher = Dispatcher(cmdtable, globaloptions, middleware)
@@ -240,7 +256,7 @@ def dispatch(args=None, cmdtable=None, globaloptions=None, middleware=None):
             _dispatcher._globaloptions = [Option(o) for o in globaloptions]
         if middleware:
             _dispatcher.middleware = middleware
-    return _dispatcher.dispatch(args)
+    return _dispatcher.dispatch(args, scriptname)
 dispatch.__doc__ = Dispatcher.dispatch.__doc__
 
 
@@ -248,10 +264,10 @@ dispatch.__doc__ = Dispatcher.dispatch.__doc__
 # Help
 # --------
 
-def help_(cmdtable, globalopts):
+def help_(cmdtable, globalopts, scriptname):
     '''Help generator for a command table.
     '''
-    def help_inner(name=None, **opts):
+    def help_inner(name=None, *args, **opts):
         '''Show help for a given help topic or a help overview.
 
         With no arguments, print a list of commands with short help messages.
@@ -276,7 +292,7 @@ def help_(cmdtable, globalopts):
             hlplist = sorted(hlp)
             maxlen = max(map(len, hlplist))
 
-            write('usage: %s <command> [options]\n' % sysname())
+            write('usage: %s <command> [options]\n' % scriptname)
             write('\ncommands:\n\n')
             for cmd in hlplist:
                 doc = hlp[cmd]
@@ -289,14 +305,21 @@ def help_(cmdtable, globalopts):
             return helplist()
 
         aliases, (cmd, options, usage) = findcmd(name, cmdtable)
-        return help_cmd(cmd,
-                        replace_name(usage, sysname() + ' ' + aliases[0]),
-                        options + globalopts,
-                        aliases[1:])
+
+        if isinstance(cmd, Dispatcher):
+            recurse = help_(cmd.cmdtable, globalopts, scriptname + ' ' + name)
+            return recurse(*args, **opts)
+
+        options = list(options)
+        merge_globalopts(globalopts, options)
+
+        return help_cmd(cmd, usage, options, aliases[1:],
+                        scriptname + ' ' + aliases[0])
+
     return help_inner
 
 
-def help_cmd(func, usage, options, aliases):
+def help_cmd(func, usage, options, aliases, scriptname=None):
     '''Show help for given command.
 
     - ``func``: function to generate help for (``func.__doc__`` is taken)
@@ -316,7 +339,7 @@ def help_cmd(func, usage, options, aliases):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> help_cmd(test, 'test [-l HOST] [NAME]', opts, ())
+    >>> help_cmd(test, '%name [-l HOST] [NAME]', opts, (), 'test')
     test [-l HOST] [NAME]
     <BLANKLINE>
     that's a test command
@@ -331,6 +354,7 @@ def help_cmd(func, usage, options, aliases):
         --pid-file   name of file to write process ID to
     '''
     options = [Option(o) for o in options]  # only for doctest
+    usage = replace_name(usage, scriptname)
     write(usage + '\n')
     if aliases:
         write('\naliases: ' + ', '.join(aliases) + '\n')
@@ -366,6 +390,17 @@ def help_options(options):
 # --------
 # Options process
 # --------
+
+def merge_globalopts(globalopts, opts):
+    '''Merge the global options with the subcommand options'''
+    for o in globalopts:
+        # Don't include global option if long name matches
+        if any((x.name == o.name for x in opts)):
+            continue
+        # Don't use global option short name if already used
+        if any((x.short and x.short == o.short for x in opts)):
+            o = o._replace(short='')
+        opts.append(o)
 
 # Factory for creating _Option instances. Intended to be the entry point to
 # the *Option classes here.
@@ -590,7 +625,8 @@ def cmdparse(args, cmdtable, globalopts):
         args.remove(cmdarg)
         aliases, info = findcmd(cmdarg, cmdtable)
         cmd = aliases[0]
-        possibleopts = list(info[1]) + globalopts
+        possibleopts = list(info[1])
+        merge_globalopts(globalopts, possibleopts)
         return cmd, info[0] or None, args, possibleopts
     else:
         return None, None, args, globalopts
@@ -678,6 +714,27 @@ def guess_usage(func, options):
     if arginfo.varargs:
         usage.append('[%s ...]' % arginfo.varargs.upper())
     return ' '.join(usage)
+
+
+@contextmanager
+def help_workaround(func, scriptname, help_func=None):
+    '''Context manager to temporarily replace func.help'''
+    # Retrieve inner if function is command wrapped
+    func = getattr(func, '_inner', func)
+
+    # Ignore function that was not command wrapped
+    if not hasattr(func, 'help'):
+        yield
+        return
+
+    # Wrap the with block with a replaced help function
+    help = func.help
+    help_func = help_func or help
+    try:
+        func.help = lambda: help_func(scriptname)
+        yield
+    finally:
+        func.help = help
 
 
 @contextmanager
