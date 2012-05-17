@@ -293,7 +293,7 @@ Another things should be checked: calling help display from the function
 itself::
 
   $ run selfhelp.py --assist
-  selfhelp.py [OPTIONS]
+  selfhelp [OPTIONS]
   
   Displays ability to show help
   
@@ -386,7 +386,7 @@ We can have an option that uses the '-h' short name (although we use it as a
 short name for '--help'::
 
   $ run ls.py --help
-  ls.py [-h]
+  ls [-h]
   
   (no help text available)
   
@@ -396,3 +396,254 @@ short name for '--help'::
       --nohelp1
    -n --nohelp2
       --help   display help
+
+Let's just check that the scriptname argument ``scriptname='ls'`` works as
+expected for the error messages::
+
+  $ run ls.py invalid
+  ls: invalid arguments
+  
+  ls [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --human  Pretty print filesizes
+      --help   display help
+
+  $ run ls.py --invalid
+  error: option --invalid not recognized
+  
+  ls [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --human  Pretty print filesizes
+      --help   display help
+
+
+We can also supply the ``scriptname`` argument to ``dispatch``::
+
+  $ run scriptname.py
+  usage: newname <command> [options]
+  
+  commands:
+  
+   cmd   (no help text available)
+   help  Show help for a given help topic or a help overview.
+
+  $ run scriptname.py help
+  usage: newname <command> [options]
+  
+  commands:
+  
+   cmd   (no help text available)
+   help  Show help for a given help topic or a help overview.
+
+  $ run scriptname.py help cmd
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+  $ run scriptname.py cmd --help
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+  $ run scriptname.py cmd invalid
+  cmd: invalid arguments
+  
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+  $ run scriptname.py cmd --invalid
+  error: option --invalid not recognized
+  
+  newname cmd [-h]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --help  display help
+
+It is possible to nest a dispatcher as a command within another dispatcher so
+that we can have subsubcommands.
+
+  $ run subcmds.py
+  usage: subcmds.py <command> [options]
+  
+  commands:
+  
+   cmd   Help for cmd
+   cmd2  (no help text available)
+   help  Show help for a given help topic or a help overview.
+
+  $ run subcmds.py help cmd
+  usage: subcmds.py cmd <command> [options]
+  
+  commands:
+  
+   subcmd1  Help for subcmd1
+   subcmd2  Help for subcmd2
+   subcmd3  Help for subcmd3
+
+  $ run subcmds.py cmd --help
+  usage: subcmds.py cmd <command> [options]
+  
+  commands:
+  
+   help     Show help for a given help topic or a help overview.
+   subcmd1  Help for subcmd1
+   subcmd2  Help for subcmd2
+   subcmd3  Help for subcmd3
+
+  $ run subcmds.py cmd2 --help
+  subcmds.py cmd2 [OPTIONS]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --showhelp  Print the help message
+      --help      display help
+  $ run subcmds.py cmd2 --showhelp
+  Showing the help:
+  subcmds.py cmd2 [OPTIONS]
+  
+  (no help text available)
+  
+  options:
+  
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py cmd subcmd1 --help
+  subcmds.py cmd subcmd1 [OPTIONS]
+  
+  Help for subcmd1
+  
+  options:
+  
+   -q --quiet     quietly
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py help cmd subcmd1
+  subcmds.py cmd subcmd1 [OPTIONS]
+  
+  Help for subcmd1
+  
+  options:
+  
+   -q --quiet     quietly
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py cmd subcmd1
+  running subcmd1
+
+  $ run subcmds.py cmd subcmd1 --quiet
+
+  $ run subcmds.py cmd subcmd1 --showhelp
+  running subcmd1
+  Showing the help:
+  subcmds.py cmd subcmd1 [OPTIONS]
+  
+  Help for subcmd1
+  
+  options:
+  
+   -q --quiet     quietly
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py cmd subcmd2
+  subcmd2: invalid arguments
+  
+  subcmds.py cmd subcmd2 NUMBER
+  
+  Help for subcmd2
+  
+  options:
+  
+   -h --help  display help
+
+  $ run subcmds.py cmd subcmd2 5
+  running subcmd2 5
+
+  $ run subcmds.py help cmd subcmd3
+  usage: subcmds.py cmd subcmd3 <command> [options]
+  
+  commands:
+  
+   subsubcmd  Help for subsubcmd
+
+  $ run subcmds.py help cmd subcmd3 --help
+  subcmds.py help [TOPIC]
+  
+  Show help for a given help topic or a help overview.
+  
+          With no arguments, print a list of commands with short help messages.
+  
+          Given a command name, print help for that command.
+  
+  options:
+  
+   -h --help  display help
+
+  $ run subcmds.py help cmd subcmd3 subsubcmd
+  subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
+  
+  Help for subsubcmd
+  
+  options:
+  
+   -l --loud      loudly
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py cmd subcmd3 subsubcmd --help
+  subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
+  
+  Help for subsubcmd
+  
+  options:
+  
+   -l --loud      loudly
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py cmd subcmd3 subsubcmd --showhelp
+  Showing the help:
+  subcmds.py cmd subcmd3 subsubcmd [OPTIONS]
+  
+  Help for subsubcmd
+  
+  options:
+  
+   -l --loud      loudly
+   -h --showhelp  Print the help message
+      --help      display help
+
+  $ run subcmds.py cmd subcmd3 subsubcmd
+
+  $ run subcmds.py cmd subcmd3 subsubcmd -l
+  running subsubcmd
+
