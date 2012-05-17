@@ -410,6 +410,8 @@ expected for the error messages::
   options:
   
    -h --human  Pretty print filesizes
+      --nohelp1
+   -n --nohelp2
       --help   display help
 
   $ run ls.py --invalid
@@ -422,6 +424,8 @@ expected for the error messages::
   options:
   
    -h --human  Pretty print filesizes
+      --nohelp1
+   -n --nohelp2
       --help   display help
 
 
