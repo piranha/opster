@@ -4,7 +4,9 @@ import sys
 from opster import command
 
 @command(usage='[-h]')
-def main(human=('h', False, 'Pretty print filesizes')):
+def main(human=('h', False, 'Pretty print filesizes'),
+         nohelp1=('', False, ''),
+         nohelp2=('n', False, '')):
     if human:
         print('26k')
     else:
