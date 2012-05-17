@@ -490,6 +490,8 @@ We can also supply the ``scriptname`` argument to ``dispatch``::
 It is possible to nest a dispatcher as a command within another dispatcher so
 that we can have subsubcommands.
 
+::
+
   $ run subcmds.py
   usage: subcmds.py <command> [options]
   
@@ -527,6 +529,7 @@ that we can have subsubcommands.
   
    -h --showhelp  Print the help message
       --help      display help
+
   $ run subcmds.py cmd2 --showhelp
   Showing the help:
   subcmds.py cmd2 [OPTIONS]

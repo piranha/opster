@@ -280,6 +280,8 @@ function object, i.e.::
 
 See `an example from the tests`_.
 
+.. _an example from the tests: http://hg.piranha.org.ua/opster/file/default/tests/selfhelp.py
+
 Error messages
 ==============
 
@@ -305,5 +307,3 @@ Now we can do::
 
   > python quit.py --algorithm=quick
   unrecognised algorithm "quick"
-
-.. _example from tests: http://hg.piranha.org.ua/opster/file/default/tests/selfhelp.py
