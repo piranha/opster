@@ -23,17 +23,18 @@ arch:
 
 test:
 	python opster.py
-	$(CRAM) tests/*.t
+	$(CRAM) tests/opster.t
 
 test2to3:
 	"$(PYTHON3)" setup.py build
 	2to3 --doctests_only --write "$(BUILD_DIR)"/opster.py
 	"$(PYTHON3)" "$(BUILD_DIR)"/opster.py
-	PYTHON="$(PYTHON3)" OPSTER_DIR="$(BUILD_DIR)" $(CRAM) tests/*.t
+	PYTHON="$(PYTHON3)" OPSTER_DIR="$(BUILD_DIR)" $(CRAM) tests/opster.t
+	PYTHON="$(PYTHON3)" OPSTER_DIR="$(BUILD_DIR)" $(CRAM) tests/py3k.t
 
 coverage:
 	coverage run -a opster.py
-	COVERAGE=1 $(CRAM) tests/*.t
+	COVERAGE=1 $(CRAM) tests/opster.t
 
 upload:
 	python setup.py sdist upload
