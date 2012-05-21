@@ -424,8 +424,7 @@ def Option(opt):
 
     # Find matching _Option subclass and return instance
     # nb. the order of testing matters
-    for Type in (BoolOption, IntOption, FloatOption, ListOption,
-                 DictOption, FuncOption, LiteralOption):
+    for Type in (BoolOption, ListOption, DictOption, FuncOption, BaseOption):
         if Type.matches(default):
             return Type(*args)
     raise OpsterError('Cannot figure out type for option %s' % name)
@@ -441,7 +440,7 @@ def CmdTable(cmdtable):
 class BaseOption(namedtuple('Option', (
             'pyname', 'name', 'short', 'default', 'helpmsg', 'completer'))):
     has_parameter = True
-    type = None
+    type = object
 
     def __repr__(self):
         return (super(BaseOption, self).__repr__()
@@ -462,19 +461,11 @@ class BaseOption(namedtuple('Option', (
 
     def convert(self, final):
         '''Generate the resulting python value from the final state.'''
-        return self.type(final)
+        return type(self.default)(final)
 
     def default_value(self):
         '''Shortcut to obtain the default value when option arg not provided.'''
         return self.convert(self.default_state())
-
-
-class LiteralOption(BaseOption):
-    '''Literal option type (including string options, no processing).'''
-    type = object
-
-    def convert(self, final):
-        return final
 
 
 class BoolOption(BaseOption):
@@ -487,16 +478,6 @@ class BoolOption(BaseOption):
 
     def update_state(self, state, new):
         return not self.default
-
-
-class IntOption(BaseOption):
-    '''Integer number option type.'''
-    type = int
-
-
-class FloatOption(BaseOption):
-    '''Floating point number option type.'''
-    type = float
 
 
 class ListOption(BaseOption):
