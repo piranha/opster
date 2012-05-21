@@ -392,10 +392,11 @@ short name for '--help'::
   
   options:
   
-   -h --human  Pretty print filesizes
+   -h --human     Pretty print filesizes
+   -f --filesize  size to print (default: 26037)
       --nohelp1
    -n --nohelp2
-      --help   display help
+      --help      display help
 
 Let's just check that the scriptname argument ``scriptname='ls'`` works as
 expected for the error messages::
@@ -409,10 +410,11 @@ expected for the error messages::
   
   options:
   
-   -h --human  Pretty print filesizes
+   -h --human     Pretty print filesizes
+   -f --filesize  size to print (default: 26037)
       --nohelp1
    -n --nohelp2
-      --help   display help
+      --help      display help
 
   $ run ls.py --invalid
   error: option --invalid not recognized
@@ -423,10 +425,18 @@ expected for the error messages::
   
   options:
   
-   -h --human  Pretty print filesizes
+   -h --human     Pretty print filesizes
+   -f --filesize  size to print (default: 26037)
       --nohelp1
    -n --nohelp2
-      --help   display help
+      --help      display help
+
+Now lets check that opster gets the type of the --filesize option correct
+(should be decimal.Decimal)::
+
+  $ run ls.py --filesize=12345 -h
+  <class 'decimal.Decimal'>
+  12k
 
 
 We can also supply the ``scriptname`` argument to ``dispatch``::
