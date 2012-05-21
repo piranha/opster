@@ -689,10 +689,30 @@ def guess_options(func):
 
     See docstring of ``command()`` for description of those variables.
     '''
-    args, _, _, defaults = inspect.getargspec(func)
+    try:
+        args, _, _, defaults = inspect.getargspec(func)
+    except ValueError: # has keyword-only arguments
+        for o in guess_options_py3k(func):
+            yield o
+        return
     for name, option in zip(args[-len(defaults):], defaults):
         if not isinstance(option, tuple):
             continue
+        yield (option[0], name_from_python(name)) + option[1:]
+
+
+def guess_options_py3k(func):
+    '''Get options definitions from function with keyword-only arguments
+
+    They should be declared in a following way:
+
+    def func(*, longname=(shortname, default, help)):
+        pass
+
+    See docstring of ``command()`` for description of those variables.
+    '''
+    spec = inspect.getfullargspec(func)
+    for name, option in spec.kwonlydefaults.items():
         yield (option[0], name_from_python(name)) + option[1:]
 
 
@@ -702,7 +722,10 @@ def guess_usage(func, options):
     usage = ['%name']
     if options:
         usage.append('[OPTIONS]')
-    arginfo = inspect.getargspec(func)
+    try:
+        arginfo = inspect.getargspec(func)
+    except ValueError: # keyword-only args
+        arginfo = inspect.getfullargspec(func)
     optnames = [o.name for o in options]
     nonoptional = len(arginfo.args) - len(arginfo.defaults or ())
 
@@ -768,7 +791,10 @@ def call_cmd(name, func, opts, middleware=None):
     '''Wrapper for command call, catching situation with insufficient arguments.
     '''
     # depth is necessary when there is a middleware in setup
-    arginfo = inspect.getargspec(func)
+    try:
+        arginfo = inspect.getargspec(func)
+    except ValueError:
+        arginfo = inspect.getfullargspec(func)
     if middleware:
         tocall = middleware(func)
         depth = 2
