@@ -486,7 +486,7 @@ class UnicodeOption(BaseOption):
 
     def convert(self, final):
         if sys.version_info < (3, 0):
-            final = final.decode(ENCODING)
+            return final.decode(ENCODING)
         return final
 
 

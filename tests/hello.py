@@ -1,6 +1,8 @@
 import sys
 from opster import command
 
+# This could seem to be a little involved, but keep in mind that those little
+# movements here are done to support both python 2.x and 3.x
 unicode = unicode if sys.version_info < (3, 0) else str
 out = getattr(sys.stdout, 'buffer', sys.stdout)
 
