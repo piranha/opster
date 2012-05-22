@@ -1,9 +1,13 @@
+import sys
 from opster import command
+
+unicode = unicode if sys.version_info < (3, 0) else str
+out = getattr(sys.stdout, 'buffer', sys.stdout)
 
 @command()
 def hello(name,
           times=1,
-          greeting=('g', u'Hello', 'Greeting to use')):
+          greeting=('g', unicode('Hello'), 'Greeting to use')):
     """
     Hello world continues the long established tradition
     of delivering simple, but working programs in all
@@ -12,11 +16,11 @@ def hello(name,
     This tests different docstring formatting (just text instead of having
     subject and body).
     """
-    if isinstance(name, str):
+    if hasattr(name, 'decode'):
         name = name.decode('utf-8')
     # no parsing for optional arguments yet :\
     for i in range(int(times)):
-        print((u"%s %s" % (greeting, name)).encode('utf-8'))
+        out.write((unicode("%s %s\n") % (greeting, name)).encode('utf-8'))
 
 if __name__ == "__main__":
     hello.command()
