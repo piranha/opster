@@ -485,7 +485,9 @@ class UnicodeOption(BaseOption):
     type = unicode
 
     def convert(self, final):
-        return final.decode(ENCODING)
+        if sys.version_info < (3, 0):
+            final = final.decode(ENCODING)
+        return final
 
 
 class BoolOption(BaseOption):
