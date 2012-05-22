@@ -424,8 +424,8 @@ def Option(opt):
 
     # Find matching _Option subclass and return instance
     # nb. the order of testing matters
-    for Type in (BoolOption, ListOption, DictOption,
-                 FuncOption, UnicodeOption, LiteralOption):
+    for Type in (BoolOption, ListOption, DictOption, FuncOption,
+                 TupleOption, UnicodeOption, LiteralOption):
         if Type.matches(default):
             return Type(*args)
     raise OpsterError('Cannot figure out type for option %s' % name)
@@ -529,6 +529,28 @@ class DictOption(BaseOption):
             raise getopt.GetoptError(msg % new)
         state[k] = v
         return state
+
+
+class TupleOption(BaseOption):
+    '''Tuple option type.'''
+    type = tuple
+
+    def __init__(self, *args, **kwargs):
+        self._option = Option(('', '_', self.default[0], ''))
+
+    def default_state(self):
+        return self._option.default
+
+    def update_state(self, state, new):
+        return self._option.update_state(state, new)
+
+    def convert(self, final):
+        finalval = self._option.convert(final)
+        if finalval not in self.default:
+            msg = "unrecognised value: %r (should be one of %s)"
+            msg = msg % (final, ', '.join(str(v) for v in self.default))
+            raise getopt.GetoptError(msg)
+        return finalval
 
 
 class FuncOption(BaseOption):
