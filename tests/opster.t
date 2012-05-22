@@ -289,6 +289,27 @@ Should we check passing some invalid arguments? I think so::
    -h --help         display help
 
 
+Lets try some extended option types::
+
+  $ run test_extopts.py -h
+  test_extopts.py [OPTIONS]
+  
+  Command using extended option types
+  
+  options:
+  
+   -m --money  amount of money (default: 100.00)
+   -r --ratio  input/output ratio (default: 1/4)
+   -h --help   display help
+
+  $ run test_extopts.py
+  money: <class 'decimal.Decimal'> 100.00
+  ratio: <class 'fractions.Fraction'> 1/4
+
+  $ run test_extopts.py --money=-.12 --ratio='5/6'
+  money: <class 'decimal.Decimal'> -0.12
+  ratio: <class 'fractions.Fraction'> 5/6
+
 Another things should be checked: calling help display from the function
 itself::
 
