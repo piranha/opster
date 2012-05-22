@@ -425,7 +425,7 @@ def Option(opt):
     # Find matching _Option subclass and return instance
     # nb. the order of testing matters
     for Type in (BoolOption, ListOption, DictOption,
-                 FuncOption, LiteralOption):
+                 FuncOption, UnicodeOption, LiteralOption):
         if Type.matches(default):
             return Type(*args)
     raise OpsterError('Cannot figure out type for option %s' % name)
@@ -479,6 +479,15 @@ class LiteralOption(BaseOption):
             return final
         else:
             return type(self.default)(final)
+
+class UnicodeOption(BaseOption):
+    '''Handle unicode values, decoding input'''
+    type = unicode
+
+    def convert(self, final):
+        if sys.version_info < (3, 0):
+            return final.decode(ENCODING)
+        return final
 
 
 class BoolOption(BaseOption):
