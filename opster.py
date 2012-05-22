@@ -471,7 +471,7 @@ class BaseOption(namedtuple('Option', (
 
 class LiteralOption(BaseOption):
     '''Literal option type (including string, int, float, etc.)'''
-    type=object
+    type = object
 
     def convert(self, final):
         '''Generate the resulting python value from the final state.'''
