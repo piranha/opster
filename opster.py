@@ -25,6 +25,21 @@ except locale.Error:
     ENCODING = 'UTF-8'
 
 _writer = codecs.getwriter(ENCODING)
+FSE_ENCODING = sys.getfilesystemencoding()
+
+
+def decodearg(arg, encoding=ENCODING):
+    '''Decode an input argument as encoding'''
+    # python 2.x: have bytes, convert to unicode with given encoding
+    if sys.version_info < (3, 0):
+        return arg.decode(ENCODING)
+    # python 3.x: have unicode (perhaps with surrogate escape)
+    # arg has already been decoded with FSE_ENCODING
+    else:
+        # Invert implicit decoding done by python
+        arg_raw = arg.encode(FSE_ENCODING, 'surrogateescape')
+        # Re-decode as desired encoding
+        return arg_raw.decode(ENCODING)
 
 
 def write(text, out=None):
@@ -480,14 +495,13 @@ class LiteralOption(BaseOption):
         else:
             return type(self.default)(final)
 
+
 class UnicodeOption(BaseOption):
     '''Handle unicode values, decoding input'''
     type = unicode
 
     def convert(self, final):
-        if sys.version_info < (3, 0):
-            return final.decode(ENCODING)
-        return final
+        return decodearg(final)
 
 
 class BoolOption(BaseOption):
