@@ -6,7 +6,7 @@ ALGOS = ('slow', 'fast')
 
 @command()
 def main(algo1=('a', 'fast', 'algorithm: slow or fast'),
-         algo2=('A', tuple(ALGOS), 'algorithm: slow or fast'),
+         algo2=('A', ALGOS, 'algorithm: slow or fast'),
          ncpus=('n', tuple(range(1, NMAX+1)), 'number of cpus to use')):
     '''
     script that uses different algorithms and numbers of cpus
