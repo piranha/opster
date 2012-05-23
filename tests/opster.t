@@ -374,11 +374,63 @@ keyword argument 'option'``::
   $ run multivalueserr.py some arguments hehe
   I work! False bopt some arguments ('hehe',)
 
-Scripts can exit with an error message at any time by raising
+Opster can give helpful error messages if arguments are invalid::
+
+  $ run quit.py --help
+  quit.py [OPTIONS]
+  
+  script that uses different algorithms and numbers of cpus
+  
+  options:
+  
+   -a --algo1  algorithm: slow or fast (default: fast)
+   -A --algo2  algorithm: slow or fast (default: slow)
+   -n --ncpus  number of cpus to use (default: 1)
+   -h --help   display help
+
+Scripts can exit with a user-defined error message at any time by raising
 ``command.Error``::
 
-  $ run quit.py --algorithm=quick
+  $ run quit.py --algo1=quick
   unrecognised algorithm "quick"
+
+Or arguments can be rejected because they are not in a tuple::
+
+  $ run quit.py --algo2=quick
+  error: unrecognised value: 'quick' (should be one of slow, fast)
+  
+  quit.py [OPTIONS]
+  
+  script that uses different algorithms and numbers of cpus
+  
+  options:
+  
+   -a --algo1  algorithm: slow or fast (default: fast)
+   -A --algo2  algorithm: slow or fast (default: slow)
+   -n --ncpus  number of cpus to use (default: 1)
+   -h --help   display help
+
+  $ run quit.py --ncpus=-1
+  error: unrecognised value: '-1' (should be one of 1, 2, 3, 4)
+  
+  quit.py [OPTIONS]
+  
+  script that uses different algorithms and numbers of cpus
+  
+  options:
+  
+   -a --algo1  algorithm: slow or fast (default: fast)
+   -A --algo2  algorithm: slow or fast (default: slow)
+   -n --ncpus  number of cpus to use (default: 1)
+   -h --help   display help
+
+Just check that the tuple options work when there's no error::
+
+  $ run quit.py --algo1=fast --algo2=slow --ncpus=3
+  algo1: fast
+  algo2: slow
+  ncpus: 3
+
 
 That's all for today; see you next time!
 
