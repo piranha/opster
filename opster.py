@@ -183,9 +183,8 @@ class Dispatcher(object):
 
         return wrapper
 
-    def add_dispatcher(self, name, dispatcher, help,
-                             hide=False, shortlist=False):
-        '''Add another dispatcher as a subcommand'''
+    def nest(self, name, dispatcher, help, hide=False, shortlist=False):
+        '''Add another dispatcher as a subcommand.'''
         dispatcher.__doc__ = help
         prefix = hide and '~' or (shortlist and '^' or '')
         self._cmdtable[prefix + name] = dispatcher, [], None
