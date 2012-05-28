@@ -57,6 +57,8 @@ the option should be parsed:
 - boolean/None: ``not default`` is passed and option takes no value
 - function: function is called with value and the return value is used
 - list: the value is appended to this list
+- tuple: value is checked to be present in default value (i.e. tuple behaves
+  as a list of choices)
 - dictionary: the value is then assumed to be in the format ``key=value`` and
   is then assigned to this dictionary, :ref:`example <definitions-test>`
 

@@ -39,8 +39,8 @@ def subsubcmd(loud=('l', False, 'loudly'),
         print('Showing the help:')
         subsubcmd.help()
 
-d2.add_dispatcher('subcmd3', d3, 'Help for subcmd3')
-d.add_dispatcher('cmd', d2, 'Help for cmd')
+d2.nest('subcmd3', d3, 'Help for subcmd3')
+d.nest('cmd', d2, 'Help for cmd')
 
 if __name__ == '__main__':
     d.dispatch()
