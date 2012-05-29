@@ -19,7 +19,7 @@ def hello(name,
     subject and body).
     """
     # opster should somehow do this automatically:
-    name = decodearg(name, 'utf-8')
+    name = decodearg(name)
 
     # no parsing for optional arguments yet :\
     for i in range(int(times)):

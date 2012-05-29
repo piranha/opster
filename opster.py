@@ -47,14 +47,17 @@ def err(text):
 
 # encoding to use when decoding command line arguments
 FSE_ENCODING = sys.getfilesystemencoding()
+ARG_ENCODING = os.environ.get('OPSTER_ARG_ENCODING', FSE_ENCODING)
 
-def decodearg(arg, arg_encoding=FSE_ENCODING):
+
+def decodearg(arg, arg_encoding=ARG_ENCODING):
     '''Decode an argument from sys.argv'''
     # python 2.x: have bytes, convert to unicode with given encoding
     if sys.version_info < (3, 0):
         return arg.decode(arg_encoding)
     # python 3.x: have unicode
     # arg has already been decoded with FSE_ENCODING
+    # In the default case we just return the arg as it is
     elif arg_encoding == FSE_ENCODING:
         return arg
     # Needed to encode and redecode as arg_encoding
@@ -508,7 +511,7 @@ class UnicodeOption(BaseOption):
     type = unicode
 
     def convert(self, final):
-        return decodearg(final, 'utf-8')
+        return decodearg(final)
 
 
 class BoolOption(BaseOption):
