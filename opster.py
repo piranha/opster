@@ -15,6 +15,7 @@ __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
 
+# encoding to use for output in sys.stdout and sys.stderr
 try:
     import locale
     ENCODING = locale.getpreferredencoding()
@@ -23,23 +24,7 @@ try:
         ENCODING = 'UTF-8'
 except locale.Error:
     ENCODING = 'UTF-8'
-
 _writer = codecs.getwriter(ENCODING)
-FSE_ENCODING = sys.getfilesystemencoding()
-
-
-def decodearg(arg, encoding=ENCODING):
-    '''Decode an input argument as encoding'''
-    # python 2.x: have bytes, convert to unicode with given encoding
-    if sys.version_info < (3, 0):
-        return arg.decode(ENCODING)
-    # python 3.x: have unicode (perhaps with surrogate escape)
-    # arg has already been decoded with FSE_ENCODING
-    else:
-        # Invert implicit decoding done by python
-        arg_raw = arg.encode(FSE_ENCODING, 'surrogateescape')
-        # Re-decode as desired encoding
-        return arg_raw.decode(ENCODING)
 
 
 def write(text, out=None):
@@ -58,6 +43,29 @@ def err(text):
     '''Write output to stderr.'''
     write(text, out=sys.stderr)
     sys.stderr.flush()
+
+
+# encoding to use when decoding command line arguments
+FSE_ENCODING = sys.getfilesystemencoding()
+
+def decodearg(arg, arg_encoding=FSE_ENCODING):
+    '''Decode an argument from sys.argv'''
+    # python 2.x: have bytes, convert to unicode with given encoding
+    if sys.version_info < (3, 0):
+        return arg.decode(arg_encoding)
+    # python 3.x: have unicode
+    # arg has already been decoded with FSE_ENCODING
+    elif arg_encoding == FSE_ENCODING:
+        return arg
+    # Needed to encode and redecode as arg_encoding
+    else:
+        # On posix the argument was decoded using surrogate escape
+        if os.name == 'posix':
+            b_arg = arg.encode(FSE_ENCODING, 'surrogateescape')
+        # On windows the 'mbcs' codec has no surrogate escape handler
+        else:
+            b_arg = arg.encode(FSE_ENCODING)
+        return b_arg.decode(arg_encoding)
 
 
 class Dispatcher(object):
@@ -501,7 +509,7 @@ class UnicodeOption(BaseOption):
     type = unicode
 
     def convert(self, final):
-        return decodearg(final)
+        return decodearg(final, 'utf-8')
 
 
 class BoolOption(BaseOption):
