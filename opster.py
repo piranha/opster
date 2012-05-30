@@ -21,6 +21,7 @@ try:
     ENCODING = locale.getpreferredencoding()
 except locale.Error:
     ENCODING = 'UTF-8'
+ENCODING = os.environ.get('OPSTER_OUT_ENCODING', ENCODING)
 _writer = codecs.getwriter(ENCODING)
 
 
