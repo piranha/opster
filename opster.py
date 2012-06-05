@@ -857,9 +857,6 @@ def call_cmd_regular(func, opts):
     '''
     def inner(*args, **kwargs):
         arginfo = inspect.getargspec(func)
-        if len(args) > len(arginfo.args):
-            raise TypeError('You have supplied more positional arguments'
-                            ' than applicable')
 
         # short name, long name, default, help, (maybe) completer
         funckwargs = dict((o.pyname, o.default) for o in opts)
