@@ -53,20 +53,21 @@ def decodearg(arg, arg_encoding=ARG_ENCODING):
     # python 2.x: have bytes, convert to unicode with given encoding
     if sys.version_info < (3, 0):
         return arg.decode(arg_encoding)
+
     # python 3.x: have unicode
     # arg has already been decoded with FSE_ENCODING
     # In the default case we just return the arg as it is
-    elif arg_encoding == FSE_ENCODING:
+    if arg_encoding == FSE_ENCODING:
         return arg
-    # Needed to encode and redecode as arg_encoding
-    else:
+
+    # Need to encode and redecode as arg_encoding
+    if os.name == 'posix':
         # On posix the argument was decoded using surrogate escape
-        if os.name == 'posix':
-            b_arg = arg.encode(FSE_ENCODING, 'surrogateescape')
+        arg = arg.encode(FSE_ENCODING, 'surrogateescape')
+    else:
         # On windows the 'mbcs' codec has no surrogate escape handler
-        else:
-            b_arg = arg.encode(FSE_ENCODING)
-        return b_arg.decode(arg_encoding)
+        arg = arg.encode(FSE_ENCODING)
+    return arg.decode(arg_encoding)
 
 
 class Dispatcher(object):
