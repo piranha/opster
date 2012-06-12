@@ -68,7 +68,7 @@ Ok, then let's run it::
 Yeah, nice one, but we know that command ``complex`` is just hidden there. Let's
 check it out::
 
-  $ run multicommands.py help complex
+  $ OPSTER_OUT_ENCODING=utf-8 run multicommands.py help complex
   multicommands.py complex [-p] [--exit value] ...
   
   That's more complex command intended to do something
@@ -362,7 +362,7 @@ time::
 
 And there is no problems handling unicode data::
 
-  $ run hello.py кросавчег -g Привет
+  $ OPSTER_ARG_ENCODING=utf-8 run hello.py кросавчег -g Привет
   \xd0\x9f\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82 \xd0\xba\xd1\x80\xd0\xbe\xd1\x81\xd0\xb0\xd0\xb2\xd1\x87\xd0\xb5\xd0\xb3 (esc)
 
 
