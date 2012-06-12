@@ -15,15 +15,13 @@ __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
 
+# encoding to use for output in sys.stdout and sys.stderr
 try:
     import locale
     ENCODING = locale.getpreferredencoding()
-    if (not ENCODING or ENCODING == 'mac-roman' or 'ascii' in ENCODING.lower()
-        or 'ansi' in ENCODING.lower() or ENCODING.lower() == 'cp1252'):
-        ENCODING = 'UTF-8'
 except locale.Error:
     ENCODING = 'UTF-8'
-
+ENCODING = os.environ.get('OPSTER_OUT_ENCODING', ENCODING)
 _writer = codecs.getwriter(ENCODING)
 
 
@@ -43,6 +41,32 @@ def err(text):
     '''Write output to stderr.'''
     write(text, out=sys.stderr)
     sys.stderr.flush()
+
+
+# encoding to use when decoding command line arguments
+FSE_ENCODING = sys.getfilesystemencoding()
+ARG_ENCODING = os.environ.get('OPSTER_ARG_ENCODING', FSE_ENCODING)
+
+
+def decodearg(arg, arg_encoding=ARG_ENCODING):
+    '''Decode an argument from sys.argv'''
+    # python 2.x: have bytes, convert to unicode with given encoding
+    if sys.version_info < (3, 0):
+        return arg.decode(arg_encoding)
+    # python 3.x: have unicode
+    # arg has already been decoded with FSE_ENCODING
+    # In the default case we just return the arg as it is
+    elif arg_encoding == FSE_ENCODING:
+        return arg
+    # Needed to encode and redecode as arg_encoding
+    else:
+        # On posix the argument was decoded using surrogate escape
+        if os.name == 'posix':
+            b_arg = arg.encode(FSE_ENCODING, 'surrogateescape')
+        # On windows the 'mbcs' codec has no surrogate escape handler
+        else:
+            b_arg = arg.encode(FSE_ENCODING)
+        return b_arg.decode(arg_encoding)
 
 
 class Dispatcher(object):
@@ -479,14 +503,13 @@ class LiteralOption(BaseOption):
         else:
             return type(self.default)(final)
 
+
 class UnicodeOption(BaseOption):
     '''Handle unicode values, decoding input'''
     type = unicode
 
     def convert(self, final):
-        if sys.version_info < (3, 0):
-            return final.decode(ENCODING)
-        return final
+        return decodearg(final)
 
 
 class BoolOption(BaseOption):

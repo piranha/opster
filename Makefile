@@ -1,7 +1,7 @@
 .PHONY: help docs arch test
 
 SHELL ?= /bin/sh
-CRAM = cram --shell="$(SHELL)"
+CRAM = cram --shell="$(SHELL)" --preserve-env
 PYTHON3 = python3
 BUILD_DIR = `pwd`/build/lib
 
