@@ -25,6 +25,9 @@ def write(text, out=None):
     # module. text will be decoded as ascii giving the decode error.
     except UnicodeDecodeError:
         print >> out, text.decode('utf-8')
+    # Get the order of stdout/stderr correct on Windows. AFAICT this is only
+    # needed for the test environment but it's harmless otherwise.
+    out.flush()
 
 
 def err(text):
