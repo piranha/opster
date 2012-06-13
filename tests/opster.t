@@ -68,7 +68,7 @@ Ok, then let's run it::
 Yeah, nice one, but we know that command ``complex`` is just hidden there. Let's
 check it out::
 
-  $ OPSTER_OUT_ENCODING=utf-8 run multicommands.py help complex
+  $ run multicommands.py help complex
   multicommands.py complex [-p] [--exit value] ...
   
   That's more complex command intended to do something

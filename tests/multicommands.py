@@ -2,8 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import codecs
 
 from opster import dispatch, command
+
+
+# Replace stdio to enforce utf-8 output
+writer = codecs.getwriter('utf-8')
+sys.stdout = writer(getattr(sys.stdout, 'buffer', sys.stdout))
+sys.stderr = writer(getattr(sys.stderr, 'buffer', sys.stderr))
 
 
 @command(usage='[-t]', shortlist=True)
