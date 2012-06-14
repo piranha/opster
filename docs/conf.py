@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from docutils.parsers import rst
 sys.path.insert(0, '..')
 import opster
+
+# -- Add the hidden directive --------------------------------------------------
+
+class HiddenDirective(rst.Directive):
+    '''An rst directive that ignores all text in its block'''
+    has_content = True
+    def run(self):
+        return []
+
+rst.directives.register_directive('hidden', HiddenDirective)
 
 # -- General configuration -----------------------------------------------------
 

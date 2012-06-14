@@ -18,6 +18,9 @@ docs:
 open:
 	cd docs && make open
 
+doctest:
+	cd docs && $(CRAM) positional.rst
+
 arch:
 	python contrib/updatepkg.py
 
