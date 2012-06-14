@@ -6,54 +6,287 @@
 
 .. hidden::
 
-  $    # Allow opster directory to be overridden
-  >    if [ -z "$OPSTER_DIR" ]; then
-  >      OPSTER_DIR="$TESTDIR/.."
-  >    fi
-  >    # Add current dev version of opster to PYTHONPATH
-  >    export PYTHONPATH="$OPSTER_DIR"
-  >    # Change into the docs/scripts directory to run the tests
-  >    cd "${OPSTER_DIR}/docs/scripts"
+    $  # Allow opster directory to be overridden
+    >  if [ -z "$OPSTER_DIR" ]; then
+    >    OPSTER_DIR="$TESTDIR/.."
+    >  fi
 
-Introduction
-============
+    $  # Add current dev version of opster to PYTHONPATH
+    >  export PYTHONPATH="$OPSTER_DIR"
+
+    $  # Change into the docs/scripts directory to run the tests
+    >  cd "${OPSTER_DIR}/docs/scripts"
+
+    $  # Add the 2to3 built version of opster.py to PYTHONPATH when running
+    >  # Python 3.x scripts
+    >  PYTHON3=`which python3`
+    >  python3() {
+    >     PYTHONPATH="${OPSTER_DIR}/build/lib" "${PYTHON3}" $*
+    >  }
+
+A simple example
+================
 
 Before considering how Opster handles positional arguments it is instructive
-to look at a simple example of a script that does not use opster. The simplest
-way to construct a script that receives some positional command line arguments
-looks something like ``pos1.py``:
+to look at a simple example of a script that does not use opster. Opster works
+by turning a function into a script. The simplest way to construct a script
+that receives some positional command line arguments and sends them to a
+function looks something like `pos1.py`:
 
 .. literalinclude:: scripts/pos1.py
 
-This script will correctly receive its command line arguments if given valid
-arguments:
+This script has one required argument, ``arg1``, and one optional argument,
+``arg2``, (defaulting to ``None``). With valid arguments everything is fine:
 
 .. code-block:: bash
 
-  $ python pos1.py one
-  arg1: one
-  arg2: None
+    $ python pos1.py one
+    arg1: one
+    arg2: None
 
-  $ python pos1.py one two
-  arg1: one
-  arg2: two
+    $ python pos1.py one two
+    arg1: one
+    arg2: two
 
-However ``pos1.py`` is not so nice to the user when given incorrect output:
+However `pos1.py` bombs when given too many or too few input arguments:
 
 .. code-block:: bash
 
-  $ python pos1.py
-  Traceback (most recent call last):
-    File "pos1.py", line 13, in <module>
-      main(*sys.argv[1:])
-  TypeError: main() takes at least 1 argument (0 given)
-  [1]
+    $ python pos1.py one two three
+    Traceback (most recent call last):
+      File "pos1.py", line 13, in <module>
+        main(*sys.argv[1:])
+    TypeError: main() takes at most 2 arguments (3 given)
+    [1]
 
-  $ python pos1.py one two three
-  Traceback (most recent call last):
-    File "pos1.py", line 13, in <module>
-      main(*sys.argv[1:])
-  TypeError: main() takes at most 2 arguments (3 given)
-  [1]
+.. hidden::
+  .*
 
-So we can improve on this
+Using opster
+============
+
+Using Opster we can make a friendlier script, `pos2.py`, with only two
+additional lines of code:
+
+.. literalinclude:: scripts/pos2.py
+  :emphasize-lines: 6, 8, 10, 15
+
+Let us briefly consider the changes highlighted above:
+
+#. We need to import opster's ``command`` decorator.
+#. ``command()`` is used to decorate the ``main`` function.
+#. The doc-string for ``main`` is changed to a message suitable for output in
+   a command-line environment.
+#. Instead of calling ``main`` directly we call its ``.command`` attribute
+   which was added by the ``command`` decorator.
+
+For valid arguments nothing changes:
+
+.. code-block:: bash
+
+    $ python pos2.py one
+    arg1: one
+    arg2: None
+
+    $ python pos2.py one two
+    arg1: one
+    arg2: two
+
+However `pos2.py` can now print helpful output when run ``-h`` or
+``--help``:
+
+.. code-block:: bash
+
+    $ python pos2.py --help
+    pos2.py ARG1 [ARG2]
+    
+    Display the values of ARG1 and ARG2
+    
+    options:
+    
+     -h --help  display help
+
+If `pos2.py` is given the wrong number of arguments it will say so and then
+print out its help message. This is the more typical behaviour that users
+expect when they type the wrong arguments to a command line program:
+
+.. code-block:: bash
+
+    $ python pos2.py one two three
+    pos2.py: invalid arguments
+    
+    pos2.py ARG1 [ARG2]
+    
+    Display the values of ARG1 and ARG2
+    
+    options:
+    
+     -h --help  display help
+
+How it works
+============
+
+The idea of Opster is to quickly turn a python function into a full-featured
+command line script. Opster decides how to do this by looking at the arguments
+of the function that is wrapped with ``opster.command`` decorator. Let us
+consider a slightly more complicated example `pos3.py`:
+
+.. literalinclude:: scripts/pos3.py
+
+The ``main`` function in `pos3.py` has two required arguments and four
+optional arguments. Opster interprets the two required arguments to ``main``
+as required positional arguments for the the script. For each optional
+argument to ``main`` Opster checks the type of the default value: if it is a
+`tuple` it is assumed to be the definition of an `option`. Otherwise the
+optional arguments to ``main`` are taken to be optional arguments to the
+script. We can check the help output from this script:
+
+.. code-block:: bash
+
+    $ python pos3.py --help
+    pos3.py [OPTIONS] INFILE OUTFILE [PATTERN] [EXCLUDE]
+    
+    Write lines from INFILE to OUTFILE.
+    
+        If PATTERN and/or EXCLUDE is given,
+        only lines matching PATTERN but not
+        matching EXCLUDE will be written
+    
+    options:
+    
+     -r --regex     Use regular expressions
+     -e --extended  Use extended syntax
+     -h --help      display help
+
+The above help message is generated by combining three things:
+
+#. The usage string for the script. This was generated by Opster from the name
+   of the script and the capitalised names of the arguments to the ``main``
+   function.
+#. The docstring for the ``main`` function is displayed as an explanation of
+   what the script does.
+#. The list of option arguments that the script takes (The ``help`` option was
+   added automatically by Opster).
+
+Since `pos3.py` has two required arguments (``INFILE`` and ``OUTFILE``) and
+two optional positional arguments (``PATTERN`` and ``EXCLUDE``) it can take
+between two and four positional arguments and will give an error message
+otherwise. If either of the optional positional arguments is not given, the
+corresponding argument to ``main`` will be set to its default value as given
+in the definition of ``main``:
+
+.. code-block:: bash
+
+    $ python pos3.py input.txt output.txt
+    infile: input.txt
+    outfile: output.txt
+    pattern: .*
+    exclude: None
+
+    $ python pos3.py input.txt output.txt str1 str2
+    infile: input.txt
+    outfile: output.txt
+    pattern: str1
+    exclude: str2
+
+Keyword-only arguments: the new syntax
+======================================
+
+Python 3 introduced the ability to define arguments to a Python function
+that are explicitly `keyword-only` in the function signature. This enables a
+clear separation between `positional` arguments and `option` arguments that
+the ``command`` decorator can use when inspecting a function. Scripts that are
+only intended to run under Python 3 should use keyword-only arguments to
+define options as shown in `pos4.py`:
+
+.. literalinclude:: scripts/pos4.py
+  :language: python3
+
+This script would be a syntax error on Python 2 but works as you would expect
+on Python 3:
+
+.. code-block:: bash
+
+    $ python3 pos4.py --help
+    pos4.py [OPTIONS] ARG1 [ARG2]
+    
+    Do important things
+    
+    options:
+    
+     -o --option  an arbitrary option
+     -h --help    display help
+
+If ``main`` has any keyword-only arguments then the ``command`` decorator will
+assume that all `keyword-only` arguments are `option` definitions and that all
+positional arguments to ``main`` are positional arguments to the script. This
+means that Opster will not check the type of the default value to see if it is
+a tuple and it is possible to have a positional argument whose default value
+is a tuple, such as ``arg2`` in `pos4.py`:
+
+.. code-block:: bash
+
+    $ python3 pos4.py val1
+    arg1: val1
+    arg2: ()
+    option: False
+
+While Opster supports Python 2.6 and 2.7 it will need to support the syntax
+that does not use `keyword-only` arguments to define options. It is
+recommended that any scripts running only under Python 3.x should use the new
+syntax.
+
+Accepting a variable number of arguments
+========================================
+
+Many command line applications can accept an unlimited number of command line
+arguments. Opster provides support for this using Python's `varargs` syntax.
+If we can use `keyword-only` arguments for option definitions, then we can
+simply place the `varargs` paramerer at the end of the list of positional
+arguments like in `pos5.py`:
+
+.. literalinclude:: scripts/pos5.py
+  :language: python3
+
+The usage string illustrates the fact that many values can be provided with an
+ellipsis ``...`` after ``FILES``.
+
+.. code-block:: bash
+
+    $ python3 pos5.py --help
+    pos5.py [OPTIONS] PATTERN [FILES ...]
+    
+    Do important things
+    
+    options:
+    
+     -o --option  an arbitrary option
+     -h --help    display help
+
+The parameter ``files`` will receive a tuple of any arguments supplied after
+the required ``PATTERN`` argument:
+
+.. code-block:: bash
+
+    $ python3 pos5.py foo file1.txt file2.txt file3.txt
+    pattern: foo
+    files: ('file1.txt', 'file2.txt', 'file3.txt')
+
+Because the `keyword-only` syntax is unavailable on Python 2.x, Opster
+provides an alternative syntax for specifying that a script should accept a
+variable number of arguments, which is to place the `varargs` parameter
+at the end of the argument list `after` the option definitions as shown in
+``pos6.py``:
+
+.. literalinclude:: scripts/pos6.py
+
+Opster will take care of ensuring that the ``main`` function in `pos6.py`
+still receives the positional arguments to the script the same way as the
+``main`` in `pos5.py`:
+
+.. code-block:: bash
+
+    $ python pos6.py foo file1.txt file2.txt file3.txt
+    pattern: foo
+    files: ('file1.txt', 'file2.txt', 'file3.txt')
+
