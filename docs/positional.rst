@@ -179,6 +179,19 @@ in the definition of ``main``::
     pattern: str1
     exclude: str2
 
+The ``command`` decorator wraps the ``main`` function, but ensures that it can
+still be called as a function from within python. This is useful if you want
+to import the function in another module and use it there:
+
+.. doctest::
+
+  >>> from scripts import pos3
+  >>> pos3.main('input.txt', 'output.txt')
+  infile: input.txt
+  outfile: output.txt
+  pattern: .*
+  exclude: None
+
 Keyword-only arguments: the new syntax
 ======================================
 
