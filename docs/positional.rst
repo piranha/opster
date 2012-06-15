@@ -65,11 +65,11 @@ However `pos1.py` bombs when given too many or too few input arguments:
 Using opster
 ============
 
-Using Opster we can make a friendlier script, `pos2.py`, with only two
-additional lines of code:
+Using Opster we can make a friendlier script, `pos2.py`, with only a handful
+of changes:
 
 .. literalinclude:: scripts/pos2.py
-  :emphasize-lines: 6, 8, 10, 15
+  :emphasize-lines: 5, 7, 9, 14
 
 Let us briefly consider the changes highlighted above:
 
@@ -80,9 +80,7 @@ Let us briefly consider the changes highlighted above:
 #. Instead of calling ``main`` directly we call its ``.command`` attribute
    which was added by the ``command`` decorator.
 
-For valid arguments nothing changes:
-
-.. code-block:: bash
+For valid arguments nothing changes::
 
     $ python pos2.py one
     arg1: one
@@ -93,9 +91,7 @@ For valid arguments nothing changes:
     arg2: two
 
 However `pos2.py` can now print helpful output when run ``-h`` or
-``--help``:
-
-.. code-block:: bash
+``--help``::
 
     $ python pos2.py --help
     pos2.py ARG1 [ARG2]
@@ -108,9 +104,7 @@ However `pos2.py` can now print helpful output when run ``-h`` or
 
 If `pos2.py` is given the wrong number of arguments it will say so and then
 print out its help message. This is the more typical behaviour that users
-expect when they type the wrong arguments to a command line program:
-
-.. code-block:: bash
+expect when they type the wrong arguments to a command line program::
 
     $ python pos2.py one two three
     pos2.py: invalid arguments
@@ -139,9 +133,7 @@ as required positional arguments for the the script. For each optional
 argument to ``main`` Opster checks the type of the default value: if it is a
 `tuple` it is assumed to be the definition of an `option`. Otherwise the
 optional arguments to ``main`` are taken to be optional arguments to the
-script. We can check the help output from this script:
-
-.. code-block:: bash
+script. We can check the help output from this script::
 
     $ python pos3.py --help
     pos3.py [OPTIONS] INFILE OUTFILE [PATTERN] [EXCLUDE]
@@ -173,9 +165,7 @@ two optional positional arguments (``PATTERN`` and ``EXCLUDE``) it can take
 between two and four positional arguments and will give an error message
 otherwise. If either of the optional positional arguments is not given, the
 corresponding argument to ``main`` will be set to its default value as given
-in the definition of ``main``:
-
-.. code-block:: bash
+in the definition of ``main``::
 
     $ python pos3.py input.txt output.txt
     infile: input.txt
@@ -203,9 +193,7 @@ define options as shown in `pos4.py`:
   :language: python3
 
 This script would be a syntax error on Python 2 but works as you would expect
-on Python 3:
-
-.. code-block:: bash
+on Python 3::
 
     $ python3 pos4.py --help
     pos4.py [OPTIONS] ARG1 [ARG2]
@@ -222,9 +210,7 @@ assume that all `keyword-only` arguments are `option` definitions and that all
 positional arguments to ``main`` are positional arguments to the script. This
 means that Opster will not check the type of the default value to see if it is
 a tuple and it is possible to have a positional argument whose default value
-is a tuple, such as ``arg2`` in `pos4.py`:
-
-.. code-block:: bash
+is a tuple, such as ``arg2`` in `pos4.py`::
 
     $ python3 pos4.py val1
     arg1: val1
@@ -249,9 +235,7 @@ arguments like in `pos5.py`:
   :language: python3
 
 The usage string illustrates the fact that many values can be provided with an
-ellipsis ``...`` after ``FILES``.
-
-.. code-block:: bash
+ellipsis ``...`` after ``FILES``::
 
     $ python3 pos5.py --help
     pos5.py [OPTIONS] PATTERN [FILES ...]
@@ -264,9 +248,7 @@ ellipsis ``...`` after ``FILES``.
      -h --help    display help
 
 The parameter ``files`` will receive a tuple of any arguments supplied after
-the required ``PATTERN`` argument:
-
-.. code-block:: bash
+the required ``PATTERN`` argument::
 
     $ python3 pos5.py foo file1.txt file2.txt file3.txt
     pattern: foo
@@ -282,9 +264,7 @@ at the end of the argument list `after` the option definitions as shown in
 
 Opster will take care of ensuring that the ``main`` function in `pos6.py`
 still receives the positional arguments to the script the same way as the
-``main`` in `pos5.py`:
-
-.. code-block:: bash
+``main`` in `pos5.py`::
 
     $ python pos6.py foo file1.txt file2.txt file3.txt
     pattern: foo

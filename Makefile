@@ -19,6 +19,7 @@ open:
 	cd docs && make open
 
 doctest:
+	cd docs && make doctest
 	cd docs && $(CRAM) --indent=4 positional.rst
 
 arch:
