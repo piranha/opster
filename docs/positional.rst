@@ -36,9 +36,7 @@ function looks something like `pos1.py`:
 .. literalinclude:: scripts/pos1.py
 
 This script has one required argument, ``arg1``, and one optional argument,
-``arg2``, (defaulting to ``None``). With valid arguments everything is fine:
-
-.. code-block:: bash
+``arg2``, (defaulting to ``None``). With valid arguments everything is fine::
 
     $ python pos1.py one
     arg1: one
@@ -48,9 +46,7 @@ This script has one required argument, ``arg1``, and one optional argument,
     arg1: one
     arg2: two
 
-However `pos1.py` bombs when given too many or too few input arguments:
-
-.. code-block:: bash
+However `pos1.py` bombs when given too many or too few input arguments::
 
     $ python pos1.py one two three
     Traceback (most recent call last):
@@ -58,9 +54,6 @@ However `pos1.py` bombs when given too many or too few input arguments:
         main(*sys.argv[1:])
     TypeError: main() takes at most 2 arguments (3 given)
     [1]
-
-.. hidden::
-  .*
 
 Using opster
 ============
