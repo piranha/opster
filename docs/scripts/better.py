@@ -1,4 +1,4 @@
-# pos2.py
+# better.py
 
 from __future__ import print_function
 
