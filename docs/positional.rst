@@ -68,11 +68,11 @@ of changes:
 Let us briefly consider the changes highlighted above:
 
 #. We need to import opster's ``command`` decorator.
-#. ``command()`` is used to decorate the ``main`` function.
+#. ``@command()`` is used to decorate the ``main`` function.
 #. The doc-string for ``main`` is changed to a message suitable for a
    command-line user.
 #. Instead of calling ``main`` directly we call its ``.command`` attribute
-   which was added by the ``command`` decorator.
+   (which was added by the ``@command()`` decorator).
 
 So what happens when we run this script from the command line? For valid
 arguments nothing changes::
@@ -162,15 +162,15 @@ otherwise. If either of the optional positional arguments is not given, the
 corresponding argument to ``main`` will be set to its default value as given
 in the definition of ``main``::
 
-    $ python complete.py bar.txt foo.txt
-    infile: bar.txt
-    outfile: foo.txt
+    $ python complete.py brian.txt judea.txt
+    infile: brian.txt
+    outfile: judea.txt
     pattern: .*
     exclude: None
 
-    $ python complete.py bar.txt foo.txt messiah "naughty boy"
-    infile: bar.txt
-    outfile: foo.txt
+    $ python complete.py brian.txt judea.txt messiah "naughty boy"
+    infile: brian.txt
+    outfile: judea.txt
     pattern: messiah
     exclude: naughty boy
 
@@ -180,10 +180,10 @@ to import the function in another module and use it there:
 
 .. doctest::
 
-  >>> from scripts import complete
-  >>> complete.main('bar.txt', 'foo.txt')
-  infile: bar.txt
-  outfile: foo.txt
+  >>> from scripts.complete import main
+  >>> main('brian.txt', 'judea.txt')
+  infile: brian.txt
+  outfile: judea.txt
   pattern: .*
   exclude: None
 
@@ -257,7 +257,9 @@ ellipsis ``...`` after ``CHEESES``::
      -h --help   display help
 
 The parameter ``cheeses`` will receive a tuple of any command line arguments
-supplied after the required ``SHOP`` argument::
+supplied after the required ``SHOP`` argument. This is the same behaviour that
+we would expect if the function was called from Python (without any keyword
+agruments)::
 
     $ python3 varargs.py wensleydale cheddar ilchester camembert
     shop: wensleydale
@@ -276,6 +278,17 @@ Opster will take care of ensuring that the ``cheeses`` parameter in the
 line arguments the same way as in `varargs.py`::
 
     $ python varargs_py2.py wensleydale cheddar ilchester camembert
+    shop: wensleydale
+    cheeses: ('cheddar', 'ilchester', 'camembert')
+
+Opster also ensures that all positional arguments after the first are passed
+to ``cheeses`` when ``main`` is called directly (this would not have been the
+case if ``main`` was not wrapped by ``@command()``):
+
+.. doctest::
+
+  >>> from scripts.varargs_py2 import main
+  >>> main('wensleydale', 'cheddar', 'ilchester', 'camembert')
     shop: wensleydale
     cheeses: ('cheddar', 'ilchester', 'camembert')
 
