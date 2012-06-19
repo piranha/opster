@@ -289,6 +289,6 @@ case if ``main`` was not wrapped by ``@command()``):
 
   >>> from scripts.varargs_py2 import main
   >>> main('wensleydale', 'cheddar', 'ilchester', 'camembert')
-    shop: wensleydale
-    cheeses: ('cheddar', 'ilchester', 'camembert')
+  shop: wensleydale
+  cheeses: ('cheddar', 'ilchester', 'camembert')
 
