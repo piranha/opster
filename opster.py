@@ -879,17 +879,61 @@ def call_cmd(name, func, opts, middleware=None):
 def call_cmd_regular(func, opts):
     '''Wrapper for command for handling function calls from Python.
     '''
-    def inner(*args, **kwargs):
+    # This would raise an error if there were any keyword-only arguments
+    try:
         arginfo = inspect.getargspec(func)
+    except ValueError:
+        return call_cmd_regular_py3k(func, opts)
 
-        # short name, long name, default, help, (maybe) completer
-        funckwargs = dict((o.pyname, o.default) for o in opts)
-        if 'help' not in (arginfo.defaults or ()) and not arginfo.keywords:
-            funckwargs.pop('help', None)
-        funckwargs.update(kwargs)
-        return func(*args, **funckwargs)
+    def inner(*args, **kwargs):
+        # Map from argument names to Option instances
+        opt_args = dict((o.pyname, o) for o in opts)
+
+        # Pull any recognised args out of kwargs and splice them with the
+        # positional arguments to give a flat positional arg list
+        remaining = list(args)
+        args = []
+        defaults_offset = len(arginfo.args) - len(arginfo.defaults)
+        for n, argname in enumerate(arginfo.args):
+            # Option arguments MUST be given as keyword arguments
+            if argname in opt_args:
+                if argname in kwargs:
+                    argval = kwargs.pop(argname)
+                else:
+                    argval = opt_args[argname].default_value()
+            # Take a positional argument
+            elif remaining:
+                argval = remaining.pop(0)
+            # Find the default value of the positional argument
+            elif n >= defaults_offset:
+                argval = arginfo.defaults[n - defaults_offset]
+            else:
+                raise TypeError('Not enough positional arguments')
+            # Accumulate the args in order
+            args.append(argval)
+
+        # Combine the remaining positional arguments that go to varargs
+        args = args + remaining
+
+        # kwargs is any keyword arguments that were not recognised as options
+        return func(*args, **kwargs)
+
     return inner
 
+def call_cmd_regular_py3k(func, opts):
+    '''call_cmd_regular for functions with keyword only arguments'''
+    spec = inspect.getfullargspec(func)
+
+    def inner(*args, **kwargs):
+
+        # Replace the option arguments with their default values
+        for o in opts:
+            if o.pyname not in kwargs:
+                kwargs[o.pyname] = o.default_value()
+
+        return func(*args, **kwargs)
+
+    return inner
 
 def replace_name(usage, name):
     '''Replace name placeholder with a command name.'''
