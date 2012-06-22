@@ -85,7 +85,7 @@ linkcheck:
 	      "or in _build/linkcheck/output.txt."
 
 doctest:
-	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) _build/doctest
+	PYTHONPATH=. $(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) _build/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in _build/doctest/output.txt."
 
