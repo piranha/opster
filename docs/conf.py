@@ -15,6 +15,10 @@ class HiddenDirective(rst.Directive):
 
 rst.directives.register_directive('hidden', HiddenDirective)
 
+# -- Doctest setup -------------------------------------------------------------
+
+doctest_path = ['scripts']
+
 # -- General configuration -----------------------------------------------------
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest']

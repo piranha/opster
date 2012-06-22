@@ -180,7 +180,7 @@ to import the function in another module and use it there:
 
 .. doctest::
 
-  >>> from scripts.complete import main
+  >>> from complete import main
   >>> main('brian.txt', 'judea.txt')
   infile: brian.txt
   outfile: judea.txt
@@ -287,7 +287,7 @@ case if ``main`` was not wrapped by ``@command()``):
 
 .. doctest::
 
-  >>> from scripts.varargs_py2 import main
+  >>> from varargs_py2 import main
   >>> main('wensleydale', 'cheddar', 'ilchester', 'camembert')
   shop: wensleydale
   cheeses: ('cheddar', 'ilchester', 'camembert')
