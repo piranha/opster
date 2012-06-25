@@ -20,6 +20,7 @@ More documentation
 
    changelog
    overview
+   positional
    api
    Opster tests (examples here!) <tests>
 
