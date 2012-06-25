@@ -15,32 +15,24 @@ __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
 
-# encoding to use for output in sys.stdout and sys.stderr
-try:
-    import locale
-    ENCODING = locale.getpreferredencoding()
-except locale.Error:
-    ENCODING = 'UTF-8'
-ENCODING = os.environ.get('OPSTER_OUT_ENCODING', ENCODING)
-_writer = codecs.getwriter(ENCODING)
-
-
 def write(text, out=None):
     '''Write output to a given stream (stdout by default).'''
     out = out or sys.stdout
-    out.flush()
-    if hasattr(out, 'buffer'):
-        out = _writer(out.buffer)
-    elif sys.version_info < (3, 0) and isinstance(text, unicode):
-        text = text.encode(ENCODING)
-    out.write(text)
+    try:
+        print >> out, text
+    # Needed on Python 2.x if text is str/bytes containing non-ascii
+    # characters and sys.stdout is replaced by a writer from the codecs
+    # module. text will be decoded as ascii giving the decode error.
+    except UnicodeDecodeError:
+        print >> out, text.decode('utf-8')
+    # Get the order of stdout/stderr correct on Windows. AFAICT this is only
+    # needed for the test environment but it's harmless otherwise.
     out.flush()
 
 
 def err(text):
     '''Write output to stderr.'''
     write(text, out=sys.stderr)
-    sys.stderr.flush()
 
 
 # encoding to use when decoding command line arguments
@@ -316,14 +308,14 @@ def help_(cmdtable, globalopts, scriptname):
             hlplist = sorted(hlp)
             maxlen = max(map(len, hlplist))
 
-            write('usage: %s <command> [options]\n' % scriptname)
-            write('\ncommands:\n\n')
+            write('usage: %s <command> [options]' % scriptname)
+            write('\ncommands:\n')
             for cmd in hlplist:
                 doc = hlp[cmd]
-                write(' %-*s  %s\n' % (maxlen, cmd.split('|', 1)[0], doc))
+                write(' %-*s  %s' % (maxlen, cmd.split('|', 1)[0], doc))
 
         if not cmdtable:
-            return err('No commands specified!\n')
+            return err('No commands specified!')
 
         if not name or name == 'shortlist':
             return helplist()
@@ -379,19 +371,19 @@ def help_cmd(func, usage, options, aliases, scriptname=None):
     '''
     options = [Option(o) for o in options]  # only for doctest
     usage = replace_name(usage, scriptname)
-    write(usage + '\n')
+    write(usage)
     if aliases:
-        write('\naliases: ' + ', '.join(aliases) + '\n')
+        write('\naliases: ' + ', '.join(aliases))
     doc = pretty_doc_string(func)
-    write('\n' + doc.strip() + '\n\n')
-    if options:
-        write(''.join(help_options(options)))
+    write('\n' + doc.strip() + '\n')
+    for line in help_options(options):
+        write(line)
 
 
 def help_options(options):
     '''Generator for help on options.
     '''
-    yield 'options:\n\n'
+    yield 'options:\n'
     output = []
     for o in options:
         default = o.default_value()
@@ -406,9 +398,9 @@ def help_options(options):
             # wrap description at 78 chars
             second = textwrap.wrap(second, width=(78 - opts_len - 3))
             pad = '\n' + ' ' * (opts_len + 3)
-            yield ' %-*s  %s\n' % (opts_len, first, pad.join(second))
+            yield ' %-*s  %s' % (opts_len, first, pad.join(second))
         else:
-            yield ' %s\n' % first
+            yield ' %s' % first
 
 
 # --------
@@ -819,18 +811,18 @@ def exchandle(help_func, cmd=None):
         yield  # execute the block in the 'with' statement
         return
     except UnknownCommand as e:
-        err("unknown command: '%s'\n" % e)
+        err("unknown command: '%s'" % e)
     except AmbiguousCommand as e:
-        err("command '%s' is ambiguous:\n    %s\n" %
+        err("command '%s' is ambiguous:\n    %s" %
             (e.args[0], ' '.join(e.args[1])))
     except ParseError as e:
-        err('%s: %s\n\n' % (e.args[0], e.args[1].strip()))
+        err('%s: %s\n' % (e.args[0], e.args[1].strip()))
         help_func(cmd)
     except getopt.GetoptError as e:
-        err('error: %s\n\n' % e)
+        err('error: %s\n' % e)
         help_func(cmd)
     except OpsterError as e:
-        err('%s\n' % e)
+        err('%s' % e)
     # abort if a handled exception was raised
     raise ErrorHandled()
 
