@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import os, re
+import sys, os, re
 
 from distutils.core import setup
 
 # Use 2to3 build conversion if required
-try:
+if sys.version_info >= (3, 0):
     from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:
-    # 2.x
+else:
     from distutils.command.build_py import build_py
 
 def read(fname):
