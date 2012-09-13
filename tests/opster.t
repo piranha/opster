@@ -772,3 +772,10 @@ Check the `varargs` works when calling ```main``` directly::
   shop: a
   cheeses: ('b', 'c')
   music: True
+
+
+Check that calling main directly still works even if ```arginfo.defaults``` is
+None::
+
+  $ run nodefaults.py
+  hello
