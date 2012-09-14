@@ -885,7 +885,7 @@ def call_cmd_regular(func, opts):
         # positional arguments to give a flat positional arg list
         remaining = list(args)
         args = []
-        defaults_offset = len(arginfo.args) - len(arginfo.defaults)
+        defaults_offset = len(arginfo.args) - len(arginfo.defaults or [])
         for n, argname in enumerate(arginfo.args):
             # Option arguments MUST be given as keyword arguments
             if argname in opt_args:
