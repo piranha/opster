@@ -10,7 +10,7 @@ from contextlib import contextmanager
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '3.7'
+__version__ = '3.8'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
@@ -936,10 +936,7 @@ def replace_name(usage, name):
 
 def sysname():
     '''Returns name of executing file.'''
-    name = sys.argv[0]
-    if os.path.isabs(name) or os.path.dirname(name) == '.':
-        return os.path.basename(name)
-    return name
+    return os.path.basename(sys.argv[0])
 
 
 def pretty_doc_string(item):
