@@ -10,8 +10,9 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
-
 .. note:: Requires at least Python 2.6
+
+.. image:: https://secure.travis-ci.org/piranha/opster.png
 
 
 Quick example
