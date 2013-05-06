@@ -18,7 +18,9 @@ concise. Additionally it contains possibility to handle subcommands (i.e.
 Quick example
 -------------
 
-That's an example of an option definition::
+That's an example of an option definition
+
+.. code:: python
 
   import sys
   from opster import command
