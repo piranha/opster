@@ -173,6 +173,47 @@ command::
    -t --test     just test execution
    -h --help     display help
 
+Nested subcommands
+------------------
+
+It is possible to do sets of commands nested within each other, for example::
+
+  from opster import Dispatcher
+
+  d = Dispatcher()
+  nestedDispatcher = Dispatcher()
+
+  @d.command()
+  def info(host=('h', 'localhost', 'hostname'),
+           port=('p', 8080, 'port')):
+      '''Return some info'''
+      print("INFO") 
+
+
+  @nestedDispatcher.command(name='action')
+  def action(host=('h', 'localhost', 'hostname'),
+            port=('p', 8080, 'port')):
+      '''Make another action'''
+      print("Action")
+
+  d.nest('nested', nestedDispatcher, 'some nested application commands')
+
+  if __name__ == "__main__":
+      d.dispatch()
+
+Usage with nested subcommands
+-----------------------------
+Usage is the same as with a single dispatcher::
+
+  > python t.py nested --help
+  usage: t.py nested <command> [options]
+
+  commands:
+
+  action  Make another action
+  help    Show help for a given help topic or a help overview.
+
+
 Global options
 --------------
 
