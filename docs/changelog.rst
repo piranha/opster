@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+4.0 (2013.06.03)
+~~~~~~~~~~~~~~~~
+
+ - Infinitely `nested subcommands`_.
+ - Tuple options (one of given enumerated values).
+ - A lot of fixes.
+
+Most of changes were done by `Oscar Benjamin`_.
+
+.. _nested subcommands: http://opster.readthedocs.org/en/latest/overview.html#nested-subcommands
+
 3.7 (2012.05.03)
 ~~~~~~~~~~~~~~~~
 

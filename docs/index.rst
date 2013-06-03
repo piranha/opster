@@ -31,7 +31,7 @@ Features
   Python objects
 - :ref:`help message <help-generation>` generation
 - positional and named arguments (i.e. arguments and options)
-- :ref:`subcommands <subcommands>` support
+- :ref:`subcommands <subcommands>` (and subcommands of subcommands) support
 - short, clean and concise definitions
 - :ref:`ability to shorten <partial-names>` names of both subcommands and long
   options
