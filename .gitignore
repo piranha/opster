@@ -6,3 +6,4 @@ opster.egg-info/
 tests/*.t.err
 tests/coverage.db
 htmlcov
+/build/

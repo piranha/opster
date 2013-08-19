@@ -10,10 +10,10 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
-.. note:: Requires at least Python 2.6, Python 3.x is supported (via 2to3, just
-          install opster from PyPI)
-
 .. image:: https://secure.travis-ci.org/piranha/opster.png
+   :target: https://travis-ci.org/piranha/opster
+
+**Supported Python versions**: Python >= 2.6 (including 3.x)
 
 
 Quick example

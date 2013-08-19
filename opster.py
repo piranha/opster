@@ -10,7 +10,7 @@ from contextlib import contextmanager
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '4.0'
+__version__ = '4.1'
 __author__ = 'Alexander Solovyov'
 __email__ = 'alexander@solovyov.net'
 
@@ -727,33 +727,37 @@ def guess_options(func):
     def func(longname=(shortname, default, help)):
         pass
 
-    See docstring of ``command()`` for description of those variables.
-    '''
-    try:
-        args, _, _, defaults = inspect.getargspec(func)
-    except ValueError: # has keyword-only arguments
-        for o in guess_options_py3k(func):
-            yield o
-        return
-    for name, option in zip(args[-len(defaults):], defaults):
-        if not isinstance(option, tuple):
-            continue
-        yield (option[0], name_from_python(name)) + option[1:]
-
-
-def guess_options_py3k(func):
-    '''Get options definitions from function with keyword-only arguments
-
-    They should be declared in a following way:
+    Or, if you are using Python 3.x, you can declare them as keyword-only:
 
     def func(*, longname=(shortname, default, help)):
         pass
 
     See docstring of ``command()`` for description of those variables.
     '''
-    spec = inspect.getfullargspec(func)
-    for name, option in spec.kwonlydefaults.items():
-        yield (option[0], name_from_python(name)) + option[1:]
+    try:
+        args, _, _, defaults = inspect.getargspec(func)
+        options = guess_options_py2(args, defaults)
+    except ValueError: # has keyword-only arguments
+        spec = inspect.getfullargspec(func)
+        options = guess_options_py3(spec)
+    for name, option in options:
+        if isinstance(option, tuple):
+            yield (option[0], name_from_python(name)) + option[1:]
+
+
+def guess_options_py2(args, defaults):
+    for name, option in zip(args[-len(defaults):], defaults):
+        yield name, option
+
+def guess_options_py3(spec):
+    '''Get options definitions from spec with keyword-only arguments
+    '''
+    if spec.args and spec.defaults:
+        for o in guess_options_py2(spec.args, spec.defaults):
+            yield o
+    for name in spec.kwonlyargs:
+        option = spec.kwonlydefaults[name]
+        yield name, option
 
 
 def guess_usage(func, options):

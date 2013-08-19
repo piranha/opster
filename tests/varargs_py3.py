@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from opster import command
 
+
 @command()
 def main(shop,
          *cheeses,
@@ -13,8 +14,8 @@ def main(shop,
     print('cheeses:', cheeses)
     print('music:', music)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     print('\nmain():')
     try:
         main()
