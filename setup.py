@@ -5,7 +5,7 @@ import sys, os, re
 from distutils.core import setup
 
 # Use 2to3 build conversion if required
-if sys.version_info >= (3, 0):
+if sys.version_info[0] >= 3:
     from distutils.command.build_py import build_py_2to3 as build_py
 else:
     from distutils.command.build_py import build_py
@@ -47,5 +47,5 @@ setup(
         ],
     py_modules=['opster'],
     platforms='any',
-    cmdclass={'build_py':build_py}
+    cmdclass={'build_py': build_py}
     )

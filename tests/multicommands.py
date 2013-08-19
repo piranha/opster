@@ -21,7 +21,7 @@ def simple(ui,
 
     I assure you! Nothing to look here. ;-)
     '''
-    ui.write(str(list(locals().keys())))
+    ui.write(str(list(sorted(locals().keys()))))
     ui.write('\n')
 
 @command(usage='[-p] [--exit value] ...', name='complex', hide=True)

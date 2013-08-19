@@ -589,9 +589,9 @@ def process(args, options):
     ...          'daemonize process'),
     ...         ('', 'pid-file', '',
     ...          'name of file to write process ID to')]
-    >>> print process(['-l', '0.0.0.0', '--pi', 'test', 'all'], opts)
-    (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
-
+    >>> x = process(['-l', '0.0.0.0', '--pi', 'test', 'all'], opts)
+    >>> x == (['all'], {'pid_file': 'test', 'daemonize': False, 'port': 8000, 'listen': '0.0.0.0'})
+    True
     '''
     options = [Option(o) for o in options]  # only for doctest
 
