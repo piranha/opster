@@ -40,8 +40,8 @@ Define function to make it simpler::
 
 Main characters:
 
-* `multicommands.py <http://hg.piranha.org.ua/opster/file/tip/tests/multicommands.py>`_
-* `test_opts.py <http://hg.piranha.org.ua/opster/file/tip/tests/test_opts.py>`_
+* `multicommands.py <https://github.com/piranha/opster/blob/master/tests/multicommands.py>`_
+* `test_opts.py <https://github.com/piranha/opster/blob/master/tests/test_opts.py>`_
 
 
 Action
