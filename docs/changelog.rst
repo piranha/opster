@@ -2,6 +2,7 @@ Changelog
 ---------
 
 4.1 (2013.08.19)
+~~~~~~~~~~~~~~~~
 
  - Improve guessing abilities under Python 3 (options in keyword arguments and
    keyword only arguments are combined now).
