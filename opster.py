@@ -2,7 +2,7 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, keyword, codecs
+import sys, traceback, getopt, types, textwrap, inspect, os, re, keyword, codecs
 from itertools import imap
 from functools import wraps
 from collections import namedtuple, Callable
@@ -680,6 +680,7 @@ def aliases_(cmdtable_key):
 def findpossible(cmd, table):
     '''Return cmd -> (aliases, command table entry) for each matching command.
     '''
+    pattern = '.*?'.join(list(cmd))
     choice = {}
     for e in table.keys():
         aliases = aliases_(e)
@@ -688,7 +689,7 @@ def findpossible(cmd, table):
             found = cmd
         else:
             for a in aliases:
-                if a.startswith(cmd):
+                if re.search(pattern, a):
                     found = a
                     break
         if found is not None:
