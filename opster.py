@@ -775,7 +775,7 @@ def guess_usage(func, options):
     nonoptional = len(arginfo.args) - len(arginfo.defaults or ())
 
     for i, arg in enumerate(arginfo.args):
-        if arg not in optnames:
+        if name_from_python(arg) not in optnames:
             usage.append((i > nonoptional - 1 and '[%s]' or '%s')
                          % arg.upper())
 
