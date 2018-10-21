@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+4.2 (2018.10.21)
+~~~~~~~~~~~~~~~~
+
+ - When function arguments (which become command line options) had underscores
+   in them, they appeared in help as unnamed argument (GH-60_). No more.
+
+.. _GH-60: https://github.com/piranha/opster/issues/60
+ 
 4.1 (2013.08.19)
 ~~~~~~~~~~~~~~~~
 
