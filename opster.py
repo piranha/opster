@@ -2,29 +2,22 @@
 '''Command line arguments parser
 '''
 
-import sys, traceback, getopt, types, textwrap, inspect, os, re, keyword, codecs
-from itertools import imap
+import sys, traceback, getopt, textwrap, inspect, os, re, keyword
+
 from functools import wraps
-from collections import namedtuple, Callable
+from collections import namedtuple
+from collections.abc import Callable
 from contextlib import contextmanager
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
 __version__ = '4.2'
-__author__ = 'Alexander Solovyov'
-__email__ = 'alexander@solovyov.net'
 
 
 def write(text, out=None):
     '''Write output to a given stream (stdout by default).'''
     out = out or sys.stdout
-    try:
-        print >> out, text
-    # Needed on Python 2.x if text is str/bytes containing non-ascii
-    # characters and sys.stdout is replaced by a writer from the codecs
-    # module. text will be decoded as ascii giving the decode error.
-    except UnicodeDecodeError:
-        print >> out, text.decode('utf-8')
+    print(text, file=out)
     # Get the order of stdout/stderr correct on Windows. AFAICT this is only
     # needed for the test environment but it's harmless otherwise.
     out.flush()
@@ -42,10 +35,6 @@ ARG_ENCODING = os.environ.get('OPSTER_ARG_ENCODING', FSE_ENCODING)
 
 def decodearg(arg, arg_encoding=ARG_ENCODING):
     '''Decode an argument from sys.argv'''
-    # python 2.x: have bytes, convert to unicode with given encoding
-    if sys.version_info < (3, 0):
-        return arg.decode(arg_encoding)
-
     # python 3.x: have unicode
     # arg has already been decoded with FSE_ENCODING
     # In the default case we just return the arg as it is
@@ -294,7 +283,7 @@ def help_(cmdtable, globalopts, scriptname):
             hlp = {}
             # determine if any command is marked for shortlist
             shortlist = (name == 'shortlist' and
-                         any(imap(lambda x: x.startswith('^'), cmdtable)))
+                         any(map(lambda x: x.startswith('^'), cmdtable)))
 
             for cmd, info in cmdtable.items():
                 if cmd.startswith('~'):
@@ -458,10 +447,12 @@ class BaseOption(namedtuple('Option', (
             'pyname', 'name', 'short', 'default', 'helpmsg', 'completer'))):
     has_parameter = True
     type = None
+    _fmt = None
 
     def __repr__(self):
-        return (super(BaseOption, self).__repr__()
-                .replace('Option', self.__class__.__name__, 1))
+        if not BaseOption._fmt:
+            BaseOption._fmt = ', '.join('%s=%%r' % name for name in self._fields)
+        return '%s(%s)' % (self.__class__.__name__, BaseOption._fmt % self)
 
     @classmethod
     def matches(cls, default):
@@ -499,7 +490,7 @@ class LiteralOption(BaseOption):
 
 class UnicodeOption(BaseOption):
     '''Handle unicode values, decoding input'''
-    type = unicode
+    type = str
 
     def convert(self, final):
         return decodearg(final)
@@ -508,7 +499,7 @@ class UnicodeOption(BaseOption):
 class BoolOption(BaseOption):
     '''Boolean option type.'''
     has_parameter = False
-    type = (bool, types.NoneType)
+    type = (bool, type(None))
 
     def convert(self, final):
         return bool(final)
@@ -706,12 +697,11 @@ def findcmd(cmd, table):
         return choice[cmd]
 
     if len(choice) > 1:
-        clist = choice.keys()
-        clist.sort()
+        clist = sorted(choice.keys())
         raise AmbiguousCommand(cmd, clist)
 
     if choice:
-        return choice.values()[0]
+        return list(choice.values())[0]
 
     raise UnknownCommand(cmd)
 
@@ -735,30 +725,15 @@ def guess_options(func):
 
     See docstring of ``command()`` for description of those variables.
     '''
-    try:
-        args, _, _, defaults = inspect.getargspec(func)
-        options = guess_options_py2(args, defaults)
-    except ValueError: # has keyword-only arguments
-        spec = inspect.getfullargspec(func)
-        options = guess_options_py3(spec)
-    for name, option in options:
-        if isinstance(option, tuple):
-            yield (option[0], name_from_python(name)) + option[1:]
-
-
-def guess_options_py2(args, defaults):
-    for name, option in zip(args[-len(defaults):], defaults):
-        yield name, option
-
-def guess_options_py3(spec):
-    '''Get options definitions from spec with keyword-only arguments
-    '''
+    spec = inspect.getfullargspec(func)
     if spec.args and spec.defaults:
-        for o in guess_options_py2(spec.args, spec.defaults):
-            yield o
+        for name, option in zip(spec.args[-len(spec.defaults):], spec.defaults):
+            if isinstance(option, tuple):
+                yield (option[0], name_from_python(name)) + option[1:]
     for name in spec.kwonlyargs:
         option = spec.kwonlydefaults[name]
-        yield name, option
+        if isinstance(option, tuple):
+            yield (option[0], name_from_python(name)) + option[1:]
 
 
 def guess_usage(func, options):
@@ -768,7 +743,7 @@ def guess_usage(func, options):
     if options:
         usage.append('[OPTIONS]')
     try:
-        arginfo = inspect.getargspec(func)
+        arginfo = inspect.getfullargspec(func)
     except ValueError: # keyword-only args
         arginfo = inspect.getfullargspec(func)
     optnames = [o.name for o in options]
@@ -837,7 +812,7 @@ def call_cmd(name, func, opts, middleware=None):
     '''
     # depth is necessary when there is a middleware in setup
     try:
-        arginfo = inspect.getargspec(func)
+        arginfo = inspect.getfullargspec(func)
     except ValueError:
         arginfo = inspect.getfullargspec(func)
     if middleware:
@@ -876,11 +851,7 @@ def call_cmd(name, func, opts, middleware=None):
 def call_cmd_regular(func, opts):
     '''Wrapper for command for handling function calls from Python.
     '''
-    # This would raise an error if there were any keyword-only arguments
-    try:
-        arginfo = inspect.getargspec(func)
-    except ValueError:
-        return call_cmd_regular_py3k(func, opts)
+    spec = inspect.getfullargspec(func)
 
     def inner(*args, **kwargs):
         # Map from argument names to Option instances
@@ -890,8 +861,8 @@ def call_cmd_regular(func, opts):
         # positional arguments to give a flat positional arg list
         remaining = list(args)
         args = []
-        defaults_offset = len(arginfo.args) - len(arginfo.defaults or [])
-        for n, argname in enumerate(arginfo.args):
+        defaults_offset = len(spec.args) - len(spec.defaults or [])
+        for n, argname in enumerate(spec.args):
             # Option arguments MUST be given as keyword arguments
             if argname in opt_args:
                 if argname in kwargs:
@@ -903,7 +874,7 @@ def call_cmd_regular(func, opts):
                 argval = remaining.pop(0)
             # Find the default value of the positional argument
             elif n >= defaults_offset:
-                argval = arginfo.defaults[n - defaults_offset]
+                argval = spec.defaults[n - defaults_offset]
             else:
                 raise TypeError('Not enough positional arguments')
             # Accumulate the args in order
@@ -912,25 +883,16 @@ def call_cmd_regular(func, opts):
         # Combine the remaining positional arguments that go to varargs
         args = args + remaining
 
+        if spec.kwonlydefaults:
+            for o in opts:
+                if o.pyname in spec.kwonlydefaults and o.pyname not in kwargs:
+                    kwargs[o.pyname] = o.default_value()
+
         # kwargs is any keyword arguments that were not recognised as options
         return func(*args, **kwargs)
 
     return inner
 
-def call_cmd_regular_py3k(func, opts):
-    '''call_cmd_regular for functions with keyword only arguments'''
-    spec = inspect.getfullargspec(func)
-
-    def inner(*args, **kwargs):
-
-        # Replace the option arguments with their default values
-        for o in opts:
-            if o.pyname not in kwargs:
-                kwargs[o.pyname] = o.default_value()
-
-        return func(*args, **kwargs)
-
-    return inner
 
 def replace_name(usage, name):
     '''Replace name placeholder with a command name.'''
@@ -951,7 +913,7 @@ def pretty_doc_string(item):
     if len(lines) <= 1:
         return raw_doc
     indent = len(lines[1]) - len(lines[1].lstrip())
-    return '\n'.join([lines[0]] + map(lambda l: l[indent:], lines[1:]))
+    return '\n'.join([lines[0]] + [l[indent:] for l in lines[1:]])
 
 
 def name_from_python(name):
@@ -995,7 +957,7 @@ def autocomplete(cmdtable, args, middleware):
 
     # command
     if cword == 1:
-        print ' '.join(filter(lambda x: x.startswith(current), commands))
+        print(' '.join([x for x in commands if x.startswith(current)]))
 
     # command options
     elif cwords[0] in commands:
@@ -1013,9 +975,9 @@ def autocomplete(cmdtable, args, middleware):
                 if middleware:
                     completer = middleware(completer)
                 args = completer(current)
-                print ' '.join(args),
+                print(' '.join(args), end=' ')
 
-        print ' '.join((o for o in options if o.startswith(current)))
+        print(' '.join((o for o in options if o.startswith(current))))
 
     sys.exit(1)
 
@@ -1058,7 +1020,7 @@ def completion(type=('t', 'bash', 'Completion type (bash or zsh)'),
     '''Outputs completion script for bash or zsh.'''
 
     prog_name = os.path.split(sys.argv[0])[1]
-    print COMPLETIONS[type].strip() % prog_name
+    print(COMPLETIONS[type].strip() % prog_name)
 
 
 # --------

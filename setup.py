@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
-import sys, os, re
+import os
 
 from setuptools import setup
-
-if sys.version_info[0] >= 3:
-    extra = {'use_2to3': True}
-else:
-    extra = {}
+import opster
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -20,21 +16,14 @@ def desc():
         # no docs
         return info
 
-# grep opster.py since python 3.x cannot import it before using 2to3
-opster_text = read('opster.py')
-def grep_opsterpy(attrname):
-    pattern = r"{0}\W*=\W*'([^']+)'".format(attrname)
-    strval, = re.findall(pattern, opster_text)
-    return strval
-
 setup(
     name='opster',
     description='command line parsing speedster',
     long_description=desc(),
     license='BSD',
-    version = grep_opsterpy('__version__'),
-    author = grep_opsterpy('__author__'),
-    author_email = grep_opsterpy('__email__'),
+    version = opster.__version__,
+    author = 'Alexander Solovyov',
+    author_email = 'alexander@solovyov.net',
     url='http://github.com/piranha/opster/',
     classifiers=[
         'Environment :: Console',
@@ -45,5 +34,4 @@ setup(
         'Topic :: Software Development',
         ],
     py_modules=['opster'],
-    platforms='any',
-    **extra)
+    platforms='any')

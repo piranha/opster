@@ -1,6 +1,8 @@
 Changelog
 ---------
 
+ - Drop Python 2 support
+
 4.2 (2018.10.21)
 ~~~~~~~~~~~~~~~~
 

@@ -1,7 +1,0 @@
-language: python
-python:
-  - "2.6"
-  - "2.7"
-  - "3.3" # Py3 is disabled since cram does not escape text :\
-install: "pip install https://bitbucket.org/piranha/cram/get/tip.zip"
-script: "make testcurrent"

@@ -14,7 +14,7 @@ Actors cast
 Choose python version::
 
   $   if [ -z "$PYTHON" ]; then
-  >      PYTHON="python"
+  >      PYTHON="python3"
   >   fi
 
 Add opster to the PYTHONPATH::

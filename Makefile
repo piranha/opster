@@ -1,15 +1,9 @@
 .PHONY: help docs arch test
 
 SHELL ?= /bin/sh
-CRAM = cram --shell="$(SHELL)" --preserve-env
+PRYSK = prysk --shell="$(SHELL)" --preserve-env
 BUILD_DIR = `pwd`/build/lib
-PYVER = $(shell python -V 2>&1 | cut -c8)
-
-ifeq ($(PYVER), 2)
-PYTHON3 = python3
-else
-PYTHON3 = python
-endif
+PYTHON = python3
 
 help:
 	@echo "Use \`make <target>\` with one of targets:"
@@ -25,28 +19,16 @@ open:
 	cd docs && make open
 
 arch:
-	python contrib/updatepkg.py
+	$(PYTHON) contrib/updatepkg.py
 
 test:
-	python opster.py
-	$(CRAM) tests/opster.t
-
-test3:
-	"$(PYTHON3)" setup.py build
-	2to3 --doctests_only --write "$(BUILD_DIR)"/opster.py
-	"$(PYTHON3)" "$(BUILD_DIR)"/opster.py
-	PYTHON="$(PYTHON3)" OPSTER_DIR="$(BUILD_DIR)" $(CRAM) tests/opster.t
-	PYTHON="$(PYTHON3)" OPSTER_DIR="$(BUILD_DIR)" $(CRAM) tests/py3k.t
-
-ifeq ($(PYVER), 2)
-testcurrent: test
-else
-testcurrent: test3
-endif
+	$(PYTHON) opster.py
+	$(PRYSK) tests/opster.t
+	$(PRYSK) tests/py3k.t
 
 coverage:
 	coverage run -a opster.py
-	COVERAGE=1 $(CRAM) tests/opster.t
+	COVERAGE=1 $(PRYSK) tests/opster.t
 
 upload:
 	python setup.py sdist upload
