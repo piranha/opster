@@ -10,10 +10,10 @@ dictionaries, etc) to define options, which makes configuration clear and
 concise. Additionally it contains possibility to handle subcommands (i.e.
 ``hg commit`` or ``svn update``).
 
-.. image:: https://secure.travis-ci.org/piranha/opster.png
-   :target: https://travis-ci.org/piranha/opster
+.. image:: https://github.com/piranha/opster/actions/workflows/build.yml/badge.svg
+   :target: https://github.com/piranha/opster/actions
 
-**Supported Python versions**: Python >= 2.6 (including 3.x)
+**Supported Python versions**: Python >= 3.2
 
 
 Quick example
