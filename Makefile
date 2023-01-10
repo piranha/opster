@@ -4,6 +4,7 @@ SHELL ?= /bin/sh
 PRYSK = prysk --shell="$(SHELL)" --preserve-env
 BUILD_DIR = `pwd`/build/lib
 PYTHON = python3
+VERSION = $(shell grep '__version__ =' opster.py | cut -d ' ' -f 3 | tr -d "'")
 
 help:
 	@echo "Use \`make <target>\` with one of targets:"
@@ -31,4 +32,5 @@ coverage:
 	COVERAGE=1 $(PRYSK) tests/opster.t
 
 upload:
-	python setup.py sdist upload
+	python3 setup.py sdist
+	twine upload dist/opster-$(VERSION).tar.gz

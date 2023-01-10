@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 
 __all__ = ['Dispatcher', 'command', 'dispatch']
-__version__ = '4.2'
+__version__ = '5.0'
 
 
 def write(text, out=None):
